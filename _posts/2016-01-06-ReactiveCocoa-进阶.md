@@ -9,7 +9,6 @@ catalog: true
 tags:
     - iOS
     - ReactiveCocoa
-    - 函数式编程
 ---
 # 前言
 
