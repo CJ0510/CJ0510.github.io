@@ -8,7 +8,7 @@
       <link href="/posts/1d2e832b.html"/>
       <url>/posts/1d2e832b.html</url>
       
-        <content type="html"><![CDATA[<h1 id="第-0-章"><a href="#第-0-章" class="headerlink" title="第 0 章"></a>第 0 章</h1><p>程序编译过程如下<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/njucompliers01.excalidraw.8adlw5emt3.svg"><br>编译原理研究其中的红色虚线框部分，及将源程序转换为汇编程序。<br>利用工具<code>https://godbolt.org/</code> 可以查看不同编译器对同一段代码的编译结果。<br>如下<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7zqs317i0e.webp"></p><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="http://docs.compilers.cpl.icu/#/">NJU Compilers</a><br><a href="https://godbolt.org/">Godbolt</a></p>]]></content>
+        <content type="html"><![CDATA[<h1 id="第-0-章"><a href="#第-0-章" class="headerlink" title="第 0 章"></a>第 0 章</h1><p>程序编译过程如下<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.4n82a16tqf.webp"><br>编译原理研究其中的红色虚线框部分，及将源程序转换为汇编程序。<br>利用工具<code>https://godbolt.org/</code> 可以查看不同编译器对同一段代码的编译结果。<br>如下<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7zqs317i0e.webp"></p><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="http://docs.compilers.cpl.icu/#/">NJU Compilers</a><br><a href="https://godbolt.org/">Godbolt</a></p>]]></content>
       
       
       <categories>
