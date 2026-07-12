@@ -1,0 +1,1123 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO &#x2F; SCHED_RR &#x2F; SCHED_DEADLINE &#x2F; SCHED_NORMAL 四种调度类的优先级规则。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="进程优先级">
+<meta property="og:url" content="http://example.com/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO &#x2F; SCHED_RR &#x2F; SCHED_DEADLINE &#x2F; SCHED_NORMAL 四种调度类的优先级规则。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et78bzv3i.webp">
+<meta property="article:published_time" content="2026-07-12T05:32:55.000Z">
+<meta property="article:modified_time" content="2026-07-12T08:48:10.905Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="nice">
+<meta property="article:tag" content="内核">
+<meta property="article:tag" content="进程优先级">
+<meta property="article:tag" content="进程管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp">
+  
+  
+  
+  <title>进程优先级 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="进程优先级"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-07-12 13:32" pubdate>
+          2026年7月12日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          63 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">进程优先级</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="进程优先级"><a href="#进程优先级" class="headerlink" title="进程优先级"></a>进程优先级</h1><blockquote>
+<p><strong>关键结论</strong></p>
+<ul>
+<li>Linux 内核使用数值 <strong>小即高优先级</strong> 的规则：Deadline（-1）&gt; 实时（0–98）&gt; 普通（100–139）。</li>
+<li><code>static_prio = nice + 120</code>，对普通任务生效；实时任务只看 <code>rt_priority</code>（1–99）。</li>
+<li>调度器最终使用的是 <code>p-&gt;prio</code>（动态优先级），它在优先级继承（PI）场景中可能与<br><code>normal_prio</code> 不同。</li>
+<li><code>normal_prio</code> 根据 policy 统一映射到内核内部优先级：Deadline → -1，RT → <code>100 - 1 - rt_prio</code>，<br>普通 → <code>nice + 120</code>。</li>
+</ul>
+</blockquote>
+<h2 id="从-task-struct-看优先级字段"><a href="#从-task-struct-看优先级字段" class="headerlink" title="从 task_struct 看优先级字段"></a>从 task_struct 看优先级字段</h2><p>Linux 内核在 <code>task_struct</code> 中维护了多个优先级相关字段（<br><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/linux/sched.h"><code>include/linux/sched.h</code></a>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span>             prio;           <span class="hljs-comment">// 动态优先级——调度器实际使用</span><br><span class="hljs-type">int</span>             static_prio;    <span class="hljs-comment">// 静态优先级——普通任务的 nice 内核表示</span><br><span class="hljs-type">int</span>             normal_prio;    <span class="hljs-comment">// 归一化优先级——由 policy 与静态参数计算</span><br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>    rt_priority;    <span class="hljs-comment">// 实时优先级——仅对 SCHED_FIFO / SCHED_RR 有效</span><br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>    policy;         <span class="hljs-comment">// 调度策略</span><br></code></pre></td></tr></table></figure>
+
+<p>这几个字段各司其职。理解它们之间的关系，是掌握 Linux 调度行为的前提。</p>
+<h2 id="调度策略与优先级的整体关系"><a href="#调度策略与优先级的整体关系" class="headerlink" title="调度策略与优先级的整体关系"></a>调度策略与优先级的整体关系</h2><p>内核通过 <code>policy</code> 字段区分任务的调度类。每种策略使用的优先级参数不同，<br>内核内部优先级数值也不同。</p>
+<h3 id="调度策略一览"><a href="#调度策略一览" class="headerlink" title="调度策略一览"></a>调度策略一览</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * Scheduling policies</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_NORMAL        0   <span class="hljs-comment">// 普通，CFS 调度（也称 SCHED_OTHER）</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_FIFO          1   <span class="hljs-comment">// 实时 FIFO，无时间片</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_RR            2   <span class="hljs-comment">// 实时轮转，同优先级按时间片轮转</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_BATCH         3   <span class="hljs-comment">// 普通批处理，不强调交互</span></span><br><span class="hljs-comment">/* SCHED_ISO: reserved but not implemented yet */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_IDLE          5   <span class="hljs-comment">// 极低优先级，系统空闲时才运行</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_DEADLINE      6   <span class="hljs-comment">// Deadline 实时，按截止期限调度</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_EXT           7   <span class="hljs-comment">// 可扩展（sched_ext，BPF 调度器）</span></span><br></code></pre></td></tr></table></figure>
+
+<p>策略宏定义于 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/uapi/linux/sched.h"><code>include/uapi/linux/sched.h</code></a>。</p>
+<h3 id="策略-→-优先级依据-→-内核内部优先级映射"><a href="#策略-→-优先级依据-→-内核内部优先级映射" class="headerlink" title="策略 → 优先级依据 → 内核内部优先级映射"></a>策略 → 优先级依据 → 内核内部优先级映射</h3><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>类型</th>
+<th>调度类</th>
+<th>优先级依据</th>
+<th>内核 prio 范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SCHED_DEADLINE</code></td>
+<td>Deadline 实时</td>
+<td><code>dl_sched_class</code></td>
+<td><code>runtime</code> &#x2F; <code>deadline</code> &#x2F; <code>period</code></td>
+<td><strong>-1</strong></td>
+<td>最高优先级；不使用 <code>nice</code> 或 <code>rt_priority</code></td>
+</tr>
+<tr>
+<td><code>SCHED_FIFO</code></td>
+<td>实时</td>
+<td><code>rt_sched_class</code></td>
+<td><code>rt_priority</code>（1–99）</td>
+<td><strong>0–98</strong></td>
+<td>先进先出；运行至阻塞&#x2F;让出&#x2F;被抢占</td>
+</tr>
+<tr>
+<td><code>SCHED_RR</code></td>
+<td>实时</td>
+<td><code>rt_sched_class</code></td>
+<td><code>rt_priority</code>（1–99）</td>
+<td><strong>0–98</strong></td>
+<td>实时轮转；同优先级线程按时间片轮流</td>
+</tr>
+<tr>
+<td><code>SCHED_NORMAL</code></td>
+<td>普通</td>
+<td><code>fair_sched_class</code></td>
+<td><code>nice</code>（-20–+19）</td>
+<td><strong>100–139</strong></td>
+<td>默认策略；权重由 <code>nice</code> 决定</td>
+</tr>
+<tr>
+<td><code>SCHED_BATCH</code></td>
+<td>普通</td>
+<td><code>fair_sched_class</code></td>
+<td><code>nice</code>（-20–+19）</td>
+<td><strong>100–139</strong></td>
+<td>面向批处理；唤醒逻辑与 NORMAL 不同</td>
+</tr>
+<tr>
+<td><code>SCHED_IDLE</code></td>
+<td>普通</td>
+<td><code>fair_sched_class</code></td>
+<td>Idle 权重</td>
+<td><strong>100–139</strong></td>
+<td>极低优先级；仅在系统空闲时运行</td>
+</tr>
+<tr>
+<td><code>SCHED_EXT</code></td>
+<td>可扩展</td>
+<td><code>ext_sched_class</code></td>
+<td>由 BPF 定义</td>
+<td><em>BPF 决定</em></td>
+<td><code>sched_ext</code> 可编程调度（Linux 6.12+）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>核心规则：</strong> 内核内部优先级数值越小，调度优先级越高。<br>在任何 CPU 上，一个可运行的 Deadline 或 RT 任务会立即抢占普通任务。</p>
+</blockquote>
+<h3 id="三类任务的核心行为对比"><a href="#三类任务的核心行为对比" class="headerlink" title="三类任务的核心行为对比"></a>三类任务的核心行为对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>普通任务（CFS）</th>
+<th>FIFO&#x2F;RR 实时任务</th>
+<th>Deadline 任务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>优先级参数</td>
+<td><code>nice</code>（-20–+19）</td>
+<td><code>rt_priority</code>（1–99）</td>
+<td><code>runtime</code> &#x2F; <code>deadline</code> &#x2F; <code>period</code></td>
+</tr>
+<tr>
+<td>内核 prio</td>
+<td>100–139</td>
+<td>0–98</td>
+<td>-1</td>
+</tr>
+<tr>
+<td>时间片</td>
+<td>有（CFS 按权重动态分配）</td>
+<td>FIFO 无、RR 有固定时间片</td>
+<td>按 <code>runtime</code> 预算</td>
+</tr>
+<tr>
+<td>抢占规则</td>
+<td>被 RT&#x2F;DL 抢占；CFS 内部按 vruntime</td>
+<td>更高 <code>rt_priority</code> 抢占；同优先级 FIFO 不抢占</td>
+<td>Earliest Deadline First (EDF)</td>
+</tr>
+<tr>
+<td>用户态设置</td>
+<td><code>nice(2)</code> &#x2F; <code>setpriority(2)</code></td>
+<td><code>sched_setscheduler(2)</code></td>
+<td><code>sched_setattr(2)</code></td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>通用应用程序</td>
+<td>硬实时响应（IRQ 线程、音频）</td>
+<td>周期性实时任务（视频编解码）</td>
+</tr>
+</tbody></table>
+<h2 id="静态优先级-static-prio"><a href="#静态优先级-static-prio" class="headerlink" title="静态优先级 static_prio"></a>静态优先级 <code>static_prio</code></h2><p><code>static_prio</code> 是普通线程 nice 值的内核内部表示。nice 值在 <strong>-20 到 +19</strong> 之间，<br>nice 越大表示线程越”友好”——越容易让出 CPU。</p>
+<p>内核内部普通优先级范围是 <strong>100 到 139</strong>（值越大，调度优先级越低）。<br>转换关系定义在 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/linux/sched/prio.h"><code>include/linux/sched/prio.h</code></a>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_NICE         19</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MIN_NICE        -20</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> NICE_WIDTH      (MAX_NICE - MIN_NICE + 1)   <span class="hljs-comment">// = 40</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_USER_RT_PRIO 100</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_RT_PRIO      MAX_USER_RT_PRIO           <span class="hljs-comment">// = 100</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_PRIO         (MAX_RT_PRIO + NICE_WIDTH)  <span class="hljs-comment">// = 140</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DEFAULT_PRIO     (MAX_RT_PRIO + NICE_WIDTH / 2)  <span class="hljs-comment">// = 120</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> NICE_TO_PRIO(nice)  ((nice) + DEFAULT_PRIO)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> PRIO_TO_NICE(prio)  ((prio) - DEFAULT_PRIO)</span><br></code></pre></td></tr></table></figure>
+
+<p>展开即：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">static_prio</span> = nice + <span class="hljs-number">120</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>示例：</strong></p>
+<table>
+<thead>
+<tr>
+<th>nice 值</th>
+<th><code>static_prio</code></th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-20</td>
+<td>100</td>
+<td>普通任务中的最高调度优先级</td>
+</tr>
+<tr>
+<td>-10</td>
+<td>110</td>
+<td>高于默认</td>
+</tr>
+<tr>
+<td>0</td>
+<td>120 (<code>DEFAULT_PRIO</code>)</td>
+<td>默认优先级</td>
+</tr>
+<tr>
+<td>10</td>
+<td>130</td>
+<td>低于默认</td>
+</tr>
+<tr>
+<td>19</td>
+<td>139</td>
+<td>普通任务中的最低调度优先级</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><code>static_prio</code> 在进程生命周期内通常不变，仅可通过 <code>nice(2)</code> &#x2F; <code>setpriority(2)</code> 系统调用修改。<br>实时任务不使用 <code>static_prio</code>（其值在 RT 任务中无调度意义）。</p>
+</blockquote>
+<h2 id="实时优先级-rt-priority"><a href="#实时优先级-rt-priority" class="headerlink" title="实时优先级 rt_priority"></a>实时优先级 <code>rt_priority</code></h2><p><code>rt_priority</code> 仅对 <code>SCHED_FIFO</code> 和 <code>SCHED_RR</code> 生效。用户空间取值范围为 <strong>1 到 99</strong>（<br><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man7/sched.7.html">sched(7) man-page</a>），<br>0 为系统保留。值越大，实时优先级越高。</p>
+<p>可通过 <code>sched_get_priority_min(2)</code> &#x2F; <code>sched_get_priority_max(2)</code> 查询系统支持范围：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// SCHED_FIFO 返回 1；SCHED_RR 返回 1</span><br><span class="hljs-type">int</span> min = sched_get_priority_min(SCHED_FIFO);<br><span class="hljs-comment">// SCHED_FIFO 返回 99；SCHED_RR 返回 99</span><br><span class="hljs-type">int</span> max = sched_get_priority_max(SCHED_FIFO);<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>兼容性提醒：</strong> POSIX.1 仅要求实现提供至少 32 个实时优先级级别。<br>可移植程序应通过上述系统调用动态获取实际范围，而非硬编码 1–99。</p>
+</blockquote>
+<p>实时任务的 <code>rt_priority</code> 在 CFS 调度器中不参与 <code>vruntime</code> 计算——它的优先级<br>直接来自调度类的排序（RT &gt; CFS），而非权重分配。</p>
+<h2 id="归一化优先级-normal-prio"><a href="#归一化优先级-normal-prio" class="headerlink" title="归一化优先级 normal_prio"></a>归一化优先级 <code>normal_prio</code></h2><p><code>normal_prio</code> 将不同策略的优先级参数统一映射到内核内部优先级数值。<br>源码位于 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/kernel/sched/core.c"><code>kernel/sched/core.c</code></a>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> __normal_prio(<span class="hljs-type">int</span> policy, <span class="hljs-type">int</span> rt_prio, <span class="hljs-type">int</span> nice)<br>&#123;<br>    <span class="hljs-type">int</span> prio;<br><br>    <span class="hljs-keyword">if</span> (dl_policy(policy))<br>        prio = MAX_DL_PRIO - <span class="hljs-number">1</span>;             <span class="hljs-comment">// = -1</span><br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (rt_policy(policy))<br>        prio = MAX_RT_PRIO - <span class="hljs-number">1</span> - rt_prio;   <span class="hljs-comment">// = 99 - rt_prio</span><br>    <span class="hljs-keyword">else</span><br>        prio = NICE_TO_PRIO(nice);          <span class="hljs-comment">// = nice + 120</span><br><br>    <span class="hljs-keyword">return</span> prio;<br>&#125;<br><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title function_">normal_prio</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> task_struct *p)</span><br>&#123;<br>    <span class="hljs-keyword">return</span> __normal_prio(p-&gt;policy, p-&gt;rt_priority,<br>                         PRIO_TO_NICE(p-&gt;static_prio));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>映射规则：</strong></p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>输入参数</th>
+<th>计算公式</th>
+<th><code>normal_prio</code> 范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SCHED_DEADLINE</code></td>
+<td>—</td>
+<td><code>MAX_DL_PRIO - 1</code></td>
+<td><strong>-1</strong></td>
+</tr>
+<tr>
+<td><code>SCHED_FIFO</code> &#x2F; <code>SCHED_RR</code></td>
+<td><code>rt_priority</code> (1–99)</td>
+<td><code>99 - rt_priority</code></td>
+<td>0（最高 RT）– 98（最低 RT）</td>
+</tr>
+<tr>
+<td><code>SCHED_NORMAL</code> &#x2F; <code>SCHED_BATCH</code> &#x2F; <code>SCHED_IDLE</code></td>
+<td><code>nice</code> (-20–+19)</td>
+<td><code>nice + 120</code></td>
+<td>100（nice&#x3D;-20）– 139（nice&#x3D;+19）</td>
+</tr>
+</tbody></table>
+<p><strong>计算示例：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// SCHED_FIFO, rt_priority=99 → normal_prio = 99-99 = 0  (最高 RT)</span><br><span class="hljs-comment">// SCHED_FIFO, rt_priority=1  → normal_prio = 99-1  = 98 (最低 RT)</span><br><span class="hljs-comment">// SCHED_NORMAL, nice=-10     → normal_prio = 110        (高于默认)</span><br><span class="hljs-comment">// SCHED_NORMAL, nice=5       → normal_prio = 125        (低于默认)</span><br><span class="hljs-comment">// SCHED_DEADLINE             → normal_prio = -1         (高于一切)</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>normal_prio</code> 是任务”本来的”优先级——不含任何临时调整。<br>它由策略和静态参数计算得到，不随运行时状态变化。</p>
+</blockquote>
+<h2 id="动态优先级-prio"><a href="#动态优先级-prio" class="headerlink" title="动态优先级 prio"></a>动态优先级 <code>prio</code></h2><p><code>prio</code> 是调度器在做调度决策时<strong>实际使用的优先级</strong>。它在大多数时候等于 <code>normal_prio</code>，<br>但在特定情况下会被临时修改。设置 <code>prio</code> 的核心函数是 <code>effective_prio()</code>（<br><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/kernel/sched/core.c"><code>kernel/sched/core.c</code></a>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">effective_prio</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> task_struct *p)</span><br>&#123;<br>    p-&gt;normal_prio = normal_prio(p);<br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 如果当前动态优先级已经处于 RT 范围（说明正在享受</span><br><span class="hljs-comment">     * 优先级继承带来的临时提升），则保留之；否则退回 normal_prio。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">if</span> (!rt_prio(p-&gt;prio))<br>        <span class="hljs-keyword">return</span> p-&gt;normal_prio;<br>    <span class="hljs-keyword">return</span> p-&gt;prio;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>一般调用路径：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">p-&gt;prio = effective_prio(p);<br></code></pre></td></tr></table></figure>
+
+<h3 id="什么时候-prio-≠-normal-prio？"><a href="#什么时候-prio-≠-normal-prio？" class="headerlink" title="什么时候 prio ≠ normal_prio？"></a>什么时候 <code>prio ≠ normal_prio</code>？</h3><p>最常见的情况是 <strong>优先级继承（Priority Inheritance, PI）</strong>。</p>
+<p><strong>场景：</strong> 一个高优先级的 RT 任务（rt_priority&#x3D;80）尝试获取互斥锁，但该锁被一个<br>低优先级的普通任务（nice&#x3D;0, prio&#x3D;120）持有。如果内核不干预，RT 任务会被普通任务<br>无限期阻塞——这就是著名的<strong>优先级反转</strong>问题。</p>
+<p><strong>内核的处理：</strong> <code>rt_mutex</code> 实现会<strong>临时提升</strong>锁持有者的 <code>prio</code> 到等待者中最高<br>RT 优先级的水平。在上述场景中，普通任务的 <code>prio</code> 会被临时提升到 RT 范围（例如 <code>prio=19</code>），<br>使其能尽快执行完临界区并释放锁。<code>effective_prio()</code> 中的 <code>rt_prio(p-&gt;prio)</code> 检查<br>正是用来保留这种临时提升的：如果 <code>prio</code> 已经在 RT 范围，就不要降回 <code>normal_prio</code>。</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs abnf">PI 提升前：普通任务 prio <span class="hljs-operator">=</span> <span class="hljs-number">120</span> <span class="hljs-operator">=</span> normal_prio<br>PI 提升后：普通任务 prio <span class="hljs-operator">=</span> <span class="hljs-number">19</span>  ≠ normal_prio (<span class="hljs-number">120</span>)<br>——任务获得了临时的 RT 级调度优先级<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Linux 的 PI 实现细节见内核文档<br><a target="_blank" rel="noopener" href="https://docs.kernel.org/locking/rt-mutex.html"><code>Documentation/locking/rt-mutex.rst</code></a> 和<br><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/kernel/locking/rtmutex.c"><code>kernel/locking/rtmutex.c</code></a>。</p>
+</blockquote>
+<h2 id="优先级转换全景"><a href="#优先级转换全景" class="headerlink" title="优先级转换全景"></a>优先级转换全景</h2><p>下图将 <code>nice</code>、<code>rt_priority</code>、<code>policy</code> 到内核内部 <code>prio</code> 的完整映射关系汇总在一处：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp" srcset="/img/loading.gif" lazyload></p>
+<p>图中三条色带从上到下对应三种优先级域。<strong>Deadline 任务始终优先于 RT，<br>RT 始终优先于普通。</strong> 绿色区域的普通任务中，<code>static_prio</code> 和 <code>prio</code><br>通常相等，但在优先级继承发生时 <code>prio</code> 会临时上浮到 RT 区域。</p>
+<h2 id="动态优先级的运行时变化"><a href="#动态优先级的运行时变化" class="headerlink" title="动态优先级的运行时变化"></a>动态优先级的运行时变化</h2><p>除了 PI，还有两种常见情况下 <code>prio</code> 会发生变化：</p>
+<ol>
+<li><p><strong><code>nice(2)</code> 系统调用</strong>：修改 <code>static_prio</code> 后，内核重新计算<br><code>normal_prio</code> 并调用 <code>effective_prio()</code> 更新 <code>prio</code>。</p>
+</li>
+<li><p><strong><code>sched_setscheduler(2)</code></strong>：改变 <code>policy</code> 和&#x2F;或 <code>rt_priority</code> 后，<br><code>normal_prio()</code> 重新计算，<code>prio</code> 随之更新。</p>
+</li>
+</ol>
+<p>以下是一个 <code>SCHED_FIFO</code> 的简单示例（仅示意，省略错误处理）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sched.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_param</span> <span class="hljs-title">param</span> =</span> &#123; .sched_priority = <span class="hljs-number">80</span> &#125;;<br>sched_setscheduler(<span class="hljs-number">0</span>, SCHED_FIFO, &amp;param);<br><span class="hljs-comment">// 此后：</span><br><span class="hljs-comment">//   policy      = SCHED_FIFO</span><br><span class="hljs-comment">//   rt_priority = 80</span><br><span class="hljs-comment">//   normal_prio = 99 - 80 = 19</span><br><span class="hljs-comment">//   prio        = 19（在 RT 范围内）</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="1-为什么-rt-priority-只到-99-而不是更大？"><a href="#1-为什么-rt-priority-只到-99-而不是更大？" class="headerlink" title="1. 为什么 rt_priority 只到 99 而不是更大？"></a>1. 为什么 <code>rt_priority</code> 只到 99 而不是更大？</h3><p><code>MAX_USER_RT_PRIO</code> 定义为 100，用户可用范围为 1–99（0 保留给内核）。<br>这个值自 Linux 早期版本即固定，内部优先级空间（0–139）总共 140 个级别<br>（<code>MAX_PRIO = MAX_RT_PRIO + NICE_WIDTH = 100 + 40</code>），从设计上区分了<br>RT 和普通任务的优先级区间。</p>
+<h3 id="2-实时任务会不会饿死普通任务？"><a href="#2-实时任务会不会饿死普通任务？" class="headerlink" title="2. 实时任务会不会饿死普通任务？"></a>2. 实时任务会不会饿死普通任务？</h3><p>会。高 <code>rt_priority</code> 的 CPU 密集型实时任务会持续占用 CPU，<br>导致所有普通任务无法运行。这是设计的取舍——实时调度策略假定<br><strong>实时任务的行为是可控且受限的</strong>。在实践中有两个保护机制：</p>
+<ul>
+<li><strong><code>RLIMIT_RTTIME</code></strong>（<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/getrlimit.2.html"><code>getrlimit(2)</code></a>）：<br>限制实时任务连续运行时间，超出后发送 <code>SIGXCPU</code> 信号。</li>
+<li><strong>调度器节流（RT throttling）</strong>：<code>/proc/sys/kernel/sched_rt_runtime_us</code><br>限制每周期 RT 任务的总运行时间（默认 RT 占 95%，留 5% 给普通任务）。</li>
+</ul>
+<h3 id="3-SCHED-BATCH-和-SCHED-NORMAL-有什么区别？"><a href="#3-SCHED-BATCH-和-SCHED-NORMAL-有什么区别？" class="headerlink" title="3. SCHED_BATCH 和 SCHED_NORMAL 有什么区别？"></a>3. <code>SCHED_BATCH</code> 和 <code>SCHED_NORMAL</code> 有什么区别？</h3><p>两者同属 <code>fair_sched_class</code>，使用相同的 <code>nice</code> 权重体系。区别在于唤醒行为：<br><code>SCHED_BATCH</code> 任务的唤醒延迟更长，调度器会认为它们对交互响应不敏感，<br>从而减少抢占和迁移开销。适合编译任务、日志处理等批处理负载。</p>
+<h3 id="4-Deadline-调度不使用-rt-priority，那优先级怎么确定？"><a href="#4-Deadline-调度不使用-rt-priority，那优先级怎么确定？" class="headerlink" title="4. Deadline 调度不使用 rt_priority，那优先级怎么确定？"></a>4. Deadline 调度不使用 <code>rt_priority</code>，那优先级怎么确定？</h3><p><code>SCHED_DEADLINE</code> 通过三个参数控制调度：</p>
+<ul>
+<li><strong><code>sched_runtime</code></strong>：每个周期内的最大执行时间</li>
+<li><strong><code>sched_deadline</code></strong>：任务必须在此相对截止期限内完成</li>
+<li><strong><code>sched_period</code></strong>：重复周期</li>
+</ul>
+<p>调度器使用 <strong>Earliest Deadline First (EDF)</strong> 算法：截止期限越近，<br>调度优先级越高。约束条件为 <code>runtime ≤ deadline ≤ period</code>。<br>详见内核文档 <a target="_blank" rel="noopener" href="https://docs.kernel.org/scheduler/sched-deadline.html"><code>Documentation/scheduler/sched-deadline.rst</code></a>。</p>
+<h3 id="5-SCHED-IDLE-和-nice-19-哪个优先级更低？"><a href="#5-SCHED-IDLE-和-nice-19-哪个优先级更低？" class="headerlink" title="5. SCHED_IDLE 和 nice=19 哪个优先级更低？"></a>5. <code>SCHED_IDLE</code> 和 <code>nice=19</code> 哪个优先级更低？</h3><p><code>SCHED_IDLE</code> 比 <code>nice=19</code> 更低。<code>SCHED_IDLE</code> 使用特殊的 Idle 权重，<br>仅在<strong>没有其他可运行任务</strong>时才获得 CPU 时间。<code>nice=19</code> 的普通任务<br>至少还会在 CFS 中获得极小的时间片。直观排序如下：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Deadline</span> &gt; RT(<span class="hljs-number">0</span>-<span class="hljs-number">98</span>) &gt; nice=-<span class="hljs-number">20</span>(prio=<span class="hljs-number">100</span>) &gt; ... &gt; nice=<span class="hljs-number">19</span>(prio=<span class="hljs-number">139</span>) &gt; SCHED_IDLE<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Linux 的优先级体系由四个核心字段构成一个层次分明的整体：</p>
+<ul>
+<li><strong><code>static_prio</code></strong>：面向普通任务，由 <code>nice</code> 值线性映射（<code>nice + 120</code>），范围 100–139。</li>
+<li><strong><code>rt_priority</code></strong>：面向 RT 任务，用户可设 1–99，大即高优先级。</li>
+<li><strong><code>normal_prio</code></strong>：将 <code>policy</code> 与上述静态参数统一定价到内核内部优先级（-1 到 139）。</li>
+<li><strong><code>prio</code></strong>：调度器实际使用的动态优先级。通常等于 <code>normal_prio</code>，但在优先级继承等<br>场景下会临时偏离——这是内核处理优先级反转的核心机制。</li>
+</ul>
+<p>在同一个 CPU 上，调度类的选择优先于内部优先级数值：Deadline 调度类先于 RT 调度类，<br>RT 调度类先于 CFS 调度类。只有在调度类内部，<code>prio</code> 的数值比较才决定谁先运行。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et78bzv3i.webp" srcset="/img/loading.gif" lazyload alt="优先级模型"></p>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/linux/sched/prio.h"><code>include/linux/sched/prio.h</code></a> — 优先级常量和转换宏（<code>MAX_RT_PRIO</code>, <code>MAX_PRIO</code>, <code>DEFAULT_PRIO</code>, <code>NICE_TO_PRIO</code> 等）</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/kernel/sched/core.c"><code>kernel/sched/core.c</code></a> — <code>effective_prio()</code>, <code>normal_prio()</code>, <code>__normal_prio()</code> 实现</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/uapi/linux/sched.h"><code>include/uapi/linux/sched.h</code></a> — 调度策略宏定义（<code>SCHED_NORMAL</code>, <code>SCHED_FIFO</code> 等）</li>
+<li><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man7/sched.7.html"><code>sched(7)</code> man-page</a> — 调度策略和优先级 API 的用户空间文档</li>
+<li><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/sched_setattr.2.html"><code>sched_setattr(2)</code> man-page</a> — <code>SCHED_DEADLINE</code> 参数说明</li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/locking/rt-mutex.html"><code>Documentation/locking/rt-mutex.rst</code></a> — 优先级继承设计文档</li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/scheduler/sched-deadline.html"><code>Documentation/scheduler/sched-deadline.rst</code></a> — Deadline 调度类文档</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1884171139749741899">性能优化基本功（一）：掌握 Linux 和 Android 线程优先级</a> — 应用视角的优先级解读</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source">Linux 内核源码 (v6.14.3)</a> — 所有源码引用均在 Bootlin Elixir 可查</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" class="category-chain-item">进程管理</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+        <a href="/tags/%E5%86%85%E6%A0%B8/" class="print-no-link">#内核</a>
+      
+        <a href="/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" class="print-no-link">#进程管理</a>
+      
+        <a href="/tags/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" class="print-no-link">#进程优先级</a>
+      
+        <a href="/tags/nice/" class="print-no-link">#nice</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>进程优先级</div>
+      <div>http://example.com/2026/07/12/Linux Kernel/process_management/进程优先级/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年7月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/07/11/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
