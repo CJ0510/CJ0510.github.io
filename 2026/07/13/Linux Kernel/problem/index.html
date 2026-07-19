@@ -19,21 +19,22 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://example.com/2026/07/11/hello-world/index.html">
+<meta property="og:title" content="问题及思考">
+<meta property="og:url" content="http://example.com/2026/07/13/Linux%20Kernel/problem/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-11T03:46:45.526Z">
-<meta property="article:modified_time" content="2026-07-11T03:46:45.526Z">
+<meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
+<meta property="article:modified_time" content="2026-07-19T01:42:30.583Z">
 <meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Hello World - Hexo</title>
+  <title>问题及思考 - Hexo</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -302,7 +303,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="问题及思考"></span>
           
         </div>
 
@@ -313,8 +314,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-07-11 11:46" pubdate>
-          2026年7月11日 中午
+        <time datetime="2026-07-13 13:32" pubdate>
+          2026年7月13日 下午
         </time>
       </span>
     
@@ -325,7 +326,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          367 字
+          478 字
         
       </span>
     
@@ -375,24 +376,24 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Hello World</h1>
+            <h1 id="seo-header">问题及思考</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+                <h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1 内存空洞是什么？外部碎片和内部碎片又是什么？</h3><ol>
+<li>内存空洞<br>首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">物理地址<br>0 GB  ┌──────────────┐<br>      │ RAM          │<br>1 GB  ├──────────────┤<br>      │ 地址空洞      │  ← 没有真实内存，可能保留给设备/MMIO<br>3 GB  ├──────────────┤<br>      │ RAM          │<br>8 GB  └──────────────┘<br></code></pre></td></tr></table></figure>
+<ol start="2">
+<li>外部碎片<br>外部碎片是：可用内存总量够，但空闲空间被切成了很多不连续的小块，无法满足连续分配要求。<br>示意图：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">已用  空闲  已用  空闲  已用  空闲<br> ██    □□    ██    □□    ██    □□<br></code></pre></td></tr></table></figure>
+<ol start="3">
+<li>内部碎片<br>内部碎片：顾名思义，发生在分配给对象的内存的内部，分配给对象的空间大于对象实际需要，浪费发生在已分配块内部。<br>一页是 4 KiB，某次分配必须占用一整页，但实际只用了 3 KiB，示意图：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">一页 4 KiB<br>┌──────────────────────┐<br>│ 实际使用 3 KiB │浪费1KiB│<br>└──────────────────────┘<br></code></pre></td></tr></table></figure>
+<p>这 1 KiB 已经属于该分配，其他对象不能直接使用，因此是内部碎片。</p>
 
                 
               </div>
@@ -402,6 +403,13 @@
               <div class="post-metas my-3">
   
   
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+    </div>
+  
 </div>
 
 
@@ -410,8 +418,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://example.com/2026/07/11/hello-world/</div>
+      <div>问题及思考</div>
+      <div>http://example.com/2026/07/13/Linux Kernel/problem/</div>
     </div>
     <div class="license-meta">
       
@@ -423,7 +431,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年7月11日</div>
+          <div>2026年7月13日</div>
         </div>
       
       
@@ -455,18 +463,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" title="进程优先级">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">进程优先级</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/09/07/Linux%20Kernel/ziliao/" title="Linux-Kernel 0 资料整理">
-                        <span class="hidden-mobile">Linux-Kernel 0 资料整理</span>
+                      <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" title="Memory Management">
+                        <span class="hidden-mobile">Memory Management</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
