@@ -334,14 +334,14 @@
       <h2 class="index-header">
         
         <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          
+          Linux SPI Framework整体架构分析
         </a>
       </h2>
 
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
         <div>
-          
+          1 SPI Framework上一张我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。真个框架如图  看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个框架第一层是设备驱动层(Device Driver)，主要负责设备的功能，简单的理解就是根Soc通信的设备。第二层是SPI Core层，这就是Linux提供的公共框架，负责管理每次的
         </div>
       </a>
 
@@ -349,12 +349,19 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:56" pubdate>
+            <time datetime="2026-08-01 13:32" pubdate>
               2026-08-01
             </time>
           </div>
         
         
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+            
+          </div>
         
       </div>
     </article>
@@ -406,15 +413,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          问题及思考
+        <a href="/2026/07/13/rk3566/P1/" target="_self">
+          RK3566 BSP
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/rk3566/P1/" target="_self">
         <div>
-          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
+          简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https://github.com/rockchip-linux/u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch/arm/mach-rockchip/├── rk3568├── rk3399└── rk3588
         </div>
       </a>
 
@@ -446,15 +453,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/13/rk3566/P1/" target="_self">
-          RK3566 BSP
+        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+          问题及思考
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/rk3566/P1/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
         <div>
-          简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https://github.com/rockchip-linux/u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch/arm/mach-rockchip/├── rk3568├── rk3399└── rk3588
+          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
         </div>
       </a>
 
