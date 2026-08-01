@@ -8,22 +8,24 @@
 <head>
   <meta charset="UTF-8">
 
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
   
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <meta name="theme-color" content="#2f4154">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
   <meta name="author" content="CJ1018">
-  <meta name="keywords" content="">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
     <meta name="description" content="从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO &#x2F; SCHED_RR &#x2F; SCHED_DEADLINE &#x2F; SCHED_NORMAL 四种调度类的优先级规则。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="进程优先级">
-<meta property="og:url" content="http://example.com/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://cj0510.github.io/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
 <meta property="og:description" content="从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO &#x2F; SCHED_RR &#x2F; SCHED_DEADLINE &#x2F; SCHED_NORMAL 四种调度类的优先级规则。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp">
@@ -41,7 +43,7 @@
   
   
   
-  <title>进程优先级 - Hexo</title>
+  <title>进程优先级 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -75,11 +77,15 @@
 
 
 
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h2,h3,h4","collapseDepth":1},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -101,11 +107,11 @@
   <header>
     
 
-<div class="header-inner" style="height: 70vh;">
+<div class="header-inner" style="height: 72vh;">
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>CJ · Tech Notes</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -304,13 +310,13 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="进程优先级"></span>
+            <span id="subtitle">进程优先级</span>
           
         </div>
 
@@ -322,7 +328,7 @@
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
         <time datetime="2026-07-12 13:32" pubdate>
-          2026年7月12日 下午
+          2026-07-12
         </time>
       </span>
     
@@ -333,6 +339,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
+          <!-- compatible with older versions-->
           7.5k 字
         
       </span>
@@ -344,6 +351,7 @@
         
         
         
+          <!-- compatible with older versions-->
           63 分钟
         
       </span>
@@ -628,7 +636,7 @@
 <p>Linux 的 PI 实现细节见内核文档<br><a target="_blank" rel="noopener" href="https://docs.kernel.org/locking/rt-mutex.html"><code>Documentation/locking/rt-mutex.rst</code></a> 和<br><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/kernel/locking/rtmutex.c"><code>kernel/locking/rtmutex.c</code></a>。</p>
 </blockquote>
 <h2 id="优先级转换全景"><a href="#优先级转换全景" class="headerlink" title="优先级转换全景"></a>优先级转换全景</h2><p>下图将 <code>nice</code>、<code>rt_priority</code>、<code>policy</code> 到内核内部 <code>prio</code> 的完整映射关系汇总在一处：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lve7jjva.webp" srcset="/img/loading.svg" lazyload></p>
 <p>图中三条色带从上到下对应三种优先级域。<strong>Deadline 任务始终优先于 RT，<br>RT 始终优先于普通。</strong> 绿色区域的普通任务中，<code>static_prio</code> 和 <code>prio</code><br>通常相等，但在优先级继承发生时 <code>prio</code> 会临时上浮到 RT 区域。</p>
 <h2 id="动态优先级的运行时变化"><a href="#动态优先级的运行时变化" class="headerlink" title="动态优先级的运行时变化"></a>动态优先级的运行时变化</h2><p>除了 PI，还有两种常见情况下 <code>prio</code> 会发生变化：</p>
 <ol>
@@ -666,7 +674,7 @@
 <li><strong><code>prio</code></strong>：调度器实际使用的动态优先级。通常等于 <code>normal_prio</code>，但在优先级继承等<br>场景下会临时偏离——这是内核处理优先级反转的核心机制。</li>
 </ul>
 <p>在同一个 CPU 上，调度类的选择优先于内部优先级数值：Deadline 调度类先于 RT 调度类，<br>RT 调度类先于 CFS 调度类。只有在调度类内部，<code>prio</code> 的数值比较才决定谁先运行。</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et78bzv3i.webp" srcset="/img/loading.gif" lazyload alt="优先级模型"></p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et78bzv3i.webp" srcset="/img/loading.svg" lazyload alt="优先级模型"></p>
 <hr>
 <h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
 <li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.14.3/source/include/linux/sched/prio.h"><code>include/linux/sched/prio.h</code></a> — 优先级常量和转换宏（<code>MAX_RT_PRIO</code>, <code>MAX_PRIO</code>, <code>DEFAULT_PRIO</code>, <code>NICE_TO_PRIO</code> 等）</li>
@@ -740,7 +748,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>进程优先级</div>
-      <div>http://example.com/2026/07/12/Linux Kernel/process_management/进程优先级/</div>
+      <div>https://cj0510.github.io/2026/07/12/Linux Kernel/process_management/进程优先级/</div>
     </div>
     <div class="license-meta">
       
@@ -761,14 +769,7 @@
           <div>许可协议</div>
           <div>
             
-              
-              
-                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-cc-by"></i>
-                  </span>
-                </a>
-              
+              CC BY-NC-SA 4.0
             
           </div>
         </div>
@@ -784,9 +785,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" title="Memory Management">
+                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Memory Management</span>
+                        <span class="hidden-mobile">问题及思考</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -898,7 +899,7 @@
     <div class="footer-inner">
   
     <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
     </div>
   
   
@@ -926,21 +927,6 @@
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
 
 
 

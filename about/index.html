@@ -8,30 +8,35 @@
 <head>
   <meta charset="UTF-8">
 
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
   
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="CJ1018">
-  <meta name="keywords" content="">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   
-    <meta property="og:type" content="website">
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="👋 关于我一名嵌入式 Linux 与内核技术开发者，专注于以下方向：  Linux 内核：进程调度、内存管理、SPI&#x2F;I²C 等驱动框架 嵌入式系统：RK3566&#x2F; Rockchip 平台 BSP 与 U-Boot 移植 开源技术：基于开源工具链构建嵌入式 Linux SDK  📝 关于博客本博客记录技术学习过程中的笔记、总结与思考，以 Linux 内核源码分析为主线，结合">
+<meta property="og:type" content="website">
 <meta property="og:title" content="关于">
-<meta property="og:url" content="http://example.com/about/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://cj0510.github.io/about/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="👋 关于我一名嵌入式 Linux 与内核技术开发者，专注于以下方向：  Linux 内核：进程调度、内存管理、SPI&#x2F;I²C 等驱动框架 嵌入式系统：RK3566&#x2F; Rockchip 平台 BSP 与 U-Boot 移植 开源技术：基于开源工具链构建嵌入式 Linux SDK  📝 关于博客本博客记录技术学习过程中的笔记、总结与思考，以 Linux 内核源码分析为主线，结合">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-12T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-07-12T05:33:27.873Z">
+<meta property="article:modified_time" content="2026-08-01T12:59:08.460Z">
 <meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>关于 - Hexo</title>
+  <title>关于 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -65,11 +70,15 @@
 
 
 
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h2,h3,h4","collapseDepth":1},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -91,11 +100,11 @@
   <header>
     
 
-<div class="header-inner" style="height: 60vh;">
+<div class="header-inner" style="height: 52vh;">
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>CJ · Tech Notes</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -294,13 +303,13 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+     style="background: url('/img/banner/hardware.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.58)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="关于"></span>
+            <span id="subtitle">关于</span>
           
         </div>
 
@@ -325,7 +334,7 @@
           >
           
             <div class="about-avatar">
-              <img src="/img/avatar.png" srcset="/img/loading.gif" lazyload class="img-fluid" alt="avatar">
+              <img src="/img/avatar.svg" srcset="/img/loading.svg" lazyload class="img-fluid" alt="avatar">
             </div>
           
           <div class="container">
@@ -335,45 +344,19 @@
 
 <div class="text-center">
   <div class="about-info">
-    <div class="about-name">Fluid</div>
-    <div class="about-intro">An elegant theme for Hexo</div>
+    <div class="about-name">CJ1018</div>
+    <div class="about-intro">Linux 内核与嵌入式系统学习者 / 开发者</div>
     <div class="about-icons">
       
         
         
         
-        <a href=https://github.com class="
+        <a href=https://github.com/CJ0510 class="
            hint--bottom hint--rounded"
            aria-label="GitHub"
            target="_blank"
         >
           <i class="iconfont icon-github-fill" aria-hidden="true"></i>
-          
-        </a>
-      
-        
-        
-        
-        <a href=https://douban.com class="
-           hint--bottom hint--rounded"
-           aria-label="豆瓣"
-           target="_blank"
-        >
-          <i class="iconfont icon-douban-fill" aria-hidden="true"></i>
-          
-        </a>
-      
-        
-        
-        
-        <a  class="qr-trigger
-           "
-           
-           target="_self"
-        >
-          <i class="iconfont icon-wechat-fill" aria-hidden="true"></i>
-          
-            <img class="qr-img" src="/img/favicon.png" srcset="/img/loading.gif" lazyload alt="qrcode" />
           
         </a>
       
@@ -383,7 +366,28 @@
 
 <article class="about-content page-content mt-5">
   <div class="markdown-body">
-    
+    <h2 id="👋-关于我"><a href="#👋-关于我" class="headerlink" title="👋 关于我"></a>👋 关于我</h2><p>一名嵌入式 Linux 与内核技术开发者，专注于以下方向：</p>
+<ul>
+<li><strong>Linux 内核</strong>：进程调度、内存管理、SPI&#x2F;I²C 等驱动框架</li>
+<li><strong>嵌入式系统</strong>：RK3566&#x2F; Rockchip 平台 BSP 与 U-Boot 移植</li>
+<li><strong>开源技术</strong>：基于开源工具链构建嵌入式 Linux SDK</li>
+</ul>
+<h2 id="📝-关于博客"><a href="#📝-关于博客" class="headerlink" title="📝 关于博客"></a>📝 关于博客</h2><p>本博客记录技术学习过程中的笔记、总结与思考，以 Linux 内核源码分析为主线，结合实际的嵌入式开发经验。</p>
+<p>内容覆盖：</p>
+<ul>
+<li>Linux 内核核心子系统源码解读</li>
+<li>嵌入式 Linux BSP 开发实战</li>
+<li>驱动框架与通信协议分析</li>
+</ul>
+<h2 id="📬-联系方式"><a href="#📬-联系方式" class="headerlink" title="📬 联系方式"></a>📬 联系方式</h2><ul>
+<li><strong>GitHub</strong>: <a target="_blank" rel="noopener" href="https://github.com/CJ0510">CJ0510</a></li>
+<li><strong>Email</strong>: <a href="mailto:&#x43;&#74;&#x31;&#x30;&#49;&#56;&#x40;&#x65;&#x78;&#x61;&#109;&#112;&#108;&#x65;&#46;&#99;&#x6f;&#109;">CJ1018@example.com</a></li>
+</ul>
+<hr>
+<blockquote>
+<p>学无止境，与君共勉。</p>
+</blockquote>
+
   </div>
 
   
@@ -459,7 +463,7 @@
     <div class="footer-inner">
   
     <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
     </div>
   
   
@@ -487,21 +491,6 @@
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
 
 
 

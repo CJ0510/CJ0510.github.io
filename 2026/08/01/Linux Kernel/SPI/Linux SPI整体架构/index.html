@@ -8,29 +8,31 @@
 <head>
   <meta charset="UTF-8">
 
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
   
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <meta name="theme-color" content="#2f4154">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
   <meta name="author" content="CJ1018">
-  <meta name="keywords" content="">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
     <meta name="description" content="1 SPI Framework上一张我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。真个框架如图  看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个框架第一层是设备驱动层(Device Driver)，主要负责设备的功能，简单的理解就是根Soc通信的设备。第二层是SPI Core层，这就是Linux提供的公共框架，负责管理每次的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux SPI Framework整体架构分析">
-<meta property="og:url" content="http://example.com/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
 <meta property="og:description" content="1 SPI Framework上一张我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。真个框架如图  看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个框架第一层是设备驱动层(Device Driver)，主要负责设备的功能，简单的理解就是根Soc通信的设备。第二层是SPI Core层，这就是Linux提供的公共框架，负责管理每次的">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.41yrok92si.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp">
 <meta property="article:published_time" content="2026-08-01T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T11:47:19.978Z">
+<meta property="article:modified_time" content="2026-08-01T12:59:12.923Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux SPI">
 <meta name="twitter:card" content="summary_large_image">
@@ -38,7 +40,7 @@
   
   
   
-  <title>Linux SPI Framework整体架构分析 - Hexo</title>
+  <title>Linux SPI Framework整体架构分析 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -72,11 +74,15 @@
 
 
 
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h2,h3,h4","collapseDepth":1},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -98,11 +104,11 @@
   <header>
     
 
-<div class="header-inner" style="height: 70vh;">
+<div class="header-inner" style="height: 72vh;">
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>CJ · Tech Notes</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -301,13 +307,13 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Linux SPI Framework整体架构分析"></span>
+            <span id="subtitle">Linux SPI Framework整体架构分析</span>
           
         </div>
 
@@ -319,7 +325,7 @@
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
         <time datetime="2026-08-01 13:32" pubdate>
-          2026年8月1日 下午
+          2026-08-01
         </time>
       </span>
     
@@ -330,6 +336,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
+          <!-- compatible with older versions-->
           2.8k 字
         
       </span>
@@ -341,6 +348,7 @@
         
         
         
+          <!-- compatible with older versions-->
           24 分钟
         
       </span>
@@ -386,10 +394,10 @@
               <div class="markdown-body">
                 
                 <h1 id="1-SPI-Framework"><a href="#1-SPI-Framework" class="headerlink" title="1 SPI Framework"></a>1 SPI Framework</h1><p>上一张我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。真个框架如图</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp" srcset="/img/loading.svg" lazyload></p>
 <p>看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个框架<br>第一层是设备驱动层(Device Driver)，主要负责设备的功能，简单的理解就是根Soc通信的设备。第二层是SPI Core层，这就是Linux提供的公共框架，负责管理每次的SPI的通信请求。第三层 SPI Controller Driver，负责具体的Soc的SPI硬件。</p>
 <h1 id="2-三个核心对象"><a href="#2-三个核心对象" class="headerlink" title="2 三个核心对象"></a>2 三个核心对象</h1><p>整个框架里面由三个核心对象，就是软件层抽象的物理世界。分贝是spi_controller、spi_device和spi_driver。其中，spi_controller表示一台 SPI 主控制器，spi_device 表示挂在该控制器上的一个从设备；spi_driver 是对应的从设备的软件驱动。<br>结构关系：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.41yrok92si.webp" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.41yrok92si.webp" srcset="/img/loading.svg" lazyload></p>
 <p>我们先来看 spi_controller，其在物理层对应Master，源码位置在include&#x2F;linux&#x2F;spi&#x2F;spi.h</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> <span class="hljs-title">dev</span>;</span>              <span class="hljs-comment">/* 内嵌的设备结构体，用于挂载到设备模型 */</span><br><br>    <span class="hljs-type">int</span> (*transfer)(...);           <span class="hljs-comment">/* 批量传输：一次可发起多个 spi_message */</span><br><br>    <span class="hljs-type">int</span> (*transfer_one)(...);       <span class="hljs-comment">/* 单次传输：一次只处理一个 spi_message */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
 <p>我们先不分析源码，先有个概念，它表示一个SPI控制器，SPI控制器就是Soc里面对应的能实现SPI通信的端口。比如一块Soc里面可能SPI0~2三个控制器，那么每一个就对应软件层的一个spi_controller。主要负责产生时钟信号、控制片选CS、数据收发等。</p>
@@ -397,7 +405,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> <span class="hljs-title">dev</span>;</span>                  <span class="hljs-comment">/* 内嵌的设备结构体，用于挂载到设备模型 */</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">controller</span>;</span>  <span class="hljs-comment">/* 指向所属的 SPI 主控制器 */</span><br><br>    u32 max_speed_hz;                   <span class="hljs-comment">/* 该从设备支持的最大通信时钟频率 (Hz) */</span><br><br>    u8 mode;                            <span class="hljs-comment">/* SPI 工作模式 (CPOL/CPHA 组合，如 MODE0~3) */</span><br><br>    u8 chip_select;                     <span class="hljs-comment">/* 片选信号编号 (对应主控制器上的第几个 CS 引脚) */</span><br><br>&#125;;<br></code></pre></td></tr></table></figure>
 
 <p>有了设备描述还不够，还需要对应的驱动代码，也就是spi_driver，源码也在include&#x2F;linux&#x2F;spi&#x2F;spi.h</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_driver</span> &#123;</span><br>	<span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device_id</span> *<span class="hljs-title">id_table</span>;</span>   <span class="hljs-comment">/* 支持的设备ID表，用于与 spi_device 匹配 */</span><br>	<span class="hljs-type">int</span>			(*probe)(<span class="hljs-keyword">struct</span> spi_device *spi);   <span class="hljs-comment">/* 设备匹配成功后调用的探测函数 */</span><br>	<span class="hljs-type">int</span>			(*remove)(<span class="hljs-keyword">struct</span> spi_device *spi);   <span class="hljs-comment">/* 设备移除时调用的清理函数 */</span><br>	<span class="hljs-type">void</span>			(*shutdown)(<span class="hljs-keyword">struct</span> spi_device *spi); <span class="hljs-comment">/* 系统关机时调用的回调 */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_driver</span>	<span class="hljs-title">driver</span>;</span>          <span class="hljs-comment">/* 内嵌的通用设备驱动结构体 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_driver</span> &#123;</span><br>  <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device_id</span> *<span class="hljs-title">id_table</span>;</span>   <span class="hljs-comment">/* 支持的设备ID表，用于与 spi_device 匹配 */</span><br>  <span class="hljs-type">int</span>			(*probe)(<span class="hljs-keyword">struct</span> spi_device *spi);   <span class="hljs-comment">/* 设备匹配成功后调用的探测函数 */</span><br>  <span class="hljs-type">int</span>			(*remove)(<span class="hljs-keyword">struct</span> spi_device *spi);   <span class="hljs-comment">/* 设备移除时调用的清理函数 */</span><br>  <span class="hljs-type">void</span>			(*shutdown)(<span class="hljs-keyword">struct</span> spi_device *spi); <span class="hljs-comment">/* 系统关机时调用的回调 */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_driver</span>	<span class="hljs-title">driver</span>;</span>          <span class="hljs-comment">/* 内嵌的通用设备驱动结构体 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
 <p>不同设备的spi_driver不一样。填充上面的结构体即可。</p>
 <h1 id="3-DST创建spi-device"><a href="#3-DST创建spi-device" class="headerlink" title="3 DST创建spi_device"></a>3 DST创建spi_device</h1><p>这个我们直接以一个实例感受</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c">spi0 &#123;<br><br>    status=<span class="hljs-string">&quot;okay&quot;</span>;<br><br><br>    imu@<span class="hljs-number">0</span> &#123;<br><br>        compatible=<span class="hljs-string">&quot;invensense,icm42688&quot;</span>;<br><br><br>        reg=&lt;<span class="hljs-number">0</span>&gt;;<br><br><br>        spi-max-frequency=&lt;<span class="hljs-number">10000000</span>&gt;;<br><br>    &#125;;<br>&#125;;<br></code></pre></td></tr></table></figure>
@@ -410,9 +418,9 @@
 </ul>
 <p>整个启动流程就是先解析设备树，把参数给到spi controller driver，创建spi_device后与对应的spi_driver进行匹配，匹配完成后执行probe函数。</p>
 <h1 id="4-SPI数据传输流程"><a href="#4-SPI数据传输流程" class="headerlink" title="4 SPI数据传输流程"></a>4 SPI数据传输流程</h1><p>假设传感器驱动读取2字节</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c">spi_read(spi, rx_buf, <span class="hljs-number">2</span>);<br><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">spi_read</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi, <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> len)</span><br>&#123;<br>	<span class="hljs-comment">/* 构造一个 spi_transfer 描述本次传输 */</span><br>	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_transfer</span>	<span class="hljs-title">t</span> =</span> &#123;<br>			.rx_buf		= buf,      <span class="hljs-comment">/* 接收缓冲区，存放从设备发来的数据 */</span><br>			.len		= len,      <span class="hljs-comment">/* 本次传输的字节数 */</span><br>		&#125;;<br><br>	<span class="hljs-comment">/* 发起同步传输：阻塞等待传输完成，最后一个参数表示 transfer 个数 */</span><br>	<span class="hljs-keyword">return</span> spi_sync_transfer(spi, &amp;t, <span class="hljs-number">1</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c">spi_read(spi, rx_buf, <span class="hljs-number">2</span>);<br><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">spi_read</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi, <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> len)</span><br>&#123;<br>  <span class="hljs-comment">/* 构造一个 spi_transfer 描述本次传输 */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_transfer</span>	<span class="hljs-title">t</span> =</span> &#123;<br>      .rx_buf		= buf,      <span class="hljs-comment">/* 接收缓冲区，存放从设备发来的数据 */</span><br>      .len		= len,      <span class="hljs-comment">/* 本次传输的字节数 */</span><br>    &#125;;<br><br>  <span class="hljs-comment">/* 发起同步传输：阻塞等待传输完成，最后一个参数表示 transfer 个数 */</span><br>  <span class="hljs-keyword">return</span> spi_sync_transfer(spi, &amp;t, <span class="hljs-number">1</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
 <p>其中的spi表示struct spi_device *spi具体的设备。其构造了一个spi_transfer，随后放入spi_message，然后同步传输。其中spi_message 表示一次完整的逻辑通信。接着，SPI Core把消息交给对应spi_controller，SPI Core从message中取出transfer，然后调用transfer_one()。示意图如下</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp" srcset="/img/loading.svg" lazyload></p>
 <h1 id="5-总结"><a href="#5-总结" class="headerlink" title="5 总结"></a>5 总结</h1><p>好了，到这里我们就结束了。Linux SPI框架主要通过分层设计，将SPI设备驱动与SPI控制器硬件实现进行解耦。<br>整体分为三个部分</p>
 <ul>
 <li>spi_driver：负责设备功能</li>
@@ -434,6 +442,34 @@
             <div>
               <div class="post-metas my-3">
   
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
   
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
@@ -451,7 +487,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>Linux SPI Framework整体架构分析</div>
-      <div>http://example.com/2026/08/01/Linux Kernel/SPI/Linux SPI整体架构/</div>
+      <div>https://cj0510.github.io/2026/08/01/Linux Kernel/SPI/Linux SPI整体架构/</div>
     </div>
     <div class="license-meta">
       
@@ -472,14 +508,7 @@
           <div>许可协议</div>
           <div>
             
-              
-              
-                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-cc-by"></i>
-                  </span>
-                </a>
-              
+              CC BY-NC-SA 4.0
             
           </div>
         </div>
@@ -495,12 +524,18 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" title="SPI协议基础：从四根线理解Linux SPI框架">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SPI协议基础：从四根线理解Linux SPI框架</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" title="SPI协议基础：从四根线理解Linux SPI框架">
-                        <span class="hidden-mobile">SPI协议基础：从四根线理解Linux SPI框架</span>
+                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
+                        <span class="hidden-mobile">RK3566 BSP</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -603,7 +638,7 @@
     <div class="footer-inner">
   
     <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
     </div>
   
   
@@ -631,21 +666,6 @@
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
 
 
 
