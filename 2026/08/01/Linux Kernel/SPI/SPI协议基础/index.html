@@ -19,12 +19,12 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="">
   
-    <meta name="description" content="What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Peri">
+    <meta name="description" content="1 What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Pe">
 <meta property="og:type" content="article">
 <meta property="og:title" content="SPI协议基础：从四根线理解Linux SPI框架">
 <meta property="og:url" content="http://example.com/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Peri">
+<meta property="og:description" content="1 What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Pe">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.4ubn5re1ld.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7lkpdu6mlz.webp">
@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4m0vcjlj.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1sfr4ura3k.webp">
 <meta property="article:published_time" content="2026-08-01T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T05:56:06.472Z">
+<meta property="article:modified_time" content="2026-08-01T08:50:52.690Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux SPI">
 <meta name="twitter:card" content="summary_large_image">
@@ -391,7 +391,7 @@
             
               <div class="markdown-body">
                 
-                <h1 id="What-is-SPI"><a href="#What-is-SPI" class="headerlink" title="What is SPI?"></a>What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
+                <h1 id="1-What-is-SPI"><a href="#1-What-is-SPI" class="headerlink" title="1 What is SPI?"></a>1 What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
 <p>在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。<br>例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。<br>本系列就是介绍其中的SPI。<br>先给出定义：SPI（Serial Peripheral Interface）是一种<strong>高速</strong>、<strong>全双工</strong>、<strong>同步串行</strong>通信协议。<br>这里针对三个关键点分别解释</p>
 <ol>
 <li>高速<br>高速是一个模糊概念，究竟高到什么程度？这里高速相对于IIC，普通UART，CAN等低速总线。本身并没有规定最高速度。<br>其传输数据的速率和SPI的时钟频率有关：</li>
@@ -444,7 +444,7 @@
 <p>再看同步，现在数据线上有数据了，那我接收的时候怎么确定什么时候开始读取呢？<br>又怎么知道每一位持续多长时间？<br>同步通信通过一根时钟线解决这个问题，就像打电话的铃声，通知你该接电话了。</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.lwfvzeqnm.webp" srcset="/img/loading.gif" lazyload></p>
 <p>时钟信号如上，我们只需要规定数据在哪个始终边沿发生变化，以及在哪个时钟边沿被读取就行。</p>
-<h1 id="Why-need-Spi"><a href="#Why-need-Spi" class="headerlink" title="Why need Spi?"></a>Why need Spi?</h1><p>通过上面的讲解，我觉得大家应该知道spi是个什么东西了。那位什么需要这个东西？不是还有其他协议吗？你SPI就特殊些？就只有你能干了？</p>
+<h1 id="2-Why-need-Spi"><a href="#2-Why-need-Spi" class="headerlink" title="2 Why need Spi?"></a>2 Why need Spi?</h1><p>通过上面的讲解，我觉得大家应该知道spi是个什么东西了。那位什么需要这个东西？不是还有其他协议吗？你SPI就特殊些？就只有你能干了？</p>
 <p>其实不是，众多协议中没有一种是最优的。只是每种协议都有自己的偏向性，SPI 是其中偏向“短距离、高速度、简单直接”的方案。</p>
 <p>SPI通常由四根线组成，分别为</p>
 <ul>
@@ -460,7 +460,7 @@
 <li>设备少、数据多、追求速度就选SPI</li>
 </ul>
 <p>其他协议主播还没工程经验，就不讲了，后面有了在补充。</p>
-<h1 id="SPI物理结构"><a href="#SPI物理结构" class="headerlink" title="SPI物理结构"></a>SPI物理结构</h1><p>接下来让我们看一下SPI的物理结构。上面其实已经讲了，SPI一般由四根线组成：</p>
+<h1 id="3-SPI物理结构"><a href="#3-SPI物理结构" class="headerlink" title="3 SPI物理结构"></a>3 SPI物理结构</h1><p>接下来让我们看一下SPI的物理结构。上面其实已经讲了，SPI一般由四根线组成：</p>
 <ul>
 <li>SCLK：时钟</li>
 <li>MOSI（Master output slave input）：主机发、从机收</li>
@@ -472,13 +472,13 @@
 <p>那什么时候需要READY呢？如果从机只需要被主机查询，用标准四根线；如果从机需要及时通知主机“我有事&#x2F;有数据&#x2F;准备好了”，通常加一根 READY&#x2F;IRQ，使用五根线。</p>
 <p>我们思考一个场景，假设主机产生信号，告诉从机你马上相应我的需求，如果这个时候从机能立马响应且完成需求，那么4根线也没什么关系。如果不能立刻相应，那么主机就需要轮询的问你好了吗？你好了吗？快点，你好了吗？</p>
 <p>轮询会造成什么恶果呢？一个是占用CPU，一个是响应延迟。那么此时REAY线就有用了。</p>
-<h1 id="SPI通信时序"><a href="#SPI通信时序" class="headerlink" title="SPI通信时序"></a>SPI通信时序</h1><h2 id="通信模式"><a href="#通信模式" class="headerlink" title="通信模式"></a>通信模式</h2><p>简单的将就是两边共同的约定。主要有4中模式Mode0~3，由两个参数决定CPOL和CPHA。</p>
+<h1 id="4-SPI通信时序"><a href="#4-SPI通信时序" class="headerlink" title="4 SPI通信时序"></a>4 SPI通信时序</h1><h2 id="4-1-通信模式"><a href="#4-1-通信模式" class="headerlink" title="4.1 通信模式"></a>4.1 通信模式</h2><p>简单的将就是两边共同的约定。主要有4中模式Mode0~3，由两个参数决定CPOL和CPHA。</p>
 <p>CPOL时钟极性：表示不通信时，SCLK 保持高电平还是低电平<br>当CPOL &#x3D; 0时，空闲电平为低</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102vmzeyun.webp" srcset="/img/loading.gif" lazyload></p>
 <p>当CPOL &#x3D; 1时，空闲电平为高</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2ksmmgcwjl.webp" srcset="/img/loading.gif" lazyload></p>
 <p>CPHA时钟相位:一个时钟周期中，在哪个边沿采样数据<br>当CPOL &#x3D; 0时，每个周期的第一个边沿采样<br>当CPOL &#x3D; 1时，每个周期的第二个边沿采样</p>
-<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>我们以一个实际的例子讲解通讯过程中的时序图。<br>假设主机要读取从机0x12寄存器，从机返回数据0X5A<br>两边做一下规定：</p>
+<h2 id="4-2-实例"><a href="#4-2-实例" class="headerlink" title="4.2 实例"></a>4.2 实例</h2><p>我们以一个实际的例子讲解通讯过程中的时序图。<br>假设主机要读取从机0x12寄存器，从机返回数据0X5A<br>两边做一下规定：</p>
 <ul>
 <li>使用SPI Mode 0, 及CPOL&#x3D;0，CPHA&#x3D;0</li>
 <li>8位数据</li>
@@ -489,7 +489,7 @@
 <li>主机再发送一个 Dummy 字节 0xFF，为从机返回数据提供时钟<br>整个数据链：<br>主机发送：0x92  0xFF<br>从机返回：无效  0x5A<br>整个时序图如下：<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4m0vcjlj.webp" srcset="/img/loading.gif" lazyload></li>
 </ul>
 <p>主机先拉低CS，选中从机。根据设置的Mode0，在每个周期的第一个边沿采样数据。<br>产生8个时钟，在MOSI上发送0X92，发送完成后，接着发送0XFF为从机提供时钟，从机收到0x92的信息去寄存器0x12取数据，在MISO上返回0x5A。</p>
-<h1 id="为什么Linux需要SPI框架"><a href="#为什么Linux需要SPI框架" class="headerlink" title="为什么Linux需要SPI框架"></a>为什么Linux需要SPI框架</h1><p>为什么Linux需要一个统一的SPI框架？现实的场景往往不是一个MCU对应一个固定的SPI，而是不同厂商不同类型的SPI外设。而SPI框架的作用就是把控制器怎么工作和外设需要传输什么设备分离，并统一管理。<br>整个框架如下，先大致了解一下，后面会详细介绍：</p>
+<h1 id="4-3-为什么Linux需要SPI框架"><a href="#4-3-为什么Linux需要SPI框架" class="headerlink" title="4.3 为什么Linux需要SPI框架"></a>4.3 为什么Linux需要SPI框架</h1><p>为什么Linux需要一个统一的SPI框架？现实的场景往往不是一个MCU对应一个固定的SPI，而是不同厂商不同类型的SPI外设。而SPI框架的作用就是把控制器怎么工作和外设需要传输什么设备分离，并统一管理。<br>整个框架如下，先大致了解一下，后面会详细介绍：</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1sfr4ura3k.webp" srcset="/img/loading.gif" lazyload></p>
 <ul>
 <li>Device Driver：决定具体的通信设备是什么</li>
@@ -497,9 +497,9 @@
 <li>SPI Controller Driver：负责具体的硬件操作。比用使用什么模式、数据的传输宽度、SPI寄存器配置等</li>
 <li>Hardware：具体硬件</li>
 </ul>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>SPI是一种同步串行通信协议，通过SCK、MOSI、MISO、CS四根信号线实现Master和Slave之间的数据交换。</p>
+<h1 id="5-总结"><a href="#5-总结" class="headerlink" title="5 总结"></a>5 总结</h1><p>SPI是一种同步串行通信协议，通过SCK、MOSI、MISO、CS四根信号线实现Master和Slave之间的数据交换。</p>
 <p>在Linux系统中，SPI硬件被抽象为SPI Controller，而具体外设被抽象为SPI Device。Linux SPI Framework通过SPI Core连接Controller Driver和Device Driver，使设备驱动无需关注底层寄存器操作，只需要调用统一SPI接口即可完成数据传输</p>
-<h1 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h1><p>你现在能回答下面四个问题吗？欢迎在评论区交流讨论</p>
+<h1 id="6-互动"><a href="#6-互动" class="headerlink" title="6 互动"></a>6 互动</h1><p>你现在能回答下面四个问题吗？欢迎在评论区交流讨论</p>
 <ol>
 <li>SPI数据谁产生？</li>
 <li>Linux SPI驱动框架里面谁对应Master？</li>
@@ -574,12 +574,18 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
-                        <span class="hidden-mobile">RK3566 BSP</span>
+                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
+                        <span class="hidden-mobile">问题及思考</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -333,6 +333,39 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+          
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+        <div>
+          
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-01 13:56" pubdate>
+              2026-08-01
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
           SPI协议基础：从四根线理解Linux SPI框架
         </a>
@@ -341,7 +374,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
         <div>
-          What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Peri
+          1 What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。先给出定义：SPI（Serial Pe
         </div>
       </a>
 
@@ -373,15 +406,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/13/rk3566/P1/" target="_self">
-          RK3566 BSP
+        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+          问题及思考
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/rk3566/P1/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
         <div>
-          简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https://github.com/rockchip-linux/u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch/arm/mach-rockchip/├── rk3568├── rk3399└── rk3588
+          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
         </div>
       </a>
 
@@ -413,15 +446,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          问题及思考
+        <a href="/2026/07/13/rk3566/P1/" target="_self">
+          RK3566 BSP
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/07/13/rk3566/P1/" target="_self">
         <div>
-          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
+          简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https://github.com/rockchip-linux/u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch/arm/mach-rockchip/├── rk3568├── rk3399└── rk3588
         </div>
       </a>
 
