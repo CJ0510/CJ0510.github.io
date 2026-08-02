@@ -24,7 +24,16 @@ body { text-rendering: optimizeLegibility; }
 .index-card:hover .index-img img { transform: scale(1.035); }
 
 .markdown-body { line-height: 1.85; }
-.markdown-body h2 { margin-top: 2em; padding-bottom: .45em; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+
+/* 标题正文字号层级，解决主题未设置 font-size 导致标题不显眼的问题 */
+.markdown-body h1 { font-size: 1.85em; margin-top: 2.2em; padding-bottom: .35em; border-bottom: 1px solid var(--line-color, rgba(148, 163, 184, .25)); }
+.markdown-body h2 { font-size: 1.48em; margin-top: 2em; padding-bottom: .45em; border-bottom: 1px solid rgba(148, 163, 184, .25); }
+.markdown-body h3 { font-size: 1.22em; }
+.markdown-body h4 { font-size: 1.08em; }
+
+/* 文章页面主标题 H1 */
+#seo-header { font-size: 1.85em; }
+
 .markdown-body a { text-decoration-thickness: .08em; text-underline-offset: .18em; }
 .markdown-body blockquote { border-left: 4px solid var(--cj-accent); border-radius: 0 10px 10px 0; background: rgba(14, 165, 233, .06); padding: .8em 1.1em; }
 .markdown-body img { border-radius: 12px; box-shadow: 0 8px 28px rgba(15, 23, 42, .12); }
