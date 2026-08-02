@@ -62,3 +62,40 @@ html[data-user-color-scheme="dark"] ::selection { color: #e0f2fe; background: rg
   .banner { background-position: 58% center !important; }
   .markdown-body { line-height: 1.78; }
 }
+
+/* Article image watermark and drag protection */
+.cj-watermarked-image {
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.2em auto;
+  line-height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.cj-watermarked-image > img {
+  display: block;
+  margin: 0 !important;
+  max-width: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cj-image-watermark {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  color: rgba(255, 255, 255, .78);
+  font: 600 12px/1.2 Inter, "PingFang SC", sans-serif;
+  letter-spacing: .04em;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, .85);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 767px) {
+  .cj-image-watermark { right: 8px; bottom: 7px; font-size: 10px; }
+}
