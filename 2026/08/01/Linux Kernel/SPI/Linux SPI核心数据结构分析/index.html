@@ -1,0 +1,911 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="1. spi_controller 之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。 首先来看一下 spi_controller，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。比如一片 SoC 里面有 SPI03 控制器，那么对应的就是 &#96;spi_controller03。 源码位置：include&#x2F;linux&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux SPI核心数据结构分析">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="1. spi_controller 之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。 首先来看一下 spi_controller，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。比如一片 SoC 里面有 SPI03 控制器，那么对应的就是 &#96;spi_controller03。 源码位置：include&#x2F;linux&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7i13hjunxg.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.45idna9pwm.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp">
+<meta property="article:published_time" content="2026-08-01T05:32:55.000Z">
+<meta property="article:modified_time" content="2026-08-02T02:35:55.989Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Linux SPI">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp">
+  
+  
+  
+  <title>Linux SPI核心数据结构分析 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h2,h3,h4","collapseDepth":1},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux SPI核心数据结构分析</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-01 13:32" pubdate>
+          2026-08-01
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          7.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          63 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux SPI核心数据结构分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="1-spi-controller"><a href="#1-spi-controller" class="headerlink" title="1. spi_controller"></a>1. spi_controller</h1><p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp" srcset="/img/loading.svg" lazyload></p>
+<p>之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。</p>
+<p>首先来看一下 <code>spi_controller</code>，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。<br>比如一片 SoC 里面有 SPI0<del>3 控制器，那么对应的就是 &#96;spi_controller0</del>3<code>。 源码位置：</code>include&#x2F;linux&#x2F;spi&#x2F;spi.h&#96;</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> <span class="hljs-title">dev</span>;</span>              <span class="hljs-comment">// 内嵌的设备模型，用于挂载到 Linux 设备树</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">list</span>;</span>          <span class="hljs-comment">// 将所有 spi_controller 链接到全局链表</span><br><br>    s16 bus_num;                    <span class="hljs-comment">// 控制器编号，如 SoC 中 SPI0 对应 bus_num = 0</span><br>    u16 num_chipselect;             <span class="hljs-comment">// 该控制器最多支持多少个片选信号(CS)</span><br><br>    <span class="hljs-comment">/* 控制器能力的位掩码 */</span><br>    u32 mode_bits;                  <span class="hljs-comment">// 支持的 SPI 模式位(CPOL/CPHA/CS_HIGH 等)</span><br>    u32 bits_per_word_mask;         <span class="hljs-comment">// 支持的字长掩码，如 8bit、16bit</span><br><br>    <span class="hljs-comment">/* 时钟频率范围 */</span><br>    u32 min_speed_hz;               <span class="hljs-comment">// 支持的最小 SCK 频率</span><br>    u32 max_speed_hz;               <span class="hljs-comment">// 支持的最大 SCK 频率</span><br><br>    <span class="hljs-comment">/* 控制器硬件特性标志 */</span><br>    u16 flags;<br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_CONTROLLER_HALF_DUPLEX  BIT(0)  <span class="hljs-comment">// 只支持半双工</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_CONTROLLER_NO_RX        BIT(1)  <span class="hljs-comment">// 不支持接收</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_CONTROLLER_NO_TX        BIT(2)  <span class="hljs-comment">// 不支持发送</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_CONTROLLER_MUST_RX      BIT(3)  <span class="hljs-comment">// 必须同时接收</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_CONTROLLER_MUST_TX      BIT(4)  <span class="hljs-comment">// 必须同时发送</span></span><br><br>    <span class="hljs-type">bool</span> slave;                     <span class="hljs-comment">// 是否为从机控制器(极少数场景)</span><br><br>    <span class="hljs-comment">/* 传输大小限制(可选) */</span><br>    <span class="hljs-type">size_t</span> (*max_transfer_size)(<span class="hljs-keyword">struct</span> spi_device *spi);<br>    <span class="hljs-type">size_t</span> (*max_message_size)(<span class="hljs-keyword">struct</span> spi_device *spi);<br><br>    <span class="hljs-comment">/* ---- 锁与同步 ---- */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mutex</span> <span class="hljs-title">io_mutex</span>;</span>          <span class="hljs-comment">// I/O 互斥锁，保证同一时刻只有一个传输在进行</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mutex</span> <span class="hljs-title">add_lock</span>;</span>          <span class="hljs-comment">// 防止重复添加相同 CS 的锁</span><br><br>    <span class="hljs-comment">/* ---- 回调函数集 ---- */</span><br>    <span class="hljs-type">int</span> (*setup)(<span class="hljs-keyword">struct</span> spi_device *spi);             <span class="hljs-comment">// 配置从设备的模式和时钟</span><br>    <span class="hljs-type">int</span> (*transfer)(<span class="hljs-keyword">struct</span> spi_device *spi,<br>                    <span class="hljs-keyword">struct</span> spi_message *mesg);        <span class="hljs-comment">// 旧式批量传输接口(已不推荐)</span><br>    <span class="hljs-type">void</span> (*cleanup)(<span class="hljs-keyword">struct</span> spi_device *spi);          <span class="hljs-comment">// 释放设备资源</span><br><br>    <span class="hljs-comment">/* ---- 新版排队传输机制 ----</span><br><span class="hljs-comment">     * 若设置 queued = true，则使用 kthread_worker 将 message 排队处理，</span><br><span class="hljs-comment">     * 不再直接调用 transfer()。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-type">bool</span> queued;                           <span class="hljs-comment">// 是否启用排队传输</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">kthread_worker</span> *<span class="hljs-title">kworker</span>;</span>        <span class="hljs-comment">// 内核线程，负责处理消息队列</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">kthread_work</span> <span class="hljs-title">pump_messages</span>;</span>     <span class="hljs-comment">// 消息泵工作项</span><br>    <span class="hljs-type">spinlock_t</span> queue_lock;                 <span class="hljs-comment">// 队列自旋锁</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">queue</span>;</span>                <span class="hljs-comment">// 待处理的消息链表</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_message</span> *<span class="hljs-title">cur_msg</span>;</span>           <span class="hljs-comment">// 当前正在处理的消息</span><br>    <span class="hljs-type">bool</span> busy;                             <span class="hljs-comment">// 控制器是否繁忙</span><br>    <span class="hljs-type">bool</span> running;                          <span class="hljs-comment">// 控制器是否处于运行状态</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">completion</span> <span class="hljs-title">xfer_completion</span>;</span>     <span class="hljs-comment">// 传输完成通知量</span><br><br>    <span class="hljs-comment">/* 新版回调(控制器驱动实现这些) */</span><br>    <span class="hljs-type">int</span> (*prepare_transfer_hardware)(<span class="hljs-keyword">struct</span> spi_controller *ctlr);  <span class="hljs-comment">// 准备硬件(如使能时钟)</span><br>    <span class="hljs-type">int</span> (*unprepare_transfer_hardware)(<span class="hljs-keyword">struct</span> spi_controller *ctlr); <span class="hljs-comment">// 释放硬件</span><br>    <span class="hljs-type">int</span> (*prepare_message)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                           <span class="hljs-keyword">struct</span> spi_message *message);            <span class="hljs-comment">// 消息预处理</span><br>    <span class="hljs-type">int</span> (*unprepare_message)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                             <span class="hljs-keyword">struct</span> spi_message *message);          <span class="hljs-comment">// 消息后处理</span><br>    <span class="hljs-type">int</span> (*transfer_one_message)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                                <span class="hljs-keyword">struct</span> spi_message *mesg);          <span class="hljs-comment">// 处理一条消息</span><br>    <span class="hljs-type">int</span> (*transfer_one)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                        <span class="hljs-keyword">struct</span> spi_device *spi,<br>                        <span class="hljs-keyword">struct</span> spi_transfer *transfer);             <span class="hljs-comment">// 处理单个 transfer(最常用)</span><br>    <span class="hljs-type">void</span> (*set_cs)(<span class="hljs-keyword">struct</span> spi_device *spi, <span class="hljs-type">bool</span> enable);            <span class="hljs-comment">// 控制片选电平</span><br>    <span class="hljs-type">void</span> (*handle_err)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                       <span class="hljs-keyword">struct</span> spi_message *message);                <span class="hljs-comment">// 传输错误处理</span><br><br>    <span class="hljs-comment">/* ---- 片选 GPIO ---- */</span><br>    <span class="hljs-type">int</span> *cs_gpios;                     <span class="hljs-comment">// 片选 GPIO 编号数组</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">gpio_desc</span> **<span class="hljs-title">cs_gpiods</span>;</span>      <span class="hljs-comment">// 片选 GPIO 描述符数组</span><br>    <span class="hljs-type">bool</span> use_gpio_descriptors;         <span class="hljs-comment">// 是否使用 GPIO 描述符管理 CS</span><br><br>    <span class="hljs-comment">/* ---- DMA 支持 ---- */</span><br>    <span class="hljs-type">bool</span> (*can_dma)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                    <span class="hljs-keyword">struct</span> spi_device *spi,<br>                    <span class="hljs-keyword">struct</span> spi_transfer *xfer);   <span class="hljs-comment">// 判断当前传输是否可用 DMA</span><br>    <span class="hljs-type">size_t</span> max_dma_len;                           <span class="hljs-comment">// 单次 DMA 最大传输长度</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dma_chan</span> *<span class="hljs-title">dma_tx</span>;</span>                      <span class="hljs-comment">// DMA 发送通道</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dma_chan</span> *<span class="hljs-title">dma_rx</span>;</span>                      <span class="hljs-comment">// DMA 接收通道</span><br>    <span class="hljs-type">void</span> *dummy_rx;                               <span class="hljs-comment">// 全双工时无数据要收时的占位缓冲区</span><br>    <span class="hljs-type">void</span> *dummy_tx;                               <span class="hljs-comment">// 全双工时无数据要发时的占位缓冲区</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们看一下源码，只看重要部分，先看最重要的。</p>
+<h3 id="1-1-transfer-one"><a href="#1-1-transfer-one" class="headerlink" title="1.1 transfer_one"></a>1.1 transfer_one</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> (*transfer_one)(<span class="hljs-keyword">struct</span> spi_controller *ctlr,<br>                    <span class="hljs-keyword">struct</span> spi_device *spi,<br>                    <span class="hljs-keyword">struct</span> spi_transfer *transfer);<br></code></pre></td></tr></table></figure>
+
+<p>表示让每个硬件完成一次传输。它不是一个固定函数，而是提供给 SPI Core 的回调接口。</p>
+<p>那它是怎么被调用的呢？前面我们说过了，会在 SPI Core 层通过下面函数调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">controller-&gt;transfer_one()<br></code></pre></td></tr></table></figure>
+
+<p>SPI Core 不知道具体 SPI 控制器的寄存器结构，而是提供了上面的统一接口。具体控制器驱动会在初始化时赋值。</p>
+<p>我们以 RK 系列为例，提供了 <code>spi-rockchip.c</code>，具体链接我会提供在末尾。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">rockchip_spi_transfer_one</span><span class="hljs-params">(</span><br><span class="hljs-params">        <span class="hljs-keyword">struct</span> spi_controller *ctlr,</span><br><span class="hljs-params">        <span class="hljs-keyword">struct</span> spi_device *spi,</span><br><span class="hljs-params">        <span class="hljs-keyword">struct</span> spi_transfer *xfer)</span><br></code></pre></td></tr></table></figure>
+
+<p>其中定义的属于这款 SoC 独特的 <code>transfer_one</code>。</p>
+<p>在 probe 函数中会被调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">rockchip_spi_probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> platform_device *pdev)</span> &#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">ctlr</span>;</span><br><br>    ctlr-&gt;transfer_one = rockchip_spi_transfer_one;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>以后 SPI Core 调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">ctlr-&gt;transfer_one(ctlr, spi, transfer);<br></code></pre></td></tr></table></figure>
+
+<p>实际上调用的是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">rockchip_spi_transfer_one(ctlr, spi, transfer);<br></code></pre></td></tr></table></figure>
+
+<p>整个调用关系如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7i13hjunxg.webp" srcset="/img/loading.svg" lazyload></p>
+<p>这就是整个 Linux 驱动框架里面典型的<strong>抽象层 + 回调机制</strong>，读者可以慢慢体会一下。</p>
+<h3 id="1-2-num-chipselect"><a href="#1-2-num-chipselect" class="headerlink" title="1.2 num_chipselect"></a>1.2 num_chipselect</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">u16 num_chipselect;             <span class="hljs-comment">// 该控制器最多支持多少个片选信号(CS)</span><br></code></pre></td></tr></table></figure>
+
+<p>注释上写了，我就不啰嗦了。</p>
+<h3 id="1-3-bus-num"><a href="#1-3-bus-num" class="headerlink" title="1.3 bus_num"></a>1.3 bus_num</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">s16 bus_num;                    <span class="hljs-comment">// 控制器编号，如 SoC 中 SPI0 对应 bus_num = 0</span><br></code></pre></td></tr></table></figure>
+
+<p>对应的控制器编号。</p>
+<hr>
+<h1 id="2-spi-device"><a href="#2-spi-device" class="headerlink" title="2. spi_device"></a>2. spi_device</h1><p>设备端，就是具体的从机设备，挂在某个 SPI 控制器上的一个外设。<br>源码位置：<code>include/linux/spi/spi.h</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device</span> <span class="hljs-title">dev</span>;</span>                    <span class="hljs-comment">// 内嵌的设备模型，用于挂载到 Linux 设备树</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">controller</span>;</span>    <span class="hljs-comment">// 指向所属的 SPI 主控制器</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">master</span>;</span>        <span class="hljs-comment">// 旧名称，兼容层，等同于 controller</span><br>    u32 max_speed_hz;                     <span class="hljs-comment">// 该从设备支持的最大 SPI 时钟频率 (Hz)</span><br>    u8 chip_select;                       <span class="hljs-comment">// 片选信号索引（对应控制器第几路 CS）</span><br>    u8 bits_per_word;                     <span class="hljs-comment">// 每个字的位数（如 8、16）</span><br>    u32 mode;                             <span class="hljs-comment">// SPI 工作模式（CPOL/CPHA/CS_HIGH 等组合）</span><br>    <span class="hljs-type">int</span> irq;                              <span class="hljs-comment">// 该设备使用的中断号</span><br>    <span class="hljs-type">void</span> *controller_state;               <span class="hljs-comment">// 控制器驱动私有数据（控制器驱动读写）</span><br>    <span class="hljs-type">void</span> *controller_data;                <span class="hljs-comment">// 板级额外配置数据（设备树/平台数据传入）</span><br>    <span class="hljs-type">char</span> modalias[SPI_NAME_SIZE];         <span class="hljs-comment">// 设备名，用于与 spi_driver 匹配</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *driver_override;          <span class="hljs-comment">// 强制绑定的驱动名（用于 sysfs 手动匹配）</span><br>    <span class="hljs-type">int</span> cs_gpio;                          <span class="hljs-comment">// 旧版片选 GPIO 编号（已不推荐）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">gpio_desc</span> *<span class="hljs-title">cs_gpiod</span>;</span>           <span class="hljs-comment">// 片选 GPIO 描述符（新版方式）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">word_delay</span>;</span>          <span class="hljs-comment">// 字间延迟（两个 word 之间的等待时间）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">cs_setup</span>;</span>            <span class="hljs-comment">// CS 拉低后到第一个 CLK 之间的延时</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">cs_hold</span>;</span>             <span class="hljs-comment">// 最后一个 CLK 后到 CS 拉高之间的延时</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">cs_inactive</span>;</span>         <span class="hljs-comment">// CS 拉高后再次拉低的最小间隔</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-chip-select"><a href="#2-1-chip-select" class="headerlink" title="2.1 chip_select"></a>2.1 chip_select</h3><p>对应片选 CS，比如设备树：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-title class_">imu@0</span> <span class="hljs-punctuation">&#123;</span><br><br>    <span class="hljs-attr">reg</span> <span class="hljs-operator">=</span> <span class="hljs-params">&lt;<span class="hljs-number">0</span>&gt;</span><span class="hljs-punctuation">;</span><br><br><span class="hljs-punctuation">&#125;;</span><br></code></pre></td></tr></table></figure>
+
+<p>则 <code>chip_select = 0</code>。</p>
+<h3 id="2-2-mode"><a href="#2-2-mode" class="headerlink" title="2.2 mode"></a>2.2 mode</h3><p>SPI 的模式，对应 CPOL + CPHA 的组合。</p>
+<hr>
+<h1 id="3-spi-driver"><a href="#3-spi-driver" class="headerlink" title="3. spi_driver"></a>3. spi_driver</h1><p>设备对应的驱动代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_driver</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device_id</span> *<span class="hljs-title">id_table</span>;</span>   <span class="hljs-comment">// 支持的设备 ID 表，用于与 spi_device 的 modalias 匹配</span><br>    <span class="hljs-type">int</span>         (*probe)(<span class="hljs-keyword">struct</span> spi_device *spi);       <span class="hljs-comment">// 设备匹配成功后调用，初始化硬件并注册</span><br>    <span class="hljs-type">int</span>         (*remove)(<span class="hljs-keyword">struct</span> spi_device *spi);      <span class="hljs-comment">// 设备移除时调用，释放资源</span><br>    <span class="hljs-type">void</span>        (*shutdown)(<span class="hljs-keyword">struct</span> spi_device *spi);    <span class="hljs-comment">// 系统关机/重启时调用</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">device_driver</span>    <span class="hljs-title">driver</span>;</span>                       <span class="hljs-comment">// 内嵌的设备驱动模型，包含 name、of_match_table 等</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>最重要的就是 <code>probe</code> 函数，当 device 和 driver 匹配后会调用。</p>
+<p><code>probe</code> 函数通常完成：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi)</span><br>&#123;<br><br>    spi_setup(spi);<br><br><br>    spi_read();<br><br>    register_device();<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="4-spi-transfer"><a href="#4-spi-transfer" class="headerlink" title="4. spi_transfer"></a>4. spi_transfer</h1><p>一次连续 SPI 数据交换，是 SPI 传输的最小单位，表示<strong>一次不可分割的、连续的字节流传输</strong>。一个 <code>spi_message</code> 可以包含多个 <code>spi_transfer</code>，靠链表串联。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_transfer</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">void</span> *tx_buf;             <span class="hljs-comment">// 发送缓冲区指针（要发给从设备的数据）</span><br>    <span class="hljs-type">void</span> *rx_buf;                   <span class="hljs-comment">// 接收缓冲区指针（存放从设备返回的数据）</span><br>    <span class="hljs-type">unsigned</span> len;                   <span class="hljs-comment">// 本次传输的字节数</span><br><br>    <span class="hljs-comment">/* DMA 相关 */</span><br>    <span class="hljs-type">dma_addr_t</span> tx_dma;              <span class="hljs-comment">// 发送缓冲区的 DMA 地址</span><br>    <span class="hljs-type">dma_addr_t</span> rx_dma;              <span class="hljs-comment">// 接收缓冲区的 DMA 地址</span><br><br>    <span class="hljs-comment">/* 传输模式（单线/双线/四线） */</span><br>    <span class="hljs-type">unsigned</span> tx_nbits:<span class="hljs-number">3</span>;            <span class="hljs-comment">// 发送数据线数：1bit / 2bit / 4bit</span><br>    <span class="hljs-type">unsigned</span> rx_nbits:<span class="hljs-number">3</span>;            <span class="hljs-comment">// 接收数据线数：1bit / 2bit / 4bit</span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_NBITS_SINGLE  0x01  <span class="hljs-comment">// 1 线传输（标准 SPI）</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_NBITS_DUAL    0x02  <span class="hljs-comment">// 2 线传输（Dual SPI）</span></span><br>    <span class="hljs-meta">#<span class="hljs-keyword">define</span> SPI_NBITS_QUAD    0x04  <span class="hljs-comment">// 4 线传输（Quad SPI）</span></span><br><br>    <span class="hljs-comment">/* 控制标志 */</span><br>    <span class="hljs-type">unsigned</span> dummy_data:<span class="hljs-number">1</span>;          <span class="hljs-comment">// 是否为占位数据（全双工时一方无实际数据时用）</span><br>    <span class="hljs-type">unsigned</span> cs_change:<span class="hljs-number">1</span>;           <span class="hljs-comment">// 本次 transfer 结束后是否翻转片选</span><br><br>    u8 bits_per_word;               <span class="hljs-comment">// 每个字的位数（如 8、16），可覆盖 spi_device 的默认值</span><br><br>    <span class="hljs-comment">/* 时序延迟 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">delay</span>;</span>         <span class="hljs-comment">// 本次 transfer 结束后的延时</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">cs_change_delay</span>;</span> <span class="hljs-comment">// cs_change 生效后的等待时间</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_delay</span> <span class="hljs-title">word_delay</span>;</span>    <span class="hljs-comment">// 两个数据字之间的间隔</span><br><br>    u32 speed_hz;                   <span class="hljs-comment">// 本次传输用的时钟频率（可覆盖默认值）</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">transfer_list</span>;</span> <span class="hljs-comment">// 链表节点，挂载到 spi_message.transfers</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-1-tx-buf-rx-buf-len"><a href="#4-1-tx-buf-rx-buf-len" class="headerlink" title="4.1 tx_buf &#x2F; rx_buf &#x2F; len"></a>4.1 tx_buf &#x2F; rx_buf &#x2F; len</h3><p>三件套，描述一次传输数据。</p>
+<p>比如发送：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">tx_buf</span>：<span class="hljs-number">0</span>x11 <span class="hljs-number">0</span>x22<br></code></pre></td></tr></table></figure>
+
+<p>接收：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">rx_buf</span>：<span class="hljs-number">0</span>x11 <span class="hljs-number">0</span>x22<br></code></pre></td></tr></table></figure>
+
+<p>那么长度 <code>len = 2</code>。</p>
+<h3 id="4-2-transfer-list"><a href="#4-2-transfer-list" class="headerlink" title="4.2 transfer_list"></a>4.2 transfer_list</h3><p>链表节点，用来将多个 <code>spi_transfer</code> 串在一起，挂到 <code>spi_message.transfers</code> 上。SPI Core 在 <code>spi_transfer_one_message()</code> 中通过 <code>list_for_each_entry</code> 遍历这个链表，逐个交给 <code>controller-&gt;transfer_one()</code>。</p>
+<hr>
+<h1 id="5-spi-message"><a href="#5-spi-message" class="headerlink" title="5. spi_message"></a>5. spi_message</h1><p>表示一次完整的 SPI 事件。比如先发送地址再读取数据，这两个动作组成一个 message。<br>源码位置：<code>include/linux/spi/spi.h</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_message</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">transfers</span>;</span>         <span class="hljs-comment">// 链表头，串联多个 spi_transfer</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_device</span> *<span class="hljs-title">spi</span>;</span>             <span class="hljs-comment">// 指向本次通信的目标从设备</span><br>    <span class="hljs-type">unsigned</span> is_dma_mapped:<span class="hljs-number">1</span>;           <span class="hljs-comment">// 缓冲区是否已经做过 DMA 映射</span><br><br>    <span class="hljs-comment">/* 异步完成回调 */</span><br>    <span class="hljs-type">void</span> (*complete)(<span class="hljs-type">void</span> *context);    <span class="hljs-comment">// 传输完成时调用的回调函数</span><br>    <span class="hljs-type">void</span> *context;                      <span class="hljs-comment">// 传给 complete 回调的参数</span><br><br>    <span class="hljs-comment">/* 传输结果 */</span><br>    <span class="hljs-type">unsigned</span> frame_length;              <span class="hljs-comment">// 预计传输的总字节数</span><br>    <span class="hljs-type">unsigned</span> actual_length;             <span class="hljs-comment">// 实际传输的字节数</span><br>    <span class="hljs-type">int</span> status;                         <span class="hljs-comment">// 传输结果状态（0 成功，负值表示错误码）</span><br><br>    <span class="hljs-comment">/* 内部使用 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">queue</span>;</span>             <span class="hljs-comment">// 消息在控制器等待队列中的节点</span><br>    <span class="hljs-type">void</span> *state;                        <span class="hljs-comment">// 控制器驱动私有状态（可选）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">resources</span>;</span>         <span class="hljs-comment">// spi_res 资源链表，传输完成后自动释放</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>1. <code>transfers</code></strong></p>
+<p>将若干个 <code>spi_transfer</code> 通过链表串起来，控制器驱动按顺序逐个发送。</p>
+<p><code>spi_message</code> 与 <code>spi_transfer</code> 的关系如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.45idna9pwm.webp" srcset="/img/loading.svg" lazyload></p>
+<blockquote>
+<p><strong><code>spi_transfer</code> 是数据传输的最小段，<code>spi_message</code> 将多个段组合成一次片选持续的完整事务，设备驱动通过构造 <code>spi_message</code> 并发起 <code>spi_sync()</code> &#x2F; <code>spi_async()</code> 来完成与芯片的交互。</strong></p>
+</blockquote>
+<hr>
+<h1 id="6-一次-SPI-传输的数据流"><a href="#6-一次-SPI-传输的数据流" class="headerlink" title="6. 一次 SPI 传输的数据流"></a>6. 一次 SPI 传输的数据流</h1><p>整个流程我们在上一章讲解过了，这里就不多说了，回顾一下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp" srcset="/img/loading.svg" lazyload></p>
+<hr>
+<h1 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. 总结</h1><p>Linux SPI Framework 通过多个核心数据结构完成硬件抽象。<br>其中：</p>
+<ul>
+<li><strong>spi_controller</strong>：描述 SoC 中的 SPI 控制器，负责操作具体硬件</li>
+<li><strong>spi_device</strong>：描述挂载在 SPI 总线上的外设</li>
+<li><strong>spi_driver</strong>：描述设备驱动，通过 probe 函数完成设备初始化</li>
+<li><strong>spi_message</strong>：描述一次完整 SPI 事务</li>
+<li><strong>spi_transfer</strong>：描述一次具体的数据交换</li>
+</ul>
+<p>整个 SPI 框架通过这些结构体，将设备驱动和底层硬件控制解耦，使同一个设备驱动可以运行在不同 SoC 平台上。</p>
+<hr>
+<h1 id="8-互动"><a href="#8-互动" class="headerlink" title="8. 互动"></a>8. 互动</h1><ol>
+<li>spi_controller 是什么？</li>
+<li>spi_device 是什么？</li>
+<li>spi_driver 是什么？</li>
+<li>spi_message 和 spi_transfer 为什么存在？</li>
+<li>一次 SPI 传输在这些结构体之间如何流转？</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-SPI/" class="print-no-link">#Linux SPI</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux SPI核心数据结构分析</div>
+      <div>https://cj0510.github.io/2026/08/01/Linux Kernel/SPI/Linux SPI核心数据结构分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux SPI Framework整体架构分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux SPI Framework整体架构分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" title="Linux SPI设备如何从Device Tree走到driver probe">
+                        <span class="hidden-mobile">Linux SPI设备如何从Device Tree走到driver probe</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
