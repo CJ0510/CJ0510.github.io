@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>CJ1018</name>
+  </author>
+  <generator uri="https://hexo.io/">Hexo</generator>
+  <id>https://cj0510.github.io/</id>
+  <link href="https://cj0510.github.io/" rel="alternate"/>
+  <link href="https://cj0510.github.io/atom.xml" rel="self"/>
+  <rights>All rights reserved 2026, CJ1018</rights>
+  <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
+  <title>CJ's Tech Notes</title>
+  <updated>2026-08-02T02:34:30.155Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-SPI-Framework"><a href="#1-SPI-Framework" class="headerlink" title="1. SPI Framework"></a>1. SPI Framework</h1><p>上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：</p>
+<p><img]]>
+    </summary>
+    <title>Linux SPI Framework整体架构分析</title>
+    <updated>2026-08-02T02:34:30.155Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <title>Linux SPI同步/异步接口分析</title>
+    <updated>2026-08-02T13:10:50.617Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-spi-controller"><a href="#1-spi-controller" class="headerlink" title="1. spi_controller"></a>1. spi_controller</h1><p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp"></p>
+<p>之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。</p>
+<p>首先来看一下]]>
+    </summary>
+    <title>Linux SPI核心数据结构分析</title>
+    <updated>2026-08-02T04:43:49.582Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-What-is-SPI"><a href="#1-What-is-SPI" class="headerlink" title="1. What is SPI?"></a>1. What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
+<p>在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。<br>例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如]]>
+    </summary>
+    <title>SPI协议基础：从四根线理解Linux SPI框架</title>
+    <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1]]>
+    </summary>
+    <title>问题及思考</title>
+    <updated>2026-08-01T12:59:11.047Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
+    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
+    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h2 id="Uboot"><a href="#Uboot" class="headerlink" title="Uboot"></a>Uboot</h2><p>下载uboot源码</p>
+<figure class="highlight]]>
+    </summary>
+    <title>RK3566 BSP</title>
+    <updated>2026-08-01T12:59:11.938Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
+    </summary>
+    <title>Memory Management</title>
+    <updated>2026-08-01T12:59:35.125Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="进程管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <category term="内核" scheme="https://cj0510.github.io/tags/%E5%86%85%E6%A0%B8/"/>
+    <category term="进程管理" scheme="https://cj0510.github.io/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
+    <category term="进程优先级" scheme="https://cj0510.github.io/tags/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/"/>
+    <category term="nice" scheme="https://cj0510.github.io/tags/nice/"/>
+    <id>https://cj0510.github.io/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/</id>
+    <link href="https://cj0510.github.io/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/"/>
+    <published>2026-07-12T05:32:55.000Z</published>
+    <summary>从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO / SCHED_RR / SCHED_DEADLINE / SCHED_NORMAL 四种调度类的优先级规则。</summary>
+    <title>进程优先级</title>
+    <updated>2026-07-12T08:48:10.905Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <category term="内核" scheme="https://cj0510.github.io/tags/%E5%86%85%E6%A0%B8/"/>
+    <category term="资料" scheme="https://cj0510.github.io/tags/%E8%B5%84%E6%96%99/"/>
+    <id>https://cj0510.github.io/2025/09/07/Linux%20Kernel/ziliao/</id>
+    <link href="https://cj0510.github.io/2025/09/07/Linux%20Kernel/ziliao/"/>
+    <published>2025-09-07T02:44:49.000Z</published>
+    <summary>Linux 内核学习资料汇总：源码、书籍、博客、工具链等优质资源整理</summary>
+    <title>Linux-Kernel 0 资料整理</title>
+    <updated>2026-08-01T12:59:42.967Z</updated>
+  </entry>
+</feed>
