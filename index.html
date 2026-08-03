@@ -343,7 +343,7 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
+        <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI同步/异步接口分析">
         </a>
       </div>
@@ -351,15 +351,15 @@
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
+        <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
           Linux SPI同步/异步接口分析
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
+      <a class="index-excerpt " href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
         <div>
-          
+          1 为什么需要同步和异步接口先说下什么是同步和异步。就是字面意思啦。  同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。 异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理  我们看一个场景 假设上面一次SPI通信流程为：发送寄存器地址；等待SPI clock；读取数据。 一个线程A调用同步接口spi_sync()，此时线程A会被阻塞，
         </div>
       </a>
 
@@ -367,8 +367,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
+            <time datetime="2026-08-03 20:32" pubdate>
+              2026-08-03
             </time>
           </div>
         
@@ -434,80 +434,6 @@
       <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
         <div>
           1. spi_controller 之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。 首先来看一下 spi_controller，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。比如一片 SoC 里面有 SPI0-3 控制器，那么对应的就是 spi_controller0-3。 源码位置：include/linux/spi/spi.h
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI设备如何从Device Tree走到driver probe">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          Linux SPI设备如何从Device Tree走到driver probe
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-        <div>
-          1 为什么SPI设备需要DTS描述对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有设备枚举机制。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 struct device 并匹配驱动。但 SPI 总线天生不具备这个能力。 SPI 协议只定义了 MOSI、MISO、SCLK、C
         </div>
       </a>
 
@@ -639,6 +565,80 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI设备如何从Device Tree走到driver probe">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
+          Linux SPI设备如何从Device Tree走到driver probe
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
+        <div>
+          1 为什么SPI设备需要DTS描述对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有设备枚举机制。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 struct device 并匹配驱动。但 SPI 总线天生不具备这个能力。 SPI 协议只定义了 MOSI、MISO、SCLK、C
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-01 13:32" pubdate>
+              2026-08-01
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI Framework整体架构分析">
         </a>
@@ -713,80 +713,6 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="问题及思考">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          问题及思考
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-        <div>
-          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-13 13:32" pubdate>
-              2026-07-13
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/07/13/rk3566/P1/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="RK3566 BSP">
         </a>
@@ -833,6 +759,80 @@
     <span>></span>
     
   <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/" class="category-chain-item">RK3566</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="问题及思考">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+          问题及思考
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+        <div>
+          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-07-13 13:32" pubdate>
+              2026-07-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
   
   
 

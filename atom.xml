@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-02T13:10:50.617Z</updated>
+  <updated>2026-08-03T13:38:48.444Z</updated>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -18,11 +18,20 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
+    <id>https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-03T12:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要同步和异步接口"><a href="#1-为什么需要同步和异步接口" class="headerlink" title="1 为什么需要同步和异步接口"></a>1 为什么需要同步和异步接口</h1><p>先说下什么是同步和异步。就是字面意思啦。</p>
+<ul>
+<li>同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。</li>
+<li>异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理</li>
+</ul>
+<p>我们看一个场景</p>
+<p><img]]>
+    </summary>
     <title>Linux SPI同步/异步接口分析</title>
-    <updated>2026-08-02T13:10:50.617Z</updated>
+    <updated>2026-08-03T13:38:48.444Z</updated>
   </entry>
   <entry>
     <author>
@@ -49,22 +58,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
-    </summary>
-    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
-    <updated>2026-08-02T09:45:56.855Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -74,6 +67,22 @@
     </summary>
     <title>SPI协议基础：从四根线理解Linux SPI框架</title>
     <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
   </entry>
   <entry>
     <author>
@@ -96,22 +105,6 @@
     <author>
       <name>CJ1018</name>
     </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
-    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1]]>
-    </summary>
-    <title>问题及思考</title>
-    <updated>2026-08-01T12:59:11.047Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
     <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
     <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
     <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
@@ -125,6 +118,22 @@
     </summary>
     <title>RK3566 BSP</title>
     <updated>2026-08-01T12:59:11.938Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1]]>
+    </summary>
+    <title>问题及思考</title>
+    <updated>2026-08-01T12:59:11.047Z</updated>
   </entry>
   <entry>
     <author>
