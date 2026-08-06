@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.45idna9pwm.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfgg3dtw9.webp">
 <meta property="article:published_time" content="2026-08-01T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-02T04:43:49.582Z">
+<meta property="article:modified_time" content="2026-08-06T23:33:36.328Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux SPI">
 <meta name="twitter:card" content="summary_large_image">
@@ -448,7 +448,7 @@
 
 <p>最重要的就是 <code>probe</code> 函数，当 device 和 driver 匹配后会调用。</p>
 <p><code>probe</code> 函数通常完成：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi)</span><br>&#123;<br><br>    spi_setup(spi);<br><br><br>    spi_read();<br><br>    register_device();<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">probe</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi)</span><br>&#123;<br>    spi_setup(spi);<br>    spi_read();<br>    register_device();<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
 <h1 id="4-spi-transfer"><a href="#4-spi-transfer" class="headerlink" title="4. spi_transfer"></a>4. spi_transfer</h1><p>一次连续 SPI 数据交换，是 SPI 传输的最小单位，表示<strong>一次不可分割的、连续的字节流传输</strong>。一个 <code>spi_message</code> 可以包含多个 <code>spi_transfer</code>，靠链表串联。</p>
@@ -489,10 +489,10 @@
 <p>整个 SPI 框架通过这些结构体，将设备驱动和底层硬件控制解耦，使同一个设备驱动可以运行在不同 SoC 平台上。</p>
 <hr>
 <h1 id="8-互动"><a href="#8-互动" class="headerlink" title="8. 互动"></a>8. 互动</h1><ol>
-<li>spi_controller 是什么？</li>
-<li>spi_device 是什么？</li>
-<li>spi_driver 是什么？</li>
-<li>spi_message 和 spi_transfer 为什么存在？</li>
+<li><strong>spi_controller</strong> 是什么？</li>
+<li><strong>spi_device</strong> 是什么？</li>
+<li><strong>spi_driver</strong> 是什么？</li>
+<li><strong>spi_message</strong> 和 <strong>spi_transfer</strong> 为什么存在？</li>
 <li>一次 SPI 传输在这些结构体之间如何流转？</li>
 </ol>
 
@@ -585,9 +585,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" title="Linux SPI同步/异步接口分析">
+                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" title="Linux SPI设备如何从Device Tree走到driver probe">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux SPI同步/异步接口分析</span>
+                        <span class="hidden-mobile">Linux SPI设备如何从Device Tree走到driver probe</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

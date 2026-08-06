@@ -21,30 +21,27 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="1 为什么需要同步和异步接口先说下什么是同步和异步。就是字面意思啦。  同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。 异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理  我们看一个场景 假设上面一次SPI通信流程为：发送寄存器地址；等待SPI clock；读取数据。 一个线程A调用同步接口spi_sync()，此时线程A会被阻塞，">
+    <meta name="description" content="1 SPI调试整体思路前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？前面对整个框架都有了概念，简化模型如下：  出了问题从上面四个框架一一排查。 问题分为以下四大类  设备节点没出现，&#x2F;sys&#x2F;bus&#x2F;spi&#x2F;devices&#x2F;下面没设备；这是就要排查DTS，SPI Controller和spi_device等 设备出现，但是prob">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux SPI同步&#x2F;异步接口分析">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/">
+<meta property="og:title" content="Linux SPI调试方法">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="1 为什么需要同步和异步接口先说下什么是同步和异步。就是字面意思啦。  同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。 异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理  我们看一个场景 假设上面一次SPI通信流程为：发送寄存器地址；等待SPI clock；读取数据。 一个线程A调用同步接口spi_sync()，此时线程A会被阻塞，">
+<meta property="og:description" content="1 SPI调试整体思路前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？前面对整个框架都有了概念，简化模型如下：  出了问题从上面四个框架一一排查。 问题分为以下四大类  设备节点没出现，&#x2F;sys&#x2F;bus&#x2F;spi&#x2F;devices&#x2F;下面没设备；这是就要排查DTS，SPI Controller和spi_device等 设备出现，但是prob">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6il06j0zi2.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.b9m6dhcrn.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3yf5twjgr4.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3d5i894ogf.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2yz2k9plab.webp">
-<meta property="article:published_time" content="2026-08-03T12:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-06T14:10:29.192Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6bhsg0zpii.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.sznzwa3s7.webp">
+<meta property="article:published_time" content="2026-08-06T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-06T23:53:44.782Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux SPI">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6il06j0zi2.webp">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6bhsg0zpii.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>Linux SPI同步/异步接口分析 · CJ&#39;s Tech Notes</title>
+  <title>Linux SPI调试方法 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -318,7 +315,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">Linux SPI同步/异步接口分析</span>
+            <span id="subtitle">Linux SPI调试方法</span>
           
         </div>
 
@@ -329,8 +326,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-08-03 20:32" pubdate>
-          2026-08-03
+        <time datetime="2026-08-06 22:11" pubdate>
+          2026-08-06
         </time>
       </span>
     
@@ -342,7 +339,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          3.1k 字
+          659 字
         
       </span>
     
@@ -354,7 +351,7 @@
         
         
           <!-- compatible with older versions-->
-          26 分钟
+          6 分钟
         
       </span>
     
@@ -393,81 +390,34 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Linux SPI同步/异步接口分析</h1>
+            <h1 id="seo-header">Linux SPI调试方法</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="1-为什么需要同步和异步接口"><a href="#1-为什么需要同步和异步接口" class="headerlink" title="1 为什么需要同步和异步接口"></a>1 为什么需要同步和异步接口</h1><p>先说下什么是同步和异步。就是字面意思啦。</p>
+                <h1 id="1-SPI调试整体思路"><a href="#1-SPI调试整体思路" class="headerlink" title="1 SPI调试整体思路"></a>1 SPI调试整体思路</h1><p>前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？<br>前面对整个框架都有了概念，简化模型如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6bhsg0zpii.webp" srcset="/img/loading.svg" lazyload></p>
+<p>出了问题从上面四个框架一一排查。</p>
+<p>问题分为以下四大类</p>
 <ul>
-<li>同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。</li>
-<li>异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理</li>
+<li>设备节点没出现，&#x2F;sys&#x2F;bus&#x2F;spi&#x2F;devices&#x2F;下面没设备；这是就要排查DTS，SPI Controller和spi_device等</li>
+<li>设备出现，但是probe失败，检查compatible匹配、driver注册和probe返回值等</li>
+<li>probe成功，但是读写失败，检查SPI参数，使用mode，CS等</li>
+<li>性能问题，检查transfer的耗时，CPU占用，DMA等</li>
 </ul>
-<p>我们看一个场景</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6il06j0zi2.webp" srcset="/img/loading.svg" lazyload><br>假设上面一次SPI通信流程为：发送寄存器地址；等待SPI clock；读取数据。</p>
-<p>一个线程A调用同步接口spi_sync()，此时线程A会被阻塞，一直等待整个过程完成再返回。</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.b9m6dhcrn.webp" srcset="/img/loading.svg" lazyload></p>
-<p>一个线程B调用异步接口spi_async()，此时线程B不用等待，可以去忙其他的事，等SPI传输完成再处理</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3yf5twjgr4.webp" srcset="/img/loading.svg" lazyload></p>
-<h1 id="2-spi-sync源码分析"><a href="#2-spi-sync源码分析" class="headerlink" title="2 spi_sync源码分析"></a>2 spi_sync源码分析</h1><p>我们先来看同步的接口函数spi_sync，它的作用就是同步提交一个message并等待完成<br>源码位置：drivers&#x2F;spi&#x2F;spi.c</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">spi_sync</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi, <span class="hljs-keyword">struct</span> spi_message *message)</span><br>&#123;<br>  <span class="hljs-type">int</span> ret;<br><br>  mutex_lock(&amp;spi-&gt;controller-&gt;bus_lock_mutex);<br>  ret = __spi_sync(spi, message);<br>  mutex_unlock(&amp;spi-&gt;controller-&gt;bus_lock_mutex);<br><br>  <span class="hljs-keyword">return</span> ret;<br>&#125;<br>EXPORT_SYMBOL_GPL(spi_sync);<br></code></pre></td></tr></table></figure>
-<p>其中重要的就是上锁，为什么上锁？一个SPI Controller可能挂多个设备，统一时间只允许一个设备占用资源进行传输，保证传输不冲突。</p>
-<p>整个调用过程如下：<br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3d5i894ogf.webp" srcset="/img/loading.svg" lazyload></p>
-<p>其中在__spi_sync里面会调用一个重要函数wait_for_completion()，</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> __spi_sync(<span class="hljs-keyword">struct</span> spi_device *spi,<br>                      <span class="hljs-keyword">struct</span> spi_message *message)<br>&#123;<br>    DECLARE_COMPLETION_ONSTACK(done);<br>    <span class="hljs-type">int</span> status;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">ctlr</span> =</span> spi-&gt;controller;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags;<br><br>    message-&gt;complete = spi_complete;<br>    message-&gt;context = &amp;done;<br><br>    spin_lock_irqsave(&amp;ctlr-&gt;bus_lock_spinlock, flags);<br>    status = __spi_async(spi, message);<br>    spin_unlock_irqrestore(&amp;ctlr-&gt;bus_lock_spinlock, flags);<br><br>    <span class="hljs-keyword">if</span> (status == <span class="hljs-number">0</span>) &#123;<br>        wait_for_completion(&amp;done);<br>        status = message-&gt;status;<br>    &#125;<br><br>    message-&gt;complete = <span class="hljs-literal">NULL</span>;<br>    message-&gt;context = <span class="hljs-literal">NULL</span>;<br><br>    <span class="hljs-keyword">return</span> status;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>spi_sync() 并没有重新实现一套“同步传输”，而是先使用异步方式提交 spi_message，然后调用 wait_for_completion() 等待消息完成，从而表现为同步接口。</p>
-<p>当消息传输完成时，会产生一个中断，从而唤醒线程。这个中断函数的实现由具体的SPI 控制器驱动。以RK系列为例子：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">irqreturn_t</span> <span class="hljs-title function_">rockchip_spi_isr</span><span class="hljs-params">(<span class="hljs-type">int</span> irq, <span class="hljs-type">void</span> *dev_id)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">ctlr</span> =</span> dev_id;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rockchip_spi</span> *<span class="hljs-title">rs</span> =</span> spi_controller_get_devdata(ctlr);<br><br>    <span class="hljs-comment">/* 检查中断状态 */</span><br>    <span class="hljs-comment">/* 从RX FIFO读取数据 */</span><br>    <span class="hljs-comment">/* 向TX FIFO继续写数据 */</span><br><br>    <span class="hljs-keyword">if</span> (!rs-&gt;rx_left) &#123;<br>        spi_enable_chip(rs, <span class="hljs-literal">false</span>);<br><br>        <span class="hljs-comment">/* 关闭SPI中断 */</span><br>        writel_relaxed(<span class="hljs-number">0</span>, rs-&gt;regs + ROCKCHIP_SPI_IMR);<br><br>        <span class="hljs-comment">/* 清除中断 */</span><br>        writel_relaxed(<span class="hljs-number">0xffffffff</span>, rs-&gt;regs + ROCKCHIP_SPI_ICR);<br><br>        <span class="hljs-comment">/* 通知SPI Core：当前transfer完成 */</span><br>        spi_finalize_current_transfer(ctlr);<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> IRQ_HANDLED;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>中断处理函数通过 spi_finalize_current_transfer() 通知 SPI Core。最终 SPI Core 完成整个消息并唤醒 spi_sync() 线程。</p>
-<h1 id="3-spi-async源码分析"><a href="#3-spi-async源码分析" class="headerlink" title="3 spi_async源码分析"></a>3 spi_async源码分析</h1><p>前面我们说过spi_async提交SPI传输，但是不等待。<br>调用关系如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2yz2k9plab.webp" srcset="/img/loading.svg" lazyload></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">spi_async</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> spi_device *spi, <span class="hljs-keyword">struct</span> spi_message *message)</span><br>&#123;<br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_controller</span> *<span class="hljs-title">ctlr</span> =</span> spi-&gt;controller;<br>  <span class="hljs-type">int</span> ret;<br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags;<br><br>  ret = spi_maybe_optimize_message(spi, message);<br>  <span class="hljs-keyword">if</span> (ret)<br>    <span class="hljs-keyword">return</span> ret;<br><br>  spin_lock_irqsave(&amp;ctlr-&gt;bus_lock_spinlock, flags);<br><br>  <span class="hljs-keyword">if</span> (ctlr-&gt;bus_lock_flag)<br>    ret = -EBUSY;<br>  <span class="hljs-keyword">else</span><br>    ret = __spi_async(spi, message);<br><br>  spin_unlock_irqrestore(&amp;ctlr-&gt;bus_lock_spinlock, flags);<br><br>  <span class="hljs-keyword">return</span> ret;<br>&#125;<br>EXPORT_SYMBOL_GPL(spi_async);<br></code></pre></td></tr></table></figure>
-<p>上面首先会获取SPI控制器，接着关闭当前 CPU 中断，获取 bus_lock_spinlock 自旋锁，把message加入消息队列。</p>
-<p>怎么告诉控制器传输完成呢？通过回调机制</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">spi_message</span> &#123;</span><br><br>    <span class="hljs-type">void</span> (*complete)(<span class="hljs-type">void</span> *arg);<br><br>    <span class="hljs-type">void</span> *context;<br><br>&#125;;<br></code></pre></td></tr></table></figure>
-<p>当硬件传输完成时，会调用message-&gt;complete()。</p>
-<h1 id="4-实际选择"><a href="#4-实际选择" class="headerlink" title="4 实际选择"></a>4 实际选择</h1><table>
-<thead>
-<tr>
-<th align="left">对比维度</th>
-<th align="left">spi_sync</th>
-<th align="left">spi_async</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">是否等待</td>
-<td align="left">是，调用者原地阻塞</td>
-<td align="left">否，立即返回</td>
-</tr>
-<tr>
-<td align="left">线程状态</td>
-<td align="left">阻塞（睡眠）</td>
-<td align="left">继续运行</td>
-</tr>
-<tr>
-<td align="left">完成通知</td>
-<td align="left">函数返回值</td>
-<td align="left">回调函数 (callback)</td>
-</tr>
-<tr>
-<td align="left">并发能力</td>
-<td align="left">低，锁住整个 bus</td>
-<td align="left">高，仅队列操作加锁</td>
-</tr>
-<tr>
-<td align="left">适用场景</td>
-<td align="left">简单、低频、低速设备</td>
-<td align="left">复杂、高频、高速设备</td>
-</tr>
-<tr>
-<td align="left">在实际操作时，如果数据量小，频率比较低，那么可以选择同步；如果数据量较大，高频率，用到DMA，那么可以选择异步。</td>
-<td align="left"></td>
-<td align="left"></td>
-</tr>
-</tbody></table>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Linux SPI Framework提供同步和异步两种传输接口。同步接口spi_sync会阻塞当前线程直到SPI传输完成，实现简单，适用于低速、小数据量设备。异步接口spi_async通过消息队列和completion回调机制，在提交传输后立即返回，适用于高速、大数据量以及DMA传输场景。</p>
-<h1 id="互动"><a href="#互动" class="headerlink" title="互动"></a>互动</h1><p>SPI设备驱动发起一次数据传输时，当前线程是否需要等待硬件完成？</p>
+<h1 id="2-查看SPI设备注册状态"><a href="#2-查看SPI设备注册状态" class="headerlink" title="2 查看SPI设备注册状态"></a>2 查看SPI设备注册状态</h1><p>查看spi设备</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ls /sys/bus/spi/devices/<br></code></pre></td></tr></table></figure>
+<p>比如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">spi0.0<br>spi1.1<br>spiX.Y<br></code></pre></td></tr></table></figure>
+<p>上面表示什么呢？如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.sznzwa3s7.webp" srcset="/img/loading.svg" lazyload></p>
+<p>前面一个数字X表示控制器编号，后面一个数字Y表示片选编号。结合起来就是SPI控制器X上的CSY设备。对应框架里面struct device。</p>
+<h1 id="3-dmesg分析SPI初始化流程"><a href="#3-dmesg分析SPI初始化流程" class="headerlink" title="3 dmesg分析SPI初始化流程"></a>3 dmesg分析SPI初始化流程</h1><p>关于Linux日志的事情我们会单开一个系列讲解，这里只需要知道通过dmesg能帮助我们进行SPI驱动开发。<br>比如我们在驱动里面注入下面的代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">dev_info(&amp;pdev-&gt;dev, <span class="hljs-string">&quot;registered master spi0\n&quot;</span>);<br></code></pre></td></tr></table></figure>
+<p>在dmesg里面就会找到</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">spi-rockchip fe610000.spi: registered master spi0<br></code></pre></td></tr></table></figure>
 
+<h1 id="4-sysfs查看SPI设备绑定"><a href="#4-sysfs查看SPI设备绑定" class="headerlink" title="4 sysfs查看SPI设备绑定"></a>4 sysfs查看SPI设备绑定</h1>
                 
               </div>
             
@@ -519,8 +469,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Linux SPI同步/异步接口分析</div>
-      <div>https://cj0510.github.io/2026/08/03/Linux Kernel/SPI/Linux SPI同步和异步接口分析/</div>
+      <div>Linux SPI调试方法</div>
+      <div>https://cj0510.github.io/2026/08/06/Linux Kernel/SPI/Linux SPI调试方法/</div>
     </div>
     <div class="license-meta">
       
@@ -532,7 +482,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年8月3日</div>
+          <div>2026年8月6日</div>
         </div>
       
       
@@ -557,18 +507,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" title="Linux SPI调试方法">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux SPI调试方法</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux SPI Framework整体架构分析">
-                        <span class="hidden-mobile">Linux SPI Framework整体架构分析</span>
+                      <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" title="Linux SPI同步/异步接口分析">
+                        <span class="hidden-mobile">Linux SPI同步/异步接口分析</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
