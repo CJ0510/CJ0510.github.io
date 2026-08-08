@@ -359,7 +359,7 @@
       
       <a class="index-excerpt " href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" target="_self">
         <div>
-          1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是SPI Clock太低等原因  2 三种传输方式分析SPI控制器发送数据主要有三种方式，轮询（Polling）、中断（interrupt）和DMA。我们逐个来看。
+          1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我
         </div>
       </a>
 
@@ -433,7 +433,7 @@
       
       <a class="index-excerpt " href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" target="_self">
         <div>
-          1 SPI调试整体思路前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？前面对整个框架都有了概念，简化模型如下：  出了问题从上面四个框架一一排查。 问题分为以下四大类  设备节点没出现，&#x2F;sys&#x2F;bus&#x2F;spi&#x2F;devices&#x2F;下面没设备；这是就要排查DTS，SPI Controller和spi_device等 设备出现，但是prob
+          1 SPI调试整体思路前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？ 前面对整个框架都有了概念，简化模型如下：  出了问题从上面四个框架一一排查。 问题分为以下四大类：  设备节点没出现，/sys/bus/spi/devices/ 下面没设备；这时就要排查 DTS、SPI Controller 和 spi_device 等 设备出现，但是 probe 失败，检查 compatibl
         </div>
       </a>
 

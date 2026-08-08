@@ -21,15 +21,15 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是SPI Clock太低等原因  2 三种传输方式分析SPI控制器发送数据主要有三种方式，轮询（Polling）、中断（interrupt）和DMA。我们逐个来看。">
+    <meta name="description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux SPI性能优化">
 <meta property="og:url" content="https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是SPI Clock太低等原因  2 三种传输方式分析SPI控制器发送数据主要有三种方式，轮询（Polling）、中断（interrupt）和DMA。我们逐个来看。">
+<meta property="og:description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-08-08T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-08T08:08:30.754Z">
+<meta property="article:modified_time" content="2026-08-08T08:20:55.892Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux SPI">
 <meta name="twitter:card" content="summary_large_image">
@@ -336,7 +336,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          292 字
+          295 字
         
       </span>
     
@@ -392,19 +392,29 @@
             
               <div class="markdown-body">
                 
-                <h1 id="1-SPI性能指标"><a href="#1-SPI性能指标" class="headerlink" title="1 SPI性能指标"></a>1 SPI性能指标</h1><p>无论优化什么，明确衡量指标永远是第一步。<br>我们先来看几个关键的性能指标：</p>
+                <h1 id="1-SPI性能指标"><a href="#1-SPI性能指标" class="headerlink" title="1 SPI性能指标"></a>1 SPI性能指标</h1><p>无论优化什么，明确衡量指标永远是第一步。</p>
+<p>我们先来看几个关键的性能指标：</p>
 <ul>
 <li>吞吐量：单位时间内传输的数据量</li>
 <li>延迟：单次传输所需的时间</li>
 <li>CPU 占用率</li>
-<li>功耗<br>回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是SPI Clock太低等原因</li>
+<li>功耗</li>
 </ul>
-<h1 id="2-三种传输方式分析"><a href="#2-三种传输方式分析" class="headerlink" title="2 三种传输方式分析"></a>2 三种传输方式分析</h1><p>SPI控制器发送数据主要有三种方式，轮询（Polling）、中断（interrupt）和DMA。<br>我们逐个来看。</p>
+<p>回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。</p>
+<h1 id="2-三种传输方式分析"><a href="#2-三种传输方式分析" class="headerlink" title="2 三种传输方式分析"></a>2 三种传输方式分析</h1><p>SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。</p>
+<p>我们逐个来看。</p>
 <ol>
-<li>Polling轮询<br>Polling就是轮询，CPU不断读取 SPI控制器的状态寄存器，询问传输完没？当传输完成的时候CPU退出</li>
-<li>中断<br>此时CPU可以去做其他事，等SPI interrupt时候再进行处理。</li>
-<li>DMA<br>就是开启DMA</li>
+<li>Polling 轮询</li>
 </ol>
+<p>Polling 就是轮询，CPU 不断读取 SPI 控制器的状态寄存器，询问传输完没？当传输完成的时候 CPU 退出。</p>
+<ol start="2">
+<li>中断</li>
+</ol>
+<p>此时 CPU 可以去做其他事，等 SPI Interrupt 时候再进行处理。</p>
+<ol start="3">
+<li>DMA</li>
+</ol>
+<p>就是开启 DMA。</p>
 
                 
               </div>
