@@ -23,8 +23,8 @@
   
     <meta name="description" content="记录 Linux 内核、嵌入式系统与底层软件开发中的原理、实践和问题排查。">
 <meta property="og:type" content="website">
-<meta property="og:title" content="CJ&#39;s Tech Notes">
-<meta property="og:url" content="https://cj0510.github.io/page/2/">
+<meta property="og:title" content="标签 - Linux Logging subsystem">
+<meta property="og:url" content="https://cj0510.github.io/tags/Linux-Logging-subsystem/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
 <meta property="og:description" content="记录 Linux 内核、嵌入式系统与底层软件开发中的原理、实践和问题排查。">
 <meta property="og:locale" content="zh_CN">
@@ -36,7 +36,7 @@
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>CJ&#39;s Tech Notes</title>
+  <title>标签 - Linux Logging subsystem · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -95,7 +95,7 @@
   <header>
     
 
-<div class="header-inner" style="height: 82vh;">
+<div class="header-inner" style="height: 48vh;">
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
@@ -298,23 +298,19 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/banner/home.jpg') no-repeat center center; background-size: cover;">
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.52)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.58)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="天行健，君子以自强不息"></span>
+            <span id="subtitle">标签 - Linux Logging subsystem</span>
           
         </div>
 
         
       </div>
 
-      
-        <div class="scroll-down-bar">
-          <i class="iconfont icon-arrowdown"></i>
-        </div>
       
     </div>
   </div>
@@ -337,390 +333,23 @@
               <div class="col-12 col-md-10 m-auto">
                 
 
-<h1 style="display: none">CJ&#39;s Tech Notes</h1>
-
-  <div class="row mx-auto index-card">
+<div class="list-group">
+  <p class="h4">共计 1 篇文章</p>
+  <hr>
+  
+  
     
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="问题及思考">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          问题及思考
-        </a>
-      </h2>
-
       
-      <a class="index-excerpt " href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-        <div>
-          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-13 13:32" pubdate>
-              2026-07-13
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
+      <p class="h5">2026</p>
     
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+    <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" class="list-group-item list-group-item-action">
+      <time>08-09</time>
+      <div class="list-group-item-title">Linux日志系统整体架构</div>
+    </a>
   
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/13/rk3566/P1/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="RK3566 BSP">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/13/rk3566/P1/" target="_self">
-          RK3566 BSP
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/13/rk3566/P1/" target="_self">
-        <div>
-          简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https://github.com/rockchip-linux/u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch/arm/mach-rockchip/├── rk3568├── rk3399└── rk3588
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-13 13:32" pubdate>
-              2026-07-13
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="category-chain-item">嵌入式</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/" class="category-chain-item">RK3566</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Memory Management">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" target="_self">
-          Memory Management
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" target="_self">
-        <div>
-          理论
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-13 13:32" pubdate>
-              2026-07-13
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="进程优先级">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" target="_self">
-          进程优先级
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" target="_self">
-        <div>
-          从 task_struct 源码出发，详细分析 Linux 内核的优先级体系：static_prio、rt_priority、 normal_prio、prio 的定义、计算关系与调度策略映射，覆盖 SCHED_FIFO / SCHED_RR / SCHED_DEADLINE / SCHED_NORMAL 四种调度类的优先级规则。
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-12 13:32" pubdate>
-              2026-07-12
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" class="category-chain-item">进程管理</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E5%86%85%E6%A0%B8/">#内核</a>
-            
-              <a href="/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">#进程管理</a>
-            
-              <a href="/tags/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/">#进程优先级</a>
-            
-              <a href="/tags/nice/">#nice</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2025/09/07/Linux%20Kernel/ziliao/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux-Kernel 0 资料整理">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/09/07/Linux%20Kernel/ziliao/" target="_self">
-          Linux-Kernel 0 资料整理
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2025/09/07/Linux%20Kernel/ziliao/" target="_self">
-        <div>
-          Linux 内核学习资料汇总：源码、书籍、博客、工具链等优质资源整理
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-09-07 10:44" pubdate>
-              2025-09-07
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E5%86%85%E6%A0%B8/">#内核</a>
-            
-              <a href="/tags/%E8%B5%84%E6%96%99/">#资料</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
+</div>
 
 
-
-  <nav aria-label="navigation">
-    <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
-    </span>
-  </nav>
 
 
 
@@ -815,21 +444,6 @@
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
 
 
 

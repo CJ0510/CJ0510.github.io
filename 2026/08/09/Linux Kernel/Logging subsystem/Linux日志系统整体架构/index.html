@@ -21,24 +21,28 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我">
+    <meta name="description" content="1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux SPI性能优化">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+<meta property="og:title" content="Linux日志系统整体架构">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我">
+<meta property="og:description" content="1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-08-08T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-08T08:20:55.892Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2oc8vvf79a.png">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lwi7w2b0.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.lwg7xq46u.webp">
+<meta property="article:published_time" content="2026-08-09T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-09T10:08:39.008Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux SPI">
+<meta property="article:tag" content="Linux Logging subsystem">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2oc8vvf79a.png">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>Linux SPI性能优化 · CJ&#39;s Tech Notes</title>
+  <title>Linux日志系统整体架构 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -312,7 +316,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">Linux SPI性能优化</span>
+            <span id="subtitle">Linux日志系统整体架构</span>
           
         </div>
 
@@ -323,8 +327,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-08-08 22:11" pubdate>
-          2026-08-08
+        <time datetime="2026-08-09 22:11" pubdate>
+          2026-08-09
         </time>
       </span>
     
@@ -336,7 +340,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          295 字
+          2.5k 字
         
       </span>
     
@@ -348,7 +352,7 @@
         
         
           <!-- compatible with older versions-->
-          3 分钟
+          21 分钟
         
       </span>
     
@@ -387,34 +391,65 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Linux SPI性能优化</h1>
+            <h1 id="seo-header">Linux日志系统整体架构</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="1-SPI性能指标"><a href="#1-SPI性能指标" class="headerlink" title="1 SPI性能指标"></a>1 SPI性能指标</h1><p>无论优化什么，明确衡量指标永远是第一步。</p>
-<p>我们先来看几个关键的性能指标：</p>
+                <h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
+<p>我们可以注入类似</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">dev_err(dev,&quot;init failed\n&quot;);<br></code></pre></td></tr></table></figure>
+
+<p>在内核启动时将问题暴露出来。</p>
+<p>所以Kernel日志系统是Linux内核调试、故障定位和运行状态观察的重要基础设施。</p>
+<h1 id="2-Linux日志体系整体架构"><a href="#2-Linux日志体系整体架构" class="headerlink" title="2 Linux日志体系整体架构"></a>2 Linux日志体系整体架构</h1><p>整个日志可以分为三层，其结构如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2oc8vvf79a.png" srcset="/img/loading.svg" lazyload></p>
 <ul>
-<li>吞吐量：单位时间内传输的数据量</li>
-<li>延迟：单次传输所需的时间</li>
-<li>CPU 占用率</li>
-<li>功耗</li>
+<li><strong>第一层</strong>是日志生产者，比如我们之前SPI调用的dev_info。这里用户程序主要会调用内核提供的接口函数</li>
+<li><strong>第二层</strong>是printk日志核心，内核提供的printk 子系统，源码位于kernel&#x2F;printk&#x2F;，会把日志记录到环形缓冲区ring buffer</li>
+<li><strong>第三层</strong>是日志消费者，写入内核的日志我们还需要读出来</li>
 </ul>
-<p>回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。</p>
-<h1 id="2-三种传输方式分析"><a href="#2-三种传输方式分析" class="headerlink" title="2 三种传输方式分析"></a>2 三种传输方式分析</h1><p>SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。</p>
-<p>我们逐个来看。</p>
-<ol>
-<li>Polling 轮询</li>
+<h1 id="3-一条Kernel日志生命周期"><a href="#3-一条Kernel日志生命周期" class="headerlink" title="3 一条Kernel日志生命周期"></a>3 一条Kernel日志生命周期</h1><p>一条内核日志是怎么走到日志消费者阶段的？</p>
+<p>比如我们调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">pr_info(<span class="hljs-string">&quot;device probe success\n&quot;</span>);<br><span class="hljs-meta">#<span class="hljs-keyword">define</span> pr_info(fmt, ...) \</span><br><span class="hljs-meta">    printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)</span><br></code></pre></td></tr></table></figure>
+
+<p>pr_info()是一个宏，不是独立的底层日志系统，就是对printk的封装，其中KERN_INFO表示日志等级。</p>
+<p>在printk子系统对日志进行格式化并添加等级、时间戳、序号等信息，然后存入ring buffer。</p>
+<p>先对整个流程大致了解，接下来我们会对每一部分详细讲解。</p>
+<h1 id="4-printk是什么"><a href="#4-printk是什么" class="headerlink" title="4 printk是什么"></a>4 printk是什么</h1><p>用过C语言的都知道printf函数，而printk就是Kernel自己的printf。区别就是printk不会简单地写向 stdout，而是进入内核日志系统。</p>
+<p>基本格式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;hello\n&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>拆成两部分日志等级+正文。</p>
+<p>日志等级主要有以下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_SOH  <span class="hljs-string">&quot;\001&quot;</span>		<span class="hljs-comment">/* ASCII 头部起始标志 */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_SOH_ASCII  <span class="hljs-string">&#x27;\001&#x27;</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_EMERG  KERN_SOH <span class="hljs-string">&quot;0&quot;</span>	<span class="hljs-comment">/* 系统不可用，最高紧急级别 */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_ALERT  KERN_SOH <span class="hljs-string">&quot;1&quot;</span>	<span class="hljs-comment">/* 必须立即采取行动 */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_CRIT  KERN_SOH <span class="hljs-string">&quot;2&quot;</span>	<span class="hljs-comment">/* 严重情况（如硬件错误） */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_ERR  KERN_SOH <span class="hljs-string">&quot;3&quot;</span>	<span class="hljs-comment">/* 错误条件（如驱动失败） */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_WARNING  KERN_SOH <span class="hljs-string">&quot;4&quot;</span>	<span class="hljs-comment">/* 警告条件（非致命问题） */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_NOTICE  KERN_SOH <span class="hljs-string">&quot;5&quot;</span>	<span class="hljs-comment">/* 正常但值得注意的事件 */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_INFO  KERN_SOH <span class="hljs-string">&quot;6&quot;</span>	<span class="hljs-comment">/* 一般信息消息 */</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_DEBUG  KERN_SOH <span class="hljs-string">&quot;7&quot;</span>	<span class="hljs-comment">/* 调试级别消息，最低优先级 */</span></span><br></code></pre></td></tr></table></figure>
+
+<p>其具体含义如上，数字越小，优先级越高、问题越严重。</p>
+<p>则上面的例子会被展开为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;hello\n&quot;</span>);<br>printk(<span class="hljs-string">&quot;\001&quot;</span> <span class="hljs-string">&quot;6&quot;</span> <span class="hljs-string">&quot;hello\n&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>pr_*()又是什么？就是用宏对printk的封装，省略了日志等级的参数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">pr_emerg(fmt, ...)    → printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)<br>pr_alert(fmt, ...)    → printk(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)<br>pr_crit(fmt, ...)     → printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)<br>pr_err(fmt, ...)      → printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)<br>pr_warn(fmt, ...)     → printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)<br>pr_notice(fmt, ...)   → printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)<br>pr_info(fmt, ...)     → printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)<br>pr_debug(fmt, ...)    → printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)<br></code></pre></td></tr></table></figure>
+
+<p>日志等级有什么用？主播目前的理解就是控制台筛选。</p>
+<p>我们查看控制台等级</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat /proc/sys/kernel/printk<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.39lwi7w2b0.webp" srcset="/img/loading.svg" lazyload></p>
+<p>第一个数字就是控制台的等级，比整个等级小的会显示到控制台，一样的要看具体配置，比其高的不会显示。</p>
+<h1 id="5-ring-buffer"><a href="#5-ring-buffer" class="headerlink" title="5 ring buffer"></a>5 ring buffer</h1><p>ring buffer被叫做内核日志环形缓冲区，是为了专门保存printk() 日志记录的一块内存区域。</p>
+<p>它的作用是解决日志产生速度和输出速度的差异。</p>
+<p>我们看一他的工作原理</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.lwg7xq46u.webp" srcset="/img/loading.svg" lazyload></p>
+<p>当空间不足时，为新日志腾出空间，最旧日志被覆盖。</p>
+<h1 id="6-总结"><a href="#6-总结" class="headerlink" title="6 总结"></a>6 总结</h1><p>Linux Kernel日志系统采用”日志产生、日志存储、日志读取”三层架构。内核代码通过printk系列接口产生日志，日志首先被保存到Kernel Log Buffer中，用户空间通过dmesg、&#x2F;dev&#x2F;kmsg或者Android logcat读取这些信息。这种设计避免了日志输出阻塞内核执行，同时提供了强大的调试能力。</p>
+<h1 id="7-互动"><a href="#7-互动" class="headerlink" title="7 互动"></a>7 互动</h1><ol>
+<li>Linux为什么需要日志系统？</li>
+<li>printk打印出来的日志存在哪里？</li>
+<li>dmesg为什么能看到kernel日志？</li>
+<li>Android中的logcat和kernel日志有什么关系？</li>
+<li>一条日志完整生命周期是什么？</li>
 </ol>
-<p>Polling 就是轮询，CPU 不断读取 SPI 控制器的状态寄存器，询问传输完没？当传输完成的时候 CPU 退出。</p>
-<ol start="2">
-<li>中断</li>
-</ol>
-<p>此时 CPU 可以去做其他事，等 SPI Interrupt 时候再进行处理。</p>
-<ol start="3">
-<li>DMA</li>
-</ol>
-<p>就是开启 DMA。</p>
 
                 
               </div>
@@ -438,7 +473,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
   
   
 
@@ -455,7 +490,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux-SPI/" class="print-no-link">#Linux SPI</a>
+        <a href="/tags/Linux-Logging-subsystem/" class="print-no-link">#Linux Logging subsystem</a>
       
     </div>
   
@@ -467,8 +502,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Linux SPI性能优化</div>
-      <div>https://cj0510.github.io/2026/08/08/Linux Kernel/SPI/Linux SPI性能优化/</div>
+      <div>Linux日志系统整体架构</div>
+      <div>https://cj0510.github.io/2026/08/09/Linux Kernel/Logging subsystem/Linux日志系统整体架构/</div>
     </div>
     <div class="license-meta">
       
@@ -480,7 +515,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年8月8日</div>
+          <div>2026年8月9日</div>
         </div>
       
       
@@ -505,18 +540,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux日志系统整体架构">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux日志系统整体架构</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" title="Linux SPI调试方法">
-                        <span class="hidden-mobile">Linux SPI调试方法</span>
+                      <a href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="Linux SPI性能优化">
+                        <span class="hidden-mobile">Linux SPI性能优化</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

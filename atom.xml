@@ -10,7 +10,25 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-08T08:20:55.892Z</updated>
+  <updated>2026-08-09T10:08:39.008Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
+<p>我们可以注入类似</p>
+<figure class="highlight]]>
+    </summary>
+    <title>Linux日志系统整体架构</title>
+    <updated>2026-08-09T10:08:39.008Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
