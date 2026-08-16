@@ -10,7 +10,25 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-09T10:08:39.008Z</updated>
+  <updated>2026-08-16T11:11:10.553Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-16T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="printk-源码"><a href="#printk-源码" class="headerlink" title="printk 源码"></a>printk 源码</h1><p>之前我们讲了整个调用过程，本章从源码进行分析。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
+    </summary>
+    <title>printk源码分析</title>
+    <updated>2026-08-16T11:11:10.553Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -28,6 +46,24 @@
     </summary>
     <title>Linux日志系统整体架构</title>
     <updated>2026-08-09T10:08:39.008Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
+<p>这条链路是这样的：</p>
+<p><img]]>
+    </summary>
+    <title>printk机制基础</title>
+    <updated>2026-08-16T11:12:09.420Z</updated>
   </entry>
   <entry>
     <author>
@@ -118,6 +154,22 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -136,22 +188,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
-    </summary>
-    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
-    <updated>2026-08-02T09:45:56.855Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -161,6 +197,22 @@
     </summary>
     <title>SPI协议基础：从四根线理解Linux SPI框架</title>
     <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
+    </summary>
+    <title>Memory Management</title>
+    <updated>2026-08-01T12:59:35.125Z</updated>
   </entry>
   <entry>
     <author>
@@ -195,22 +247,6 @@
     </summary>
     <title>RK3566 BSP</title>
     <updated>2026-08-01T12:59:11.938Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
-    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
-    </summary>
-    <title>Memory Management</title>
-    <updated>2026-08-01T12:59:35.125Z</updated>
   </entry>
   <entry>
     <author>

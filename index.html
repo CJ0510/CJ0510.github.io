@@ -343,6 +343,80 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="printk源码分析">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          printk源码分析
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+        <div>
+          printk 源码之前我们讲了整个调用过程，本章从源码进行分析。  123456789101112asmlinkage __visible int _printk(const char *fmt, ...)&#123;  va_list args;  int r;  va_start(args, fmt);  r = vprintk(fmt, args);  va_end(args);  retu
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-16 22:11" pubdate>
+              2026-08-16
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Logging-subsystem/">#Linux Logging subsystem</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux日志系统整体架构">
         </a>
@@ -360,6 +434,80 @@
       <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
         <div>
           1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-09 22:11" pubdate>
+              2026-08-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Logging-subsystem/">#Linux Logging subsystem</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="printk机制基础">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+          printk机制基础
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+        <div>
+          1 printk 是什么内核中没有 printf，用户空间使用的 printf 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？ 这条链路是这样的：  最后通过内核把内容写到终端或者日志里面。 内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。 1printk(&quot;Hello, kernel!\n&quot;);  2 printk 日志等级Linux 内核的
         </div>
       </a>
 
@@ -713,80 +861,6 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI核心数据结构分析">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
-          Linux SPI核心数据结构分析
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
-        <div>
-          1. spi_controller 之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。 首先来看一下 spi_controller，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。比如一片 SoC 里面有 SPI0-3 控制器，那么对应的就是 spi_controller0-3。 源码位置：include/linux/spi/spi.h
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI设备如何从Device Tree走到driver probe">
         </a>
@@ -804,80 +878,6 @@
       <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
         <div>
           1 为什么SPI设备需要DTS描述对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有设备枚举机制。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 struct device 并匹配驱动。但 SPI 总线天生不具备这个能力。 SPI 协议只定义了 MOSI、MISO、SCLK、C
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="SPI协议基础：从四根线理解Linux SPI框架">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
-          SPI协议基础：从四根线理解Linux SPI框架
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
-        <div>
-          1. What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。 先给出定义：SPI（Serial
         </div>
       </a>
 

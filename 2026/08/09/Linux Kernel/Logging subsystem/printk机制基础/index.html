@@ -21,24 +21,27 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https:&#x2F;&#x2F;github.com&#x2F;rockchip-linux&#x2F;u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch&#x2F;arm&#x2F;mach-rockchip&#x2F;├── rk3568├── rk3399└── rk3588">
+    <meta name="description" content="1 printk 是什么内核中没有 printf，用户空间使用的 printf 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？ 这条链路是这样的：  最后通过内核把内容写到终端或者日志里面。 内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。 1printk(&quot;Hello, kernel!\n&quot;);  2 printk 日志等级Linux 内核的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RK3566 BSP">
-<meta property="og:url" content="https://cj0510.github.io/2026/07/13/rk3566/P1/">
+<meta property="og:title" content="printk机制基础">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https:&#x2F;&#x2F;github.com&#x2F;rockchip-linux&#x2F;u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch&#x2F;arm&#x2F;mach-rockchip&#x2F;├── rk3568├── rk3399└── rk3588">
+<meta property="og:description" content="1 printk 是什么内核中没有 printf，用户空间使用的 printf 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？ 这条链路是这样的：  最后通过内核把内容写到终端或者日志里面。 内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。 1printk(&quot;Hello, kernel!\n&quot;);  2 printk 日志等级Linux 内核的">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T12:59:11.938Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1hsxvvwqih.png">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp">
+<meta property="article:published_time" content="2026-08-09T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-16T11:12:09.420Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Linux Logging subsystem">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1hsxvvwqih.png">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>RK3566 BSP · CJ&#39;s Tech Notes</title>
+  <title>printk机制基础 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -312,7 +315,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">RK3566 BSP</span>
+            <span id="subtitle">printk机制基础</span>
           
         </div>
 
@@ -323,8 +326,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-07-13 13:32" pubdate>
-          2026-07-13
+        <time datetime="2026-08-09 22:11" pubdate>
+          2026-08-09
         </time>
       </span>
     
@@ -336,7 +339,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.3k 字
+          1.2k 字
         
       </span>
     
@@ -348,7 +351,7 @@
         
         
           <!-- compatible with older versions-->
-          19 分钟
+          10 分钟
         
       </span>
     
@@ -387,65 +390,40 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">RK3566 BSP</h1>
+            <h1 id="seo-header">printk机制基础</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
-<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h2 id="Uboot"><a href="#Uboot" class="headerlink" title="Uboot"></a>Uboot</h2><p>下载uboot源码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/rockchip-linux/u-boot.git<br></code></pre></td></tr></table></figure>
+                <h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
+<p>这条链路是这样的：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1hsxvvwqih.png" srcset="/img/loading.svg" lazyload></p>
+<p>最后通过内核把内容写到终端或者日志里面。</p>
+<p>内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(<span class="hljs-string">&quot;Hello, kernel!\n&quot;</span>);<br></code></pre></td></tr></table></figure>
 
-<h3 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a>源码结构</h3><ol>
-<li>soc<br>先看源码结构<br>这是 RK3566 SoC相关代码。<br>例如：</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">arch</span>/arm/mach-rockchip/<br><br>├── rk3568<br>├── rk3399<br>└── rk3588<br></code></pre></td></tr></table></figure>
-<p>里面负责：CPU初始化、时钟、DDR、电源<br>因为 RK3566 和 RK3568 接近：<br>很多代码：<br>rk3568&#x2F;</p>
-<ol start="2">
-<li><p>板级代码。<br>例如：<br>board&#x2F;rockchip&#x2F;<br>里面：<br>evb_rk3568<br>类似：<br>board&#x2F;rockchip&#x2F;evb_rk3568&#x2F;<br>负责：<br>开发板差异。<br>比如：<br>GPIO<br>LED<br>电源<br>按键</p>
-</li>
-<li><p>驱动代码<br>drivers&#x2F;<br>硬件驱动。<br>比如：<br>MMC<br>drivers&#x2F;mmc&#x2F;<br>对应：<br>eMMC</p>
-</li>
-</ol>
-<p>UART<br>drivers&#x2F;serial&#x2F;<br>对应<br>串口输出<br>Clock<br>drivers&#x2F;clk&#x2F;<br>对应：<br>时钟</p>
-<ol start="5">
-<li>cmd&#x2F;<br>U-Boot命令。<br>例如：<br>cmd&#x2F;mmc.c<br>cmd&#x2F;bootm.c<br>cmd&#x2F;load.c<br>对应：<br>&#x3D;&gt; mmc list<br>&#x3D;&gt; boot</li>
-</ol>
-<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>进入源码目录，查看板级支持</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ls configs | grep rk3566<br></code></pre></td></tr></table></figure>
-<p>显示</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">rk3566-ebook.config<br>rk3566-nand.config<br>rk3566.config<br></code></pre></td></tr></table></figure>
-<p>下载rkbin文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/rockchip-linux/rkbin.git<br></code></pre></td></tr></table></figure>
-<p>下载编译工具</p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">gcc</span>-linaro-<span class="hljs-number">6</span>.<span class="hljs-number">3</span>.<span class="hljs-number">1</span>-<span class="hljs-number">2017</span>.<span class="hljs-number">05</span>-x86_64_arm-linux-gnueabihf.tar.xz<br><span class="hljs-attribute">gcc</span>-linaro-<span class="hljs-number">6</span>.<span class="hljs-number">3</span>.<span class="hljs-number">1</span>-<span class="hljs-number">2017</span>.<span class="hljs-number">05</span>-x86_64_aarch64-linux-gnu.tar.xz<br></code></pre></td></tr></table></figure>
-<p>修改make.sh</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">CROSS_COMPILE_ARM32=../toolchain/arm32/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-<br>CROSS_COMPILE_ARM64=../toolchain/arm64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-<br></code></pre></td></tr></table></figure>
-<p>编译</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs vim">./<span class="hljs-keyword">make</span>.<span class="hljs-keyword">sh</span> clean<br>./<span class="hljs-keyword">make</span>.<span class="hljs-keyword">sh</span><br></code></pre></td></tr></table></figure>
+<h1 id="2-printk-日志等级"><a href="#2-printk-日志等级" class="headerlink" title="2 printk 日志等级"></a>2 printk 日志等级</h1><p>Linux 内核的日志，并不是所有信息都一样重要。有些信息必须第一时间看到，有些信息只在开发调试的时候才有用。</p>
+<p>比如当内核崩溃的时候，必须立即看到；Debug 开发调试，这种信息平时并不重要，调试完就可以不管。</p>
+<p>如果所有信息都一视同仁，紧急的崩溃信息很可能被大量调试信息淹没。所以内核设计了**日志等级（log level）**机制，用等级来区分每条消息的重要程度。</p>
+<p>前一章我们讲了，内核等级大致分为如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_EMERG   <span class="hljs-string">&quot;&lt;0&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_ALERT   <span class="hljs-string">&quot;&lt;1&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_CRIT    <span class="hljs-string">&quot;&lt;2&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_ERR     <span class="hljs-string">&quot;&lt;3&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_WARNING <span class="hljs-string">&quot;&lt;4&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_NOTICE  <span class="hljs-string">&quot;&lt;5&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_INFO    <span class="hljs-string">&quot;&lt;6&gt;&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_DEBUG   <span class="hljs-string">&quot;&lt;7&gt;&quot;</span></span><br></code></pre></td></tr></table></figure>
 
-<h3 id="代码学习"><a href="#代码学习" class="headerlink" title="代码学习"></a>代码学习</h3><p>按照启动顺序看</p>
-<ol>
-<li>board_init_f()<br>位置：u-boot&#x2F;common&#x2F;board_f.c<br>作用：Uboot启动过程中前半段初始化函数，在 U-Boot 重定位之前，完成最基本的硬件和运行环境初始化，并计算后续 U-Boot 应该搬到内存的什么位置。<br>整个启动过程</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">CPU 上电 / 复位<br>      ↓<br>汇编启动代码 start.S<br>      ↓<br>board_init_f()<br>      ↓<br>执行 init_sequence_f[] 中的初始化函数<br>      ↓<br>计算 U-Boot 重定位地址<br>      ↓<br>relocate_code()<br>      ↓<br>board_init_r()<br>      ↓<br>进入完整的 U-Boot 命令行环境<br></code></pre></td></tr></table></figure>
-<p>board_init_f() 自己并没有把所有初始化逻辑都写出来，而是按照顺序执行 init_sequence_f[] 中登记的函数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">board_init_f</span><span class="hljs-params">(ulong boot_flags)</span><br>&#123;<br>  gd-&gt;flags = boot_flags;<br>  gd-&gt;have_console = <span class="hljs-number">0</span>;<br><br>  <span class="hljs-keyword">if</span> (initcall_run_list(init_sequence_f))<br>    hang();<br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> !defined(CONFIG_ARM) &amp;&amp; !defined(CONFIG_SANDBOX) &amp;&amp; \</span><br><span class="hljs-meta">    !defined(CONFIG_EFI_APP) &amp;&amp; !CONFIG_IS_ENABLED(X86_64)</span><br>  <span class="hljs-comment">/* NOTREACHED - jump_to_copy() does not return */</span><br>  hang();<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>数字越小，优先级越高。</p>
+<p>平时写驱动，很少直接写 <code>printk</code> + 宏，而是用内核封装好的函数：</p>
+<p>例如，驱动初始化失败：</p>
+<p>常用的封装函数有：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">pr_emerg(...)   <span class="hljs-comment">// 0</span><br>pr_alert(...)   <span class="hljs-comment">// 1</span><br>pr_crit(...)    <span class="hljs-comment">// 2</span><br>pr_err(...)     <span class="hljs-comment">// 3</span><br>pr_warn(...)    <span class="hljs-comment">// 4</span><br>pr_notice(...)  <span class="hljs-comment">// 5</span><br>pr_info(...)    <span class="hljs-comment">// 6</span><br>pr_debug(...)   <span class="hljs-comment">// 7</span><br></code></pre></td></tr></table></figure>
 
-<p>init_sequence_f[]是一张函数指针表，里面有几个重要的初始化函数：</p>
-<ul>
-<li>dram_init()：用于初始化或探测 DRAM，并记录内存容量</li>
-<li>timer_init()：初始化早期定时器，让 U-Boot 能够获得时间基准</li>
-<li>serial_init()：初始化早期串口，主要用于输出启动日志</li>
-</ul>
-<ol start="2">
-<li>board_init_r()<br>位置：common&#x2F;board_r.c<br>作用：完成设备、存储、环境变量、网络等完整初始化，最终执行 bootcmd 或进入命令行。<br>简化代码：</li>
-</ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">board_init_r</span><span class="hljs-params">(<span class="hljs-type">gd_t</span> *new_gd, ulong dest_addr)</span><br>&#123;<br>    gd = new_gd;<br><br>    <span class="hljs-keyword">if</span> (initcall_run_list(init_sequence_r))<br>        hang();<br><br>    hang();<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>与 board_init_f() 类似，真正的初始化工作主要由函数指针数组完成：init_sequence_r[]<br>里面有几个重要函数</p>
-<ul>
-<li>initr_mmc：MMC 初始化主要负责准备，SD 卡、eMMCMMC 控制器、对应块设备</li>
-</ul>
+<h1 id="3-printk-调用流程"><a href="#3-printk-调用流程" class="headerlink" title="3 printk 调用流程"></a>3 printk 调用流程</h1><p>现在进入核心，整个 <code>printk</code> 调用流程如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp" srcset="/img/loading.svg" lazyload></p>
+<p>我们逐个来看，先看 <code>printk</code>，这是入口，其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">int</span> <span class="hljs-title function_">printk</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *fmt, ...)</span><br>&#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<p>它就是个壳，本身不干什么，就是接受可变参数，然后把参数传下去。</p>
+<p>接着是 <code>vprintk</code> 函数，主要负责解析参数并进行格式化。</p>
+<p>继续向下就是 <code>vprintk_emit()</code>，先调用 <code>vprintk_store</code> 把日志写入 ring buffer，再决定是否显示到控制台。</p>
+<p>最后就是环形缓冲区。</p>
+<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h1><p><strong><code>printk</code> 收参数、格式化、写 ring buffer、必要时打印到控制台，这就是它的全部工作。</strong></p>
 
                 
               </div>
@@ -464,12 +442,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="category-chain-item">嵌入式</a>
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
   
   
     <span>></span>
     
-  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/" class="category-chain-item">RK3566</a>
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
   
   
 
@@ -486,7 +464,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+        <a href="/tags/Linux-Logging-subsystem/" class="print-no-link">#Linux Logging subsystem</a>
       
     </div>
   
@@ -498,8 +476,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>RK3566 BSP</div>
-      <div>https://cj0510.github.io/2026/07/13/rk3566/P1/</div>
+      <div>printk机制基础</div>
+      <div>https://cj0510.github.io/2026/08/09/Linux Kernel/Logging subsystem/printk机制基础/</div>
     </div>
     <div class="license-meta">
       
@@ -511,7 +489,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年7月13日</div>
+          <div>2026年8月9日</div>
         </div>
       
       
@@ -536,9 +514,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
+                      <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux日志系统整体架构">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">问题及思考</span>
+                        <span class="hidden-mobile">Linux日志系统整体架构</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -546,8 +524,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" title="进程优先级">
-                        <span class="hidden-mobile">进程优先级</span>
+                      <a href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="Linux SPI性能优化">
+                        <span class="hidden-mobile">Linux SPI性能优化</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
