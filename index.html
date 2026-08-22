@@ -343,6 +343,80 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Kernel Log Buffer源码分析">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" target="_self">
+          Kernel Log Buffer源码分析
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" target="_self">
+        <div>
+          为什么printk需要Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约为GHZ级别的，而串口的传输速度只有几Mbps。如果CPU每次的日志都需要等串口等设备同步，那么就会造成的大量的日志积累，拖慢系统的运行。 于
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-18 22:11" pubdate>
+              2026-08-18
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Logging-subsystem/">#Linux Logging subsystem</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="printk源码分析">
         </a>
@@ -417,23 +491,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux日志系统整体架构">
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="printk机制基础">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          Linux日志系统整体架构
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+          printk机制基础
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
         <div>
-          1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日
+          1 printk 是什么内核中没有 printf，用户空间使用的 printf 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？ 这条链路是这样的：  最后通过内核把内容写到终端或者日志里面。 内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。 1printk(&quot;Hello, kernel!\n&quot;);  2 printk 日志等级Linux 内核的
         </div>
       </a>
 
@@ -491,23 +565,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="printk机制基础">
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux日志系统整体架构">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
-          printk机制基础
+        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+          Linux日志系统整体架构
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" target="_self">
+      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
         <div>
-          1 printk 是什么内核中没有 printf，用户空间使用的 printf 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？ 这条链路是这样的：  最后通过内核把内容写到终端或者日志里面。 内核运行在内核态，直接驱动硬件，所以需要提供打印的服务。 1printk(&quot;Hello, kernel!\n&quot;);  2 printk 日志等级Linux 内核的
+          1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日
         </div>
       </a>
 
@@ -804,80 +878,6 @@
       <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
         <div>
           1. SPI Framework上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：  看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个层次：  第一层：设备驱动层（Device Driver），主要负责设备的功能，简单的理解就是跟 SoC 通信的设备 第二层：SPI Core 层，这是 Linux 提供的公共框
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI设备如何从Device Tree走到driver probe">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          Linux SPI设备如何从Device Tree走到driver probe
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-        <div>
-          1 为什么SPI设备需要DTS描述对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有设备枚举机制。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 struct device 并匹配驱动。但 SPI 总线天生不具备这个能力。 SPI 协议只定义了 MOSI、MISO、SCLK、C
         </div>
       </a>
 

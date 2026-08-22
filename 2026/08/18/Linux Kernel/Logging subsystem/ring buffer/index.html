@@ -21,24 +21,29 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备">
+    <meta name="description" content="为什么printk需要Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约为GHZ级别的，而串口的传输速度只有几Mbps。如果CPU每次的日志都需要等串口等设备同步，那么就会造成的大量的日志积累，拖慢系统的运行。 于">
 <meta property="og:type" content="article">
-<meta property="og:title" content="问题及思考">
-<meta property="og:url" content="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/">
+<meta property="og:title" content="Kernel Log Buffer源码分析">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备">
+<meta property="og:description" content="为什么printk需要Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约为GHZ级别的，而串口的传输速度只有几Mbps。如果CPU每次的日志都需要等串口等设备同步，那么就会造成的大量的日志积累，拖慢系统的运行。 于">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T12:59:11.047Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png">
+<meta property="article:published_time" content="2026-08-18T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-22T03:34:49.338Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Linux Logging subsystem">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>问题及思考 · CJ&#39;s Tech Notes</title>
+  <title>Kernel Log Buffer源码分析 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -312,7 +317,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">问题及思考</span>
+            <span id="subtitle">Kernel Log Buffer源码分析</span>
           
         </div>
 
@@ -323,8 +328,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-07-13 13:32" pubdate>
-          2026-07-13
+        <time datetime="2026-08-18 22:11" pubdate>
+          2026-08-18
         </time>
       </span>
     
@@ -336,7 +341,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          478 字
+          2.9k 字
         
       </span>
     
@@ -348,7 +353,7 @@
         
         
           <!-- compatible with older versions-->
-          4 分钟
+          25 分钟
         
       </span>
     
@@ -387,24 +392,62 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">问题及思考</h1>
+            <h1 id="seo-header">Kernel Log Buffer源码分析</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1 内存空洞是什么？外部碎片和内部碎片又是什么？</h3><ol>
-<li>内存空洞<br>首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">物理地址<br>0 GB  ┌──────────────┐<br>      │ RAM          │<br>1 GB  ├──────────────┤<br>      │ 地址空洞      │  ← 没有真实内存，可能保留给设备/MMIO<br>3 GB  ├──────────────┤<br>      │ RAM          │<br>8 GB  └──────────────┘<br></code></pre></td></tr></table></figure>
-<ol start="2">
-<li>外部碎片<br>外部碎片是：可用内存总量够，但空闲空间被切成了很多不连续的小块，无法满足连续分配要求。<br>示意图：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">已用  空闲  已用  空闲  已用  空闲<br> ██    □□    ██    □□    ██    □□<br></code></pre></td></tr></table></figure>
-<ol start="3">
-<li>内部碎片<br>内部碎片：顾名思义，发生在分配给对象的内存的内部，分配给对象的空间大于对象实际需要，浪费发生在已分配块内部。<br>一页是 4 KiB，某次分配必须占用一整页，但实际只用了 3 KiB，示意图：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">一页 4 KiB<br>┌──────────────────────┐<br>│ 实际使用 3 KiB │浪费1KiB│<br>└──────────────────────┘<br></code></pre></td></tr></table></figure>
-<p>这 1 KiB 已经属于该分配，其他对象不能直接使用，因此是内部碎片。</p>
+                <h1 id="为什么printk需要Ring-Buffer"><a href="#为什么printk需要Ring-Buffer" class="headerlink" title="为什么printk需要Ring Buffer"></a>为什么printk需要Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？<br>因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。<br>CPU 时钟大约为GHZ级别的，而串口的传输速度只有几Mbps。<br>如果CPU每次的日志都需要等串口等设备同步，那么就会造成的大量的日志积累，拖慢系统的运行。</p>
+<p>于是printk会把产生的消息存入ring buffer。实现生产者和消费者解耦的目的。</p>
+<h1 id="printk-Ring-Buffer整体结构"><a href="#printk-Ring-Buffer整体结构" class="headerlink" title="printk Ring Buffer整体结构"></a>printk Ring Buffer整体结构</h1><p>源码很清晰，我们直接看一下源码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span>	<span class="hljs-title">desc_ring</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_data_ring</span>	<span class="hljs-title">text_data_ring</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		fail;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>主要由两个环形缓冲区组成：</p>
+<ul>
+<li>desc_ring：这条日志是什么</li>
+<li>text_data_ring：日志的具体内容</li>
+</ul>
+<p>例如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>上面这条日志就会产生两种信息，一种是日志的描述信息，包括日志等级、日志序号和时间戳等；<br>一种就是日志的具体内容，及 “temperature&#x3D;25\n”。</p>
+<p>通过全局变量访问，定义如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> <span class="hljs-title">printk_rb_dynamic</span>;</span><br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> *<span class="hljs-title">prb</span> =</span> &amp;printk_rb_static;<br></code></pre></td></tr></table></figure>
+<p>比如我们之前讲到的prb_reserve(&amp;e, prb, &amp;r);这里的prb就是整个 printk Ring Buffer。</p>
+<p>我们接着讲解desc_ring，其定义如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span> &#123;</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		count_bits;<br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc</span>		*<span class="hljs-title">descs</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">infos</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		head_id;<br>  <span class="hljs-type">atomic_long_t</span>		tail_id;<br>  <span class="hljs-type">atomic_long_t</span>		last_finalized_seq;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>主要就是两个核心数组descs和infos，其中descs记录日志的状态，infos记录日志信息，<br>示意如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp" srcset="/img/loading.svg" lazyload></p>
+<p>继续看text_data_ring，简单的理解就是一个char data[]存放真正的日志字符串。</p>
+<p>我们举个例子来看，假设日志如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>则其被拆解为</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png" srcset="/img/loading.svg" lazyload></p>
+<p>上面还有两个东西一个head一个是tail，我们之前说过了，新的日志会覆盖旧的，<br>就需要两个指针，指明新的日志写在哪里，旧的写在哪里。<br>当空间不够时，tail 会向前移动，旧日志将被淘汰，这个具体代码我们在后面讨论。</p>
+<p>上面这个流程的示意图如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp" srcset="/img/loading.svg" lazyload></p>
+<h1 id="一条日志如何写入Ring-Buffer"><a href="#一条日志如何写入Ring-Buffer" class="headerlink" title="一条日志如何写入Ring Buffer"></a>一条日志如何写入Ring Buffer</h1><p>我们假设一日志为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>其写入的整体流程我们在上一章看过了，这里我们只关注是怎么写入ring buffer的。<br>之前我们说过日志等级</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_SOH  <span class="hljs-string">&quot;\001&quot;</span>  <span class="hljs-comment">// ASCII 码 1，即 SOH 控制字符</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_INFO KERN_SOH <span class="hljs-string">&quot;6&quot;</span></span><br></code></pre></td></tr></table></figure>
+<p>上面信息在编译的时候被拼接为”\0016temperature&#x3D;%d\n”</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">vprintk_store</span><span class="hljs-params">(...)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_reserved_entry</span> <span class="hljs-title">e</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br>    u16 reserve_size;<br>    u16 text_len;<br><br>    <span class="hljs-comment">/* 1. 计算正文需要多少空间 */</span><br>    reserve_size = vsnprintf(..., fmt, args) + <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">/* 2. 解析日志等级 */</span><br>    printk_parse_prefix(..., &amp;level, &amp;flags);<br><br>    <span class="hljs-comment">/* 3. 初始化记录 */</span><br>    prb_rec_init_wr(&amp;r, reserve_size);<br><br>    <span class="hljs-comment">/* 4. 预留descriptor和文本空间 */</span><br>    <span class="hljs-keyword">if</span> (!prb_reserve(&amp;e, prb, &amp;r))<br>        ...;<br><br>    <span class="hljs-comment">/* 5. 写入日志正文 */</span><br>    text_len = printk_sprint(r.text_buf, ...,<br>                             fmt, args);<br><br>    <span class="hljs-comment">/* 6. 填写元数据 */</span><br>    r.info-&gt;text_len = text_len;<br>    r.info-&gt;level = level;<br>    r.info-&gt;flags = flags;<br>    r.info-&gt;ts_nsec = ts_nsec;<br>    r.info-&gt;caller_id = caller_id;<br><br>    <span class="hljs-comment">/* 7. 提交记录 */</span><br>    <span class="hljs-keyword">if</span> (flags &amp; LOG_NEWLINE)<br>        prb_final_commit(&amp;e);<br>    <span class="hljs-keyword">else</span><br>        prb_commit(&amp;e);<br><br>    <span class="hljs-keyword">return</span> text_len;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>其核心函数就是vprintk_store()，printk参数经过解析传入其中，如图所示。<br>接着就开始获取日志的信息，包括产生时间和调用者(日志是谁产生的)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">ts_nsec = local_clock();<br>caller_id = printk_caller_id();<br></code></pre></td></tr></table></figure>
+<p>保存日志前先计算日志所需的空间大小，计算完成后，把要写入的东西和大小记录下来。</p>
+<p>接着就是最核心的去ring buffer中拿空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">prb_reserve(&amp;e, prb, &amp;r)<br><br><span class="hljs-comment">// r 定义</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">info</span>;</span><br>  <span class="hljs-type">char</span>			*text_buf;<br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		text_buf_size;<br>&#125;;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br></code></pre></td></tr></table></figure>
+<p>其中：</p>
+<ul>
+<li>prb：指向ring buffer</li>
+<li>r：希望写入的日志和大小<br>上面说过ring buffer由两类，所以需要完成descriptor ring和text data ring空间的预留，<br>一个是记录槽位，一个是正文槽位。</li>
+</ul>
+<p>然后填写infos里面的信息，最后提交即可，其流程图如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png" srcset="/img/loading.svg" lazyload></p>
+<h1 id="prb-reserve"><a href="#prb-reserve" class="headerlink" title="prb_reserve()"></a>prb_reserve()</h1><p>根据上面的流程我们知道，prb_reserve()的核心作用就是预留空间，分两部分。<br>为一条新日志预留一个 descriptor，并在 text data ring 中预留正文空间，然后把可写地址返回给调用者<br>定义为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">bool</span> <span class="hljs-title function_">prb_reserve</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> prb_reserved_entry *e,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_ringbuffer *rb,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_record *r)</span>;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>未完待续……</p>
+</blockquote>
 
                 
               </div>
@@ -428,7 +471,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
+  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
   
   
 
@@ -445,7 +488,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+        <a href="/tags/Linux-Logging-subsystem/" class="print-no-link">#Linux Logging subsystem</a>
       
     </div>
   
@@ -457,8 +500,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>问题及思考</div>
-      <div>https://cj0510.github.io/2026/07/13/Linux Kernel/problem/</div>
+      <div>Kernel Log Buffer源码分析</div>
+      <div>https://cj0510.github.io/2026/08/18/Linux Kernel/Logging subsystem/ring buffer/</div>
     </div>
     <div class="license-meta">
       
@@ -470,7 +513,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年7月13日</div>
+          <div>2026年8月18日</div>
         </div>
       
       
@@ -495,18 +538,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" title="Linux SPI核心数据结构分析">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux SPI核心数据结构分析</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
-                        <span class="hidden-mobile">RK3566 BSP</span>
+                      <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="printk源码分析">
+                        <span class="hidden-mobile">printk源码分析</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

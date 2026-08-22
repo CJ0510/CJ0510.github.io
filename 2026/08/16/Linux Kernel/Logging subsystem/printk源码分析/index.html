@@ -30,7 +30,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp">
 <meta property="article:published_time" content="2026-08-16T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-16T11:11:10.553Z">
+<meta property="article:modified_time" content="2026-08-22T03:35:00.261Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Logging subsystem">
 <meta name="twitter:card" content="summary_large_image">
@@ -414,6 +414,9 @@
 
 <p>这是 printk 使用的全局环形缓冲区 <code>printk_ringbuffer</code>。</p>
 <p>上面大致做的就是首先计算日志所需空间，初始化日志记录结构体 <code>printk_record</code>，向 ring buffer 申请空间，写入日志正文，填写日志的信息，提交日志。</p>
+<blockquote>
+<p>未完待续……</p>
+</blockquote>
 
                 
               </div>
@@ -504,12 +507,18 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" title="Kernel Log Buffer源码分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kernel Log Buffer源码分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux日志系统整体架构">
-                        <span class="hidden-mobile">Linux日志系统整体架构</span>
+                      <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/" title="printk机制基础">
+                        <span class="hidden-mobile">printk机制基础</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

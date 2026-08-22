@@ -10,7 +10,23 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-16T11:11:10.553Z</updated>
+  <updated>2026-08-22T03:34:49.338Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/</id>
+    <link href="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/"/>
+    <published>2026-08-18T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="为什么printk需要Ring-Buffer"><a href="#为什么printk需要Ring-Buffer" class="headerlink" title="为什么printk需要Ring Buffer"></a>为什么printk需要Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？<br>因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。<br>CPU]]>
+    </summary>
+    <title>Kernel Log Buffer源码分析</title>
+    <updated>2026-08-22T03:34:49.338Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -27,25 +43,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
     </summary>
     <title>printk源码分析</title>
-    <updated>2026-08-16T11:11:10.553Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
-    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
-    <published>2026-08-09T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
-<p>我们可以注入类似</p>
-<figure class="highlight]]>
-    </summary>
-    <title>Linux日志系统整体架构</title>
-    <updated>2026-08-09T10:08:39.008Z</updated>
+    <updated>2026-08-22T03:35:00.261Z</updated>
   </entry>
   <entry>
     <author>
@@ -64,6 +62,24 @@
     </summary>
     <title>printk机制基础</title>
     <updated>2026-08-16T11:12:09.420Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
+<p>我们可以注入类似</p>
+<figure class="highlight]]>
+    </summary>
+    <title>Linux日志系统整体架构</title>
+    <updated>2026-08-09T10:08:39.008Z</updated>
   </entry>
   <entry>
     <author>
@@ -170,24 +186,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-spi-controller"><a href="#1-spi-controller" class="headerlink" title="1. spi_controller"></a>1. spi_controller</h1><p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp"></p>
-<p>之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。</p>
-<p>首先来看一下]]>
-    </summary>
-    <title>Linux SPI核心数据结构分析</title>
-    <updated>2026-08-06T23:33:36.328Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -203,16 +201,18 @@
       <name>CJ1018</name>
     </author>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
-    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
     <summary>
-      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
+      <![CDATA[<h1 id="1-spi-controller"><a href="#1-spi-controller" class="headerlink" title="1. spi_controller"></a>1. spi_controller</h1><p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp"></p>
+<p>之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。</p>
+<p>首先来看一下]]>
     </summary>
-    <title>Memory Management</title>
-    <updated>2026-08-01T12:59:35.125Z</updated>
+    <title>Linux SPI核心数据结构分析</title>
+    <updated>2026-08-06T23:33:36.328Z</updated>
   </entry>
   <entry>
     <author>
@@ -247,6 +247,22 @@
     </summary>
     <title>RK3566 BSP</title>
     <updated>2026-08-01T12:59:11.938Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
+    </summary>
+    <title>Memory Management</title>
+    <updated>2026-08-01T12:59:35.125Z</updated>
   </entry>
   <entry>
     <author>
