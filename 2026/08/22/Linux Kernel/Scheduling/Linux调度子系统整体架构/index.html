@@ -21,29 +21,31 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="1 为什么 printk 需要 Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？ 因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积">
+    <meta name="description" content="1 为什么需要进程调度我们实际的情况其实是任务数多于CPU数量的，并且一个时刻CPU只能运行一个任务。假设只有一个CPU，有三个任务ABC，这时候如果A占用CPU，那么B和C就只能等待，那为什么我们有时候感觉所有任务都是一起运行的呢？这是因为操作系统让任务在CPU上并发执行，简单的说就是不停的快速切换任务。把CPU想象成超人就行了。 那什么是进程调度呢？就是决定那个任务在当前时刻可以获取CPU的使">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Kernel Log Buffer源码分析">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/">
+<meta property="og:title" content="Linux调度子系统整体架构">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="1 为什么 printk 需要 Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？ 因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积">
+<meta property="og:description" content="1 为什么需要进程调度我们实际的情况其实是任务数多于CPU数量的，并且一个时刻CPU只能运行一个任务。假设只有一个CPU，有三个任务ABC，这时候如果A占用CPU，那么B和C就只能等待，那为什么我们有时候感觉所有任务都是一起运行的呢？这是因为操作系统让任务在CPU上并发执行，简单的说就是不停的快速切换任务。把CPU想象成超人就行了。 那什么是进程调度呢？就是决定那个任务在当前时刻可以获取CPU的使">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png">
-<meta property="article:published_time" content="2026-08-18T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-22T12:18:17.560Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.13mif8f6a8.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.77eahpfqph.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.73uokqbxbz.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.86udvnl9xy.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvvdagnwt.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2a5topyo3a.webp">
+<meta property="article:published_time" content="2026-08-22T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-23T14:13:56.303Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux Logging subsystem">
+<meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.13mif8f6a8.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>Kernel Log Buffer源码分析 · CJ&#39;s Tech Notes</title>
+  <title>Linux调度子系统整体架构 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -317,7 +319,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">Kernel Log Buffer源码分析</span>
+            <span id="subtitle">Linux调度子系统整体架构</span>
           
         </div>
 
@@ -328,8 +330,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-08-18 22:11" pubdate>
-          2026-08-18
+        <time datetime="2026-08-22 22:11" pubdate>
+          2026-08-22
         </time>
       </span>
     
@@ -341,7 +343,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.9k 字
+          3.2k 字
         
       </span>
     
@@ -353,7 +355,7 @@
         
         
           <!-- compatible with older versions-->
-          25 分钟
+          27 分钟
         
       </span>
     
@@ -392,76 +394,103 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Kernel Log Buffer源码分析</h1>
+            <h1 id="seo-header">Linux调度子系统整体架构</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="1-为什么-printk-需要-Ring-Buffer"><a href="#1-为什么-printk-需要-Ring-Buffer" class="headerlink" title="1 为什么 printk 需要 Ring Buffer"></a>1 为什么 printk 需要 Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？</p>
-<p>因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积累，拖慢系统的运行。</p>
-<p>于是 printk() 会把产生的消息存入 ring buffer，实现生产者与消费者解耦的目的。</p>
-<h1 id="2-printk-Ring-Buffer-整体结构"><a href="#2-printk-Ring-Buffer-整体结构" class="headerlink" title="2 printk Ring Buffer 整体结构"></a>2 printk Ring Buffer 整体结构</h1><p>源码很清晰，我们直接看一下源码：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span>	<span class="hljs-title">desc_ring</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_data_ring</span>	<span class="hljs-title">text_data_ring</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		fail;<br>&#125;;<br></code></pre></td></tr></table></figure>
+                <h1 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1 为什么需要进程调度</h1><p>我们实际的情况其实是任务数多于CPU数量的，并且一个时刻CPU只能运行一个任务。<br>假设只有一个CPU，有三个任务ABC，这时候如果A占用CPU，那么B和C就只能等待，<br>那为什么我们有时候感觉所有任务都是一起运行的呢？<br>这是因为操作系统让任务在CPU上并发执行，简单的说就是不停的快速切换任务。<br>把CPU想象成超人就行了。</p>
+<p>那什么是进程调度呢？就是决定那个任务在当前时刻可以获取CPU的使用权，以及任务可以运行多长时间。<br>内核中的调度对象是一个task</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span></span><br></code></pre></td></tr></table></figure>
 
-<p>主要由两个环形缓冲区组成：</p>
+<p>最简单的调度模型如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.13mif8f6a8.webp" srcset="/img/loading.svg" lazyload></p>
+<p>每次切换前先保存当前任务的运行现场，方便切换回来。这个过程叫上下文切换，后面会讲。</p>
+<p>调度器要解决那些问题呢？就是调度指标是什么呢？</p>
 <ul>
-<li><code>desc_ring</code>：这条日志是什么</li>
-<li><code>text_data_ring</code>：日志的具体内容</li>
+<li>公平性：首先就是CPU的使用权，不可能让一个任务一直运行，没有意义，<br>应该尽量合理的安排每个CPU的使用时间</li>
+<li>响应速度：比如一些重要的交互任务要快速反应</li>
+<li>吞吐量：单位时间内完成的任务</li>
+<li>优先级：有些任务比较急，优先占用CPU的使用权</li>
+<li>CPU亲和性：有些任务只允许在指定 CPU 上运行。</li>
 </ul>
-<p>例如：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>把调度器想成一个选择器，输入是各种调度指标，输出是下一个占用CPU的task。</p>
+<h1 id="2-进程、线程和-task"><a href="#2-进程、线程和-task" class="headerlink" title="2 进程、线程和 task"></a>2 进程、线程和 task</h1><p>这三个东西，傻傻分不清吧？😛<br>进程就是运行的程序，比如你在终端执行的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">./app<br></code></pre></td></tr></table></figure>
 
-<p>上面这条日志就会产生两种信息，一种是日志的描述信息，包括日志等级、日志序号和时间戳等；另一种就是日志的具体内容，即 <code>&quot;temperature=25\n&quot;</code>。</p>
-<p>通过全局变量访问，其定义如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> <span class="hljs-title">printk_rb_dynamic</span>;</span><br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> *<span class="hljs-title">prb</span> =</span> &amp;printk_rb_static;<br></code></pre></td></tr></table></figure>
+<p>不同的进程都是隔离，有自己独立的资源，就像QQ农场里面的一块一块的田地。</p>
+<p>线程是进程里面的一条执行路线（就是种的菜），一个进程可以包含多个线程（一块地种多个菜）。<br>他们会共享进程的资源，但是有自己的独立现场。（共享一块地，各自长的不同）<br>如图所示，假设一个进程由两个线程</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.77eahpfqph.webp" srcset="/img/loading.svg" lazyload></p>
+<p>在内核中对应的就是task，表示一个可执行对象。<br>其定义简化为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> &#123;</span><br>    <span class="hljs-type">pid_t</span> pid;<br>    <span class="hljs-type">pid_t</span> tgid;<br><br>    <span class="hljs-keyword">volatile</span> <span class="hljs-type">long</span> state;<br><br>    <span class="hljs-type">int</span> prio;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> policy;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> *<span class="hljs-title">mm</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">files_struct</span> *<span class="hljs-title">files</span>;</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_entity</span> <span class="hljs-title">se</span>;</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">parent</span>;</span><br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p>比如我们之前讲到的 <code>prb_reserve(&amp;e, prb, &amp;r);</code>，这里的 <code>prb</code> 就是整个 printk Ring Buffer。</p>
-<p>我们接着讲解 <code>desc_ring</code>，其定义如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span> &#123;</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		count_bits;<br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc</span>		*<span class="hljs-title">descs</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">infos</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		head_id;<br>  <span class="hljs-type">atomic_long_t</span>		tail_id;<br>  <span class="hljs-type">atomic_long_t</span>		last_finalized_seq;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>进程和线程在内核中的对应形式都是task，区别就是资源的占有权。<br>比如同一个进程的线程会使用同一个struct mm_struct *mm。</p>
+<p>内核中会为每个task分配唯一id</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">task-&gt;pid<br></code></pre></td></tr></table></figure>
 
-<p>主要就是两个核心数组 <code>descs</code> 和 <code>infos</code>，其中 <code>descs</code> 记录日志的状态，<code>infos</code> 记录日志信息，示意如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp" srcset="/img/loading.svg" lazyload></p>
-<p>继续看 <code>text_data_ring</code>，简单理解就是一个 <code>char data[]</code> 存放真正的日志字符串。</p>
-<p>我们举个例子来看，假设日志如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>对于同一进程的不同线程会被分到一个线程组里，并给一个线程组id</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">task-&gt;tgid<br></code></pre></td></tr></table></figure>
 
-<p>则其被拆解为：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png" srcset="/img/loading.svg" lazyload></p>
-<p>上面还有两个东西，一个是 <code>head</code>，一个是 <code>tail</code>。我们之前说过了，新的日志会覆盖旧的，就需要两个指针，指明新的日志写在哪里、旧的写在哪里。当空间不够时，<code>tail</code> 会向前移动，旧日志将被淘汰，具体代码我们在后面讨论。</p>
-<p>上面这个流程的示意图如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp" srcset="/img/loading.svg" lazyload></p>
-<h1 id="3-一条日志如何写入-Ring-Buffer"><a href="#3-一条日志如何写入-Ring-Buffer" class="headerlink" title="3 一条日志如何写入 Ring Buffer"></a>3 一条日志如何写入 Ring Buffer</h1><p>我们假设一条日志为：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<p>假设三个线程ABC</p>
+<table>
+<thead>
+<tr>
+<th>task</th>
+<th align="right"><code>pid</code></th>
+<th align="right"><code>tgid</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td align="right">1000</td>
+<td align="right">1000</td>
+</tr>
+<tr>
+<td>B</td>
+<td align="right">1001</td>
+<td align="right">1000</td>
+</tr>
+<tr>
+<td>C</td>
+<td align="right">1002</td>
+<td align="right">1000</td>
+</tr>
+</tbody></table>
+<h1 id="3-task状态"><a href="#3-task状态" class="headerlink" title="3 task状态"></a>3 task状态</h1><p>进程和线程的整个生命周期由五个状态，如图</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.73uokqbxbz.webp" srcset="/img/loading.svg" lazyload></p>
+<p>对于调度而言，有三个非常重要的概念</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Running    正在CPU上执行<br>Runnable   已经具备运行条件，正在等待CPU<br>Sleeping   暂时不能运行，正在等待某个事件<br></code></pre></td></tr></table></figure>
 
-<p>其写入的整体流程我们在上一章看过了，这里我们只关注它是怎么写入 ring buffer 的。</p>
-<p>之前我们说过日志等级：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_SOH  <span class="hljs-string">&quot;\001&quot;</span>  <span class="hljs-comment">// ASCII 码 1，即 SOH 控制字符</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_INFO KERN_SOH <span class="hljs-string">&quot;6&quot;</span></span><br></code></pre></td></tr></table></figure>
+<p>怎么获取当前正在Running的指针呢？当然是用指针啦，<br>在内核中，每个 CPU 都有一个当前任务指针，简单理解为current</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">p</span> =</span> current;<br></code></pre></td></tr></table></figure>
 
-<p>上面的信息在编译时被拼接为 <code>&quot;\0016temperature=%d\n&quot;</code>：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">vprintk_store</span><span class="hljs-params">(...)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_reserved_entry</span> <span class="hljs-title">e</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br>    u16 reserve_size;<br>    u16 text_len;<br><br>    <span class="hljs-comment">/* 1. 计算正文需要多少空间 */</span><br>    reserve_size = vsnprintf(..., fmt, args) + <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">/* 2. 解析日志等级 */</span><br>    printk_parse_prefix(..., &amp;level, &amp;flags);<br><br>    <span class="hljs-comment">/* 3. 初始化记录 */</span><br>    prb_rec_init_wr(&amp;r, reserve_size);<br><br>    <span class="hljs-comment">/* 4. 预留descriptor和文本空间 */</span><br>    <span class="hljs-keyword">if</span> (!prb_reserve(&amp;e, prb, &amp;r))<br>        ...;<br><br>    <span class="hljs-comment">/* 5. 写入日志正文 */</span><br>    text_len = printk_sprint(r.text_buf, ...,<br>                             fmt, args);<br><br>    <span class="hljs-comment">/* 6. 填写元数据 */</span><br>    r.info-&gt;text_len = text_len;<br>    r.info-&gt;level = level;<br>    r.info-&gt;flags = flags;<br>    r.info-&gt;ts_nsec = ts_nsec;<br>    r.info-&gt;caller_id = caller_id;<br><br>    <span class="hljs-comment">/* 7. 提交记录 */</span><br>    <span class="hljs-keyword">if</span> (flags &amp; LOG_NEWLINE)<br>        prb_final_commit(&amp;e);<br>    <span class="hljs-keyword">else</span><br>        prb_commit(&amp;e);<br><br>    <span class="hljs-keyword">return</span> text_len;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>而每个CPU的 runqueue 中有rq-&gt;curr指向当前运行的task</p>
+<p>在内核中通过pick_next_task()选中Runnable的task，完成一次调度<br>上面两种状态都被定义为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> TASK_RUNNING 0x00000000</span><br></code></pre></td></tr></table></figure>
 
-<p>其核心函数就是 <code>vprintk_store()</code>，printk 的参数经过解析后传入其中，如图所示。接着开始获取日志信息，包括产生时间和调用者（日志是谁产生的）：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">ts_nsec = local_clock();<br>caller_id = printk_caller_id();<br></code></pre></td></tr></table></figure>
+<p>对于Sleeping，内核中定义了两种重要的睡眠状态</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">TASK_INTERRUPTIBLE<br>TASK_UNINTERRUPTIBLE<br></code></pre></td></tr></table></figure>
 
-<p>保存日志前先计算日志所需的空间大小，计算完成后，把要写入的东西和大小记录下来。</p>
-<p>接着就是最核心的一步：去 ring buffer 中拿空间。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">prb_reserve(&amp;e, prb, &amp;r)<br><br><span class="hljs-comment">// r 定义</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">info</span>;</span><br>  <span class="hljs-type">char</span>			*text_buf;<br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		text_buf_size;<br>&#125;;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br></code></pre></td></tr></table></figure>
+<p>可中断睡眠：表示 task 正在等待某个事件，但信号也可以唤醒或中断它。<br>不可中断睡眠：表示 task 正在等待某个内核事件，普通信号不能使它立即离开等待状态；预期由它正在等待的事件完成后唤醒，而不是随意被普通信号打断</p>
+<h1 id="4-runqueue-是什么"><a href="#4-runqueue-是什么" class="headerlink" title="4 runqueue 是什么"></a>4 runqueue 是什么</h1><p>runqueue就是每个CPU管理可运行task的数据结构，调度器从当前 CPU 的 runqueue 中选择下一个要运行的 task。<br>在内核中定义为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span></span><br></code></pre></td></tr></table></figure>
 
-<p>其中：</p>
-<ul>
-<li><code>prb</code>：指向 ring buffer</li>
-<li><code>r</code>：希望写入的日志和大小</li>
-</ul>
-<p>上面说过 ring buffer 由两类组成，所以需要完成 descriptor ring 和 text data ring 的空间预留，一个是记录槽位，一个是正文槽位。</p>
-<p>然后填写 <code>infos</code> 里面的信息，最后提交即可，其流程图如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png" srcset="/img/loading.svg" lazyload></p>
-<h1 id="4-prb-reserve"><a href="#4-prb-reserve" class="headerlink" title="4 prb_reserve()"></a>4 prb_reserve()</h1><p>根据上面的流程我们知道，<code>prb_reserve()</code> 的核心作用就是预留空间，分两部分。为一条新日志预留一个 descriptor，并在 text data ring 中预留正文空间，然后把可写地址返回给调用者。</p>
-<p>其定义为：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">bool</span> <span class="hljs-title function_">prb_reserve</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> prb_reserved_entry *e,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_ringbuffer *rb,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_record *r)</span>;<br></code></pre></td></tr></table></figure>
+<p>为什么需要呢？统一时刻具备运行条件的task不止一个。<br>虽然它叫runqueue，但是并不是一个队列，内核支持多种调度策略，<br>不同类型任务的选择规则不同，struct rq内部包含多套调度类队列</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.86udvnl9xy.webp" srcset="/img/loading.svg" lazyload></p>
+<p>与其说是队列，不如说是调度状态容器，其核心结构如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> &#123;</span><br>    <span class="hljs-type">raw_spinlock_t</span> __lock;      <span class="hljs-comment">/* 保护当前 runqueue */</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> nr_running;    <span class="hljs-comment">/* 可运行 task 数量 */</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">curr</span>;</span>   <span class="hljs-comment">/* 当前 CPU 正在运行的 task */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">idle</span>;</span>   <span class="hljs-comment">/* 当前 CPU 的 idle task */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">stop</span>;</span>   <span class="hljs-comment">/* 当前 CPU 的 stop task */</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cfs_rq</span> <span class="hljs-title">cfs</span>;</span>          <span class="hljs-comment">/* 普通任务调度队列 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rt_rq</span> <span class="hljs-title">rt</span>;</span>            <span class="hljs-comment">/* 实时任务调度队列 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dl_rq</span> <span class="hljs-title">dl</span>;</span>            <span class="hljs-comment">/* Deadline 任务调度队列 */</span><br><br>    u64 clock;                  <span class="hljs-comment">/* 调度器使用的时钟 */</span><br>    u64 clock_task;<br><br>    <span class="hljs-type">int</span> cpu;                    <span class="hljs-comment">/* 这个 rq 属于哪个 CPU */</span><br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<blockquote>
-<p>未完待续……</p>
-</blockquote>
+<h1 id="5-sched-class"><a href="#5-sched-class" class="headerlink" title="5 sched_class"></a>5 sched_class</h1><p>内核中有很多调度算法，sched_class是 Linux 调度器定义的一套统一接口。<br>不同类型的调度算法分别实现这套接口，调度核心通过函数指针调用具体算法。<br>跟C++的面向对象的编程思想差不多。<br>不需要知道task属于什么任务，提供接口就行。<br>整体框架如图</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvvdagnwt.webp" srcset="/img/loading.svg" lazyload></p>
+<p>先看其核心代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> &#123;</span><br>    <span class="hljs-type">void</span> (*enqueue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">void</span> (*dequeue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">void</span> (*yield_task)(<span class="hljs-keyword">struct</span> rq *rq);<br><br>    <span class="hljs-type">void</span> (*check_preempt_curr)(<span class="hljs-keyword">struct</span> rq *rq,<br>                               <span class="hljs-keyword">struct</span> task_struct *p,<br>                               <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *(*<span class="hljs-title">pick_next_task</span>)(</span><br><span class="hljs-class">                         <span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> *<span class="hljs-title">rq</span>);</span><br><br>    <span class="hljs-type">void</span> (*put_prev_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p);<br><br>    <span class="hljs-type">void</span> (*set_next_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p,<br>                          <span class="hljs-type">bool</span> first);<br><br>    <span class="hljs-type">void</span> (*task_tick)(<span class="hljs-keyword">struct</span> rq *rq,<br>                      <span class="hljs-keyword">struct</span> task_struct *p,<br>                      <span class="hljs-type">int</span> queued);<br><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_SMP</span><br>    <span class="hljs-type">int</span> (*select_task_rq)(<span class="hljs-keyword">struct</span> task_struct *p,<br>                          <span class="hljs-type">int</span> task_cpu,<br>                          <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">int</span> (*balance)(<span class="hljs-keyword">struct</span> rq *rq,<br>                   <span class="hljs-keyword">struct</span> task_struct *prev,<br>                   <span class="hljs-keyword">struct</span> rq_flags *rf);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在v6.1的内核中，调度类主要包括</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c">stop_sched_class<br>dl_sched_class<br>rt_sched_class<br>fair_sched_class<br>idle_sched_class<br></code></pre></td></tr></table></figure>
+
+<p>优先级从高到低，意思就是从上往下依次问有没有可以运行的task？没有就向下，如图所示</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2a5topyo3a.webp" srcset="/img/loading.svg" lazyload></p>
+<p>其中SCHED_***表示调度策略。</p>
 
                 
               </div>
@@ -485,7 +514,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
+  <a href="/categories/Linux-Kernel/Scheduling/" class="category-chain-item">Scheduling</a>
   
   
 
@@ -502,7 +531,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux-Logging-subsystem/" class="print-no-link">#Linux Logging subsystem</a>
+        <a href="/tags/Linux-Scheduling/" class="print-no-link">#Linux Scheduling</a>
       
     </div>
   
@@ -514,8 +543,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Kernel Log Buffer源码分析</div>
-      <div>https://cj0510.github.io/2026/08/18/Linux Kernel/Logging subsystem/ring buffer/</div>
+      <div>Linux调度子系统整体架构</div>
+      <div>https://cj0510.github.io/2026/08/22/Linux Kernel/Scheduling/Linux调度子系统整体架构/</div>
     </div>
     <div class="license-meta">
       
@@ -527,7 +556,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年8月18日</div>
+          <div>2026年8月22日</div>
         </div>
       
       
@@ -552,9 +581,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/22/Linux%20Kernel/ebpf/P0/" title="ebpf使用">
+                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" title="task_struct 中的调度信息">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">ebpf使用</span>
+                        <span class="hidden-mobile">task_struct 中的调度信息</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -562,8 +591,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="printk源码分析">
-                        <span class="hidden-mobile">printk源码分析</span>
+                      <a href="/2026/08/22/Linux%20Kernel/ebpf/P0/" title="ebpf使用">
+                        <span class="hidden-mobile">ebpf使用</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

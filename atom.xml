@@ -10,7 +10,55 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-22T03:34:49.338Z</updated>
+  <updated>2026-08-23T14:13:56.337Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/</id>
+    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
+    <published>2026-08-23T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h1><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
+    </summary>
+    <title>task_struct 中的调度信息</title>
+    <updated>2026-08-23T14:13:56.337Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-22T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1]]>
+    </summary>
+    <title>Linux调度子系统整体架构</title>
+    <updated>2026-08-23T14:13:56.303Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="ebpf" scheme="https://cj0510.github.io/categories/Linux-Kernel/ebpf/"/>
+    <category term="Linux ebpf" scheme="https://cj0510.github.io/tags/Linux-ebpf/"/>
+    <id>https://cj0510.github.io/2026/08/22/Linux%20Kernel/ebpf/P0/</id>
+    <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/ebpf/P0/"/>
+    <published>2026-08-22T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="泰山派libbpf使用"><a href="#泰山派libbpf使用" class="headerlink" title="泰山派libbpf使用"></a>泰山派libbpf使用</h1><p>SoC：RK3566<br>架构：AArch64<br>内核：Linux]]>
+    </summary>
+    <title>ebpf使用</title>
+    <updated>2026-08-23T13:01:09.955Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -22,10 +70,11 @@
     <link href="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/"/>
     <published>2026-08-18T14:11:55.000Z</published>
     <summary>
-      <![CDATA[<h1 id="为什么printk需要Ring-Buffer"><a href="#为什么printk需要Ring-Buffer" class="headerlink" title="为什么printk需要Ring Buffer"></a>为什么printk需要Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口？而是需要一个ring buffer？<br>因为串口、console等输出设备非常慢，CPU执行代码的速度远远快于串口发送数据的速度。<br>CPU]]>
+      <![CDATA[<h1 id="1-为什么-printk-需要-Ring-Buffer"><a href="#1-为什么-printk-需要-Ring-Buffer" class="headerlink" title="1 为什么 printk 需要 Ring Buffer"></a>1 为什么 printk 需要 Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？</p>
+<p>因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz]]>
     </summary>
     <title>Kernel Log Buffer源码分析</title>
-    <updated>2026-08-22T03:34:49.338Z</updated>
+    <updated>2026-08-22T12:18:17.560Z</updated>
   </entry>
   <entry>
     <author>
