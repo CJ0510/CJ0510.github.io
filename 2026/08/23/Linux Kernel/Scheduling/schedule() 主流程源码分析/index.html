@@ -21,28 +21,27 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="泰山派libbpf使用SoC：RK3566架构：AArch64内核：Linux 6.1.141板级配置：rockchip_rk3566_taishanpi_1m_v10_defconfig内核配置入口：rockchip_linux_defconfig根文件系统：Buildrootlibbpf：1.1.0bpftool：7.1.0 环境配置，要开启 123CONFIG_BPF_SYSCALL&#x3D;yCO">
+    <meta name="description" content="scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk &#x3D; current; &#x2F;&#x2F;保存当前任务    sched_submit_work(tsk);    do &#123;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ebpf使用">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/22/Linux%20Kernel/ebpf/P0/">
+<meta property="og:title" content="schedule() 主流程源码分析">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="泰山派libbpf使用SoC：RK3566架构：AArch64内核：Linux 6.1.141板级配置：rockchip_rk3566_taishanpi_1m_v10_defconfig内核配置入口：rockchip_linux_defconfig根文件系统：Buildrootlibbpf：1.1.0bpftool：7.1.0 环境配置，要开启 123CONFIG_BPF_SYSCALL&#x3D;yCO">
+<meta property="og:description" content="scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk &#x3D; current; &#x2F;&#x2F;保存当前任务    sched_submit_work(tsk);    do &#123;">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.46f3izuub.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1764eewigo.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.lwgs44c5k.webp">
-<meta property="article:published_time" content="2026-08-22T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-23T13:01:09.955Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5flbwmpn8g.webp">
+<meta property="article:published_time" content="2026-08-23T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-30T13:36:36.754Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux ebpf">
+<meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.46f3izuub.webp">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>ebpf使用 · CJ&#39;s Tech Notes</title>
+  <title>schedule() 主流程源码分析 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -316,7 +315,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">ebpf使用</span>
+            <span id="subtitle">schedule() 主流程源码分析</span>
           
         </div>
 
@@ -327,8 +326,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-08-22 22:11" pubdate>
-          2026-08-22
+        <time datetime="2026-08-23 22:11" pubdate>
+          2026-08-23
         </time>
       </span>
     
@@ -340,7 +339,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          322 字
+          1.3k 字
         
       </span>
     
@@ -352,7 +351,7 @@
         
         
           <!-- compatible with older versions-->
-          3 分钟
+          12 分钟
         
       </span>
     
@@ -391,19 +390,24 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">ebpf使用</h1>
+            <h1 id="seo-header">schedule() 主流程源码分析</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="泰山派libbpf使用"><a href="#泰山派libbpf使用" class="headerlink" title="泰山派libbpf使用"></a>泰山派libbpf使用</h1><p>SoC：RK3566<br>架构：AArch64<br>内核：Linux 6.1.141<br>板级配置：rockchip_rk3566_taishanpi_1m_v10_defconfig<br>内核配置入口：rockchip_linux_defconfig<br>根文件系统：Buildroot<br>libbpf：1.1.0<br>bpftool：7.1.0</p>
-<p>环境配置，要开启</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">CONFIG_BPF_SYSCALL=y<br>CONFIG_BPF_JIT=y<br>CONFIG_BPF_EVENTS=y<br></code></pre></td></tr></table></figure>
+                <h2 id="schedule"><a href="#schedule" class="headerlink" title="schedule"></a>schedule</h2><p>task被调度的原因主要分为一下几类</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp" srcset="/img/loading.svg" lazyload></p>
+<p>我们看函数的部分</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c">asmlinkage __visible <span class="hljs-type">void</span> __sched <span class="hljs-title function_">schedule</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">tsk</span> =</span> current; <span class="hljs-comment">//保存当前任务</span><br><br>    sched_submit_work(tsk);<br><br>    <span class="hljs-keyword">do</span> &#123;<br>        preempt_disable();<br>        __schedule(SM_NONE); <span class="hljs-comment">//核心</span><br>        sched_preempt_enable_no_resched();<br>    &#125; <span class="hljs-keyword">while</span> (need_resched());<br><br>    sched_update_worker(tsk);<br>&#125;<br>EXPORT_SYMBOL(schedule);<br></code></pre></td></tr></table></figure>
 
-<p>按照下面步骤，执行</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">./build.sh lunch:rockchip_rk3566_taishanpi_1m_v10_defconfig<br>./build.sh kernel-config<br></code></pre></td></tr></table></figure>
+<p>进入核心调度__schedule</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> __sched notrace<br>__schedule(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> sched_mode)<br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">prev</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">next</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq_flags</span> <span class="hljs-title">rf</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> *<span class="hljs-title">rq</span>;</span><br>    <span class="hljs-type">int</span> cpu;<br><br>    cpu = smp_processor_id(); <span class="hljs-comment">//找到当前运行的CPU</span><br>    rq = cpu_rq(cpu);  <span class="hljs-comment">// 获取当前CPU的rq</span><br>    prev = rq-&gt;curr;  <span class="hljs-comment">// 当前CPU正在运行谁</span><br><br>    <span class="hljs-comment">/* 调度前检查 */</span><br><br>    local_irq_disable(); <span class="hljs-comment">// 关闭中断</span><br><br>    rq_lock(rq, &amp;rf);  <span class="hljs-comment">// 获取rq锁</span><br><br>    update_rq_clock(rq);<br><br>    <span class="hljs-comment">/* 根据sched_mode和prev状态处理prev */</span><br>    <span class="hljs-keyword">if</span> (prev不再Runnable)<br>        deactivate_task(rq, prev, ...);<br><br>    next = pick_next_task(rq, prev, &amp;rf);<br><br>    clear_tsk_need_resched(prev); <span class="hljs-comment">// 选择下一个task</span><br><br>    <span class="hljs-keyword">if</span> (prev != next) &#123;<br>        rq-&gt;curr = next;<br><br>        context_switch(rq, prev, next, &amp;rf); <span class="hljs-comment">//上下文切换</span><br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        rq_unlock(...);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.46f3izuub.webp" srcset="/img/loading.svg" lazyload><br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1764eewigo.webp" srcset="/img/loading.svg" lazyload><br><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.lwgs44c5k.webp" srcset="/img/loading.svg" lazyload></p>
+<p>上面是整个逻辑部分，其中还有些细节，我们看prev是什么时候被移除rq的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c">prev_state = READ_ONCE(prev-&gt;__state);<br><br><span class="hljs-keyword">if</span> (!(sched_mode &amp; SM_MASK_PREEMPT) &amp;&amp; prev_state) &#123;<br>    <span class="hljs-keyword">if</span> (signal_pending_state(prev_state, prev)) &#123;<br>        WRITE_ONCE(prev-&gt;__state, TASK_RUNNING);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        deactivate_task(rq, prev,<br>                        DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>整个思路如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5flbwmpn8g.webp" srcset="/img/loading.svg" lazyload></p>
 
                 
               </div>
@@ -427,7 +431,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/ebpf/" class="category-chain-item">ebpf</a>
+  <a href="/categories/Linux-Kernel/Scheduling/" class="category-chain-item">Scheduling</a>
   
   
 
@@ -444,7 +448,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux-ebpf/" class="print-no-link">#Linux ebpf</a>
+        <a href="/tags/Linux-Scheduling/" class="print-no-link">#Linux Scheduling</a>
       
     </div>
   
@@ -456,8 +460,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>ebpf使用</div>
-      <div>https://cj0510.github.io/2026/08/22/Linux Kernel/ebpf/P0/</div>
+      <div>schedule() 主流程源码分析</div>
+      <div>https://cj0510.github.io/2026/08/23/Linux Kernel/Scheduling/schedule() 主流程源码分析/</div>
     </div>
     <div class="license-meta">
       
@@ -469,7 +473,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年8月22日</div>
+          <div>2026年8月23日</div>
         </div>
       
       
@@ -494,9 +498,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux调度子系统整体架构">
+                      <a href="/2026/08/30/Linux%20Kernel/perf/p0_perf/" title="perf初探">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux调度子系统整体架构</span>
+                        <span class="hidden-mobile">perf初探</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -504,8 +508,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" title="Kernel Log Buffer源码分析">
-                        <span class="hidden-mobile">Kernel Log Buffer源码分析</span>
+                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" title="task_struct 中的调度信息">
+                        <span class="hidden-mobile">task_struct 中的调度信息</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

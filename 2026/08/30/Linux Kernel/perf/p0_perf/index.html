@@ -21,29 +21,32 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="1 为什么 printk 需要 Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？ 因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积">
+    <meta name="description" content="perf基础Perf 是 Linux 内核提供的一套性能分析工具，它通过 Linux perf_event 子系统获取 CPU、内核和程序运行时的性能数据。 其原理大致如下  PMU全称Performance Monitoring Unit，性能监控单元，位于CPU内部，可以提供硬件性能事件统计能力。 perf的功能很强大，其基本功能大致如下  Perf是用户态工具，它自己不会凭空产生性能数据。数">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Kernel Log Buffer源码分析">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/">
+<meta property="og:title" content="perf初探">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/30/Linux%20Kernel/perf/p0_perf/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="1 为什么 printk 需要 Ring Buffer有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？ 因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积">
+<meta property="og:description" content="perf基础Perf 是 Linux 内核提供的一套性能分析工具，它通过 Linux perf_event 子系统获取 CPU、内核和程序运行时的性能数据。 其原理大致如下  PMU全称Performance Monitoring Unit，性能监控单元，位于CPU内部，可以提供硬件性能事件统计能力。 perf的功能很强大，其基本功能大致如下  Perf是用户态工具，它自己不会凭空产生性能数据。数">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp">
-<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png">
-<meta property="article:published_time" content="2026-08-18T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-22T12:18:17.560Z">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1vze7syyey.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6wrgzdibz9.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.96ahivcbbl.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8ae03h7o29.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.4n8gg8t85j.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8z79nvr0by.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6wrgzzb2j0.webp">
+<meta property="article:published_time" content="2026-08-30T14:11:55.000Z">
+<meta property="article:modified_time" content="2026-08-30T13:34:01.395Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux Logging subsystem">
+<meta property="article:tag" content="Linux perf">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1vze7syyey.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>Kernel Log Buffer源码分析 · CJ&#39;s Tech Notes</title>
+  <title>perf初探 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -317,7 +320,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">Kernel Log Buffer源码分析</span>
+            <span id="subtitle">perf初探</span>
           
         </div>
 
@@ -328,8 +331,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-08-18 22:11" pubdate>
-          2026-08-18
+        <time datetime="2026-08-30 22:11" pubdate>
+          2026-08-30
         </time>
       </span>
     
@@ -341,7 +344,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.9k 字
+          3.1k 字
         
       </span>
     
@@ -353,7 +356,7 @@
         
         
           <!-- compatible with older versions-->
-          25 分钟
+          27 分钟
         
       </span>
     
@@ -392,76 +395,109 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Kernel Log Buffer源码分析</h1>
+            <h1 id="seo-header">perf初探</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="1-为什么-printk-需要-Ring-Buffer"><a href="#1-为什么-printk-需要-Ring-Buffer" class="headerlink" title="1 为什么 printk 需要 Ring Buffer"></a>1 为什么 printk 需要 Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？</p>
-<p>因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz 级别，而串口的传输速度只有几 Mbps。如果 CPU 每次的日志都需要等串口等设备同步，那么就会造成大量的日志积累，拖慢系统的运行。</p>
-<p>于是 printk() 会把产生的消息存入 ring buffer，实现生产者与消费者解耦的目的。</p>
-<h1 id="2-printk-Ring-Buffer-整体结构"><a href="#2-printk-Ring-Buffer-整体结构" class="headerlink" title="2 printk Ring Buffer 整体结构"></a>2 printk Ring Buffer 整体结构</h1><p>源码很清晰，我们直接看一下源码：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span>	<span class="hljs-title">desc_ring</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_data_ring</span>	<span class="hljs-title">text_data_ring</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		fail;<br>&#125;;<br></code></pre></td></tr></table></figure>
+                <h2 id="perf基础"><a href="#perf基础" class="headerlink" title="perf基础"></a>perf基础</h2><p>Perf 是 Linux 内核提供的一套性能分析工具，它通过 Linux perf_event 子系统获取 CPU、内核和程序运行时的性能数据。</p>
+<p>其原理大致如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1vze7syyey.webp" srcset="/img/loading.svg" lazyload></p>
+<p>PMU全称Performance Monitoring Unit，性能监控单元，位于CPU内部，可以提供硬件性能事件统计能力。</p>
+<p>perf的功能很强大，其基本功能大致如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6wrgzdibz9.webp" srcset="/img/loading.svg" lazyload></p>
+<p>Perf是用户态工具，它自己不会凭空产生性能数据。<br>数据主要来自CPU硬件和Linux内核，再由perf_event子系统统一提供给Perf。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.96ahivcbbl.webp" srcset="/img/loading.svg" lazyload></p>
+<p>用户态程序通过系统调用perf_event_open向内核申请一个性能事件</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">perf_event_open</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> perf_event_attr *attr,  <span class="hljs-comment">// 描述监控事件</span></span><br><span class="hljs-params">                    <span class="hljs-type">pid_t</span> pid,</span><br><span class="hljs-params">                    <span class="hljs-type">int</span> cpu,</span><br><span class="hljs-params">                    <span class="hljs-type">int</span> group_fd,  <span class="hljs-comment">// 多个事件组织成事件组</span></span><br><span class="hljs-params">                    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags)</span>;<br></code></pre></td></tr></table></figure>
 
-<p>主要由两个环形缓冲区组成：</p>
+<p>上面函数会返回一个文件描述符fd<br>这里只简单描述一下，有个概念，之后深入原理在讲解。</p>
+<p>Perf主要有两种基础观察模式分别是Counting和Sampling，<br>前者观察一共发生了多少次，<br>后者观察这些事件主要发生在哪里。<br>其整体工作流程如下：</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8ae03h7o29.webp" srcset="/img/loading.svg" lazyload></p>
+<h3 id="perf的一般命令"><a href="#perf的一般命令" class="headerlink" title="perf的一般命令"></a>perf的一般命令</h3><table>
+<thead>
+<tr>
+<th>子命令</th>
+<th>主要回答的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>perf list</code></td>
+<td>Perf事件</td>
+</tr>
+<tr>
+<td><code>perf stat</code></td>
+<td>整体性能事件</td>
+</tr>
+<tr>
+<td><code>perf top</code></td>
+<td>现在谁最耗CPU</td>
+</tr>
+<tr>
+<td><code>perf record</code></td>
+<td>把采样数据记录下来</td>
+</tr>
+<tr>
+<td><code>perf report</code></td>
+<td>哪些函数和调用路径是热点？</td>
+</tr>
+<tr>
+<td><code>perf script</code></td>
+<td>把采样记录展开成文本</td>
+</tr>
+<tr>
+<td><code>perf sched</code></td>
+<td>调度过程和延迟</td>
+</tr>
+<tr>
+<td><code>perf trace</code></td>
+<td>系统调用或事件</td>
+</tr>
+</tbody></table>
+<h2 id="perf-stat"><a href="#perf-stat" class="headerlink" title="perf stat"></a>perf stat</h2><p>用于量化程序整体性能，我们看一下描述</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">stat            Run a command and gather performance counter statistics<br></code></pre></td></tr></table></figure>
+
+<p>就是统计这个程序运行期间发生了多少性能事件。<br>举个例子，一个test.c的程序</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>  <span class="hljs-keyword">volatile</span> <span class="hljs-type">uint64_t</span> sum = <span class="hljs-number">0</span>;<br>  <span class="hljs-type">uint64_t</span> i;<br><br>  <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10000000</span>; ++i)<br>    sum += i;<br><br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;perf test OK, sum=%llu\n&quot;</span>, (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span>)sum);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>在泰山派上运行后</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell">root@taishanpi:/data# perf stat ./test<br>perf test OK, sum=49999995000000<br><br> Performance counter stats for &#x27;./test&#x27;:<br><br>             41.79 msec task-clock                       #    0.945 CPUs utilized 在CPU上的运行时间<br>                 8      context-switches                 #  191.419 /sec 上下文切换次数<br>                 0      cpu-migrations                   #    0.000 /sec CPU迁移次数<br>                46      page-faults                      #    1.101 K/sec 缺页异常次数<br>          52936193      cycles                           #    1.267 GHz CPU时钟周期<br>          60626751      instructions                     #    1.15  insn per cycle 指令个数IPC<br>          10069652      branches                         #  240.940 M/sec 分支指令个数<br>             11852      branch-misses                    #    0.12% of all branches<br><br>       0.044236500 seconds time elapsed # 程序开始到结束总时间<br><br>       0.043817000 seconds user # 用户态代码运行时间<br>       0.000000000 seconds sys  # 内核态运行时间<br></code></pre></td></tr></table></figure>
+
+<p>可以看到其核心功能就是计数Counting，其关注的是总共发生了多少次。</p>
+<p>用过-e指定事件</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c">root@taishanpi:/data<span class="hljs-meta"># perf stat -e instructions ./test</span><br>perf test OK, sum=<span class="hljs-number">49999995000000</span><br><br> Performance counter stats <span class="hljs-keyword">for</span> <span class="hljs-string">&#x27;./test&#x27;</span>:<br><br>          <span class="hljs-number">60589231</span>      instructions<br><br>       <span class="hljs-number">0.039916625</span> seconds time elapsed<br><br>       <span class="hljs-number">0.040039000</span> seconds user<br>       <span class="hljs-number">0.000000000</span> seconds sys<br></code></pre></td></tr></table></figure>
+
+<p>我们看其中的一个重要指标IPC，其表示CPU平均每个时钟周期完成了多少条机器指令。<br>IPC的计算公式如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.4n8gg8t85j.webp" srcset="/img/loading.svg" lazyload></p>
+<h2 id="perf-top"><a href="#perf-top" class="headerlink" title="perf top"></a>perf top</h2><p>用于显示CPU当前主要在执行哪些函数，实时采样CPU正在执行的位置，然后按函数统计并显示热点。<br>其使用的方式是Sampling。其默认采样事件为cycles。他采集是指令地址IP<br>看个例子</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">busy_loop</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> loops)</span><br>&#123;<br>    <span class="hljs-keyword">volatile</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> sum = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span> i = <span class="hljs-number">0</span>; i &lt; loops; i++) &#123;<br>        sum += i;<br>    &#125;<br>&#125;<br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">foo</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    busy_loop(<span class="hljs-number">700000000ULL</span>);<br>&#125;<br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">bar</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    busy_loop(<span class="hljs-number">200000000ULL</span>);<br>&#125;<br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">baz</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    busy_loop(<span class="hljs-number">100000000ULL</span>);<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        foo();<br>        bar();<br>        baz();<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>从调用者的角度看，大致比例是：foo 70%；bar 20%；baz 10%。</p>
+<p>上机测试</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8z79nvr0by.webp" srcset="/img/loading.svg" lazyload></p>
+<p><code>[.]</code>：用户态符号</p>
+<p><code>[k]</code>：内核态符号</p>
+<h2 id="perf-record-report"><a href="#perf-record-report" class="headerlink" title="perf record&#x2F;report"></a>perf record&#x2F;report</h2><p>对目标程序或系统进行性能事件采样，并把采集到的样本保存到文件。</p>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">./perf record -e cycles -F 99 -g -o record_test.data -- ./record_test 1<br></code></pre></td></tr></table></figure>
+
 <ul>
-<li><code>desc_ring</code>：这条日志是什么</li>
-<li><code>text_data_ring</code>：日志的具体内容</li>
+<li><code>record</code>：采集性能采样数据</li>
+<li><code>-e cycles</code>：根据 CPU 周期采样</li>
+<li><code>-F 99</code>：每秒约采样 99 次</li>
+<li><code>-g</code>：记录调用栈</li>
+<li><code>-o record_test.data</code>：指定输出文件</li>
+<li><code>--</code>：后面是被测试程序及其参数</li>
+<li><code>./record_test 10</code>：运行约 10 秒</li>
 </ul>
-<p>例如：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<h3 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">交互式查看</span><br>./perf report -i record_test.data                                          <br><span class="hljs-meta prompt_"># </span><span class="language-bash">非交互式输出：</span>                                                           <br>./perf report --stdio -i record_test.data<br></code></pre></td></tr></table></figure>
 
-<p>上面这条日志就会产生两种信息，一种是日志的描述信息，包括日志等级、日志序号和时间戳等；另一种就是日志的具体内容，即 <code>&quot;temperature=25\n&quot;</code>。</p>
-<p>通过全局变量访问，其定义如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> <span class="hljs-title">printk_rb_dynamic</span>;</span><br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_ringbuffer</span> *<span class="hljs-title">prb</span> =</span> &amp;printk_rb_static;<br></code></pre></td></tr></table></figure>
+<h3 id="生成火焰图"><a href="#生成火焰图" class="headerlink" title="生成火焰图"></a>生成火焰图</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">perf script \<br>    -i record_test.data \<br>    &gt; record_test.perf<br></code></pre></td></tr></table></figure>
 
-<p>比如我们之前讲到的 <code>prb_reserve(&amp;e, prb, &amp;r);</code>，这里的 <code>prb</code> 就是整个 printk Ring Buffer。</p>
-<p>我们接着讲解 <code>desc_ring</code>，其定义如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc_ring</span> &#123;</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		count_bits;<br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_desc</span>		*<span class="hljs-title">descs</span>;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">infos</span>;</span><br>  <span class="hljs-type">atomic_long_t</span>		head_id;<br>  <span class="hljs-type">atomic_long_t</span>		tail_id;<br>  <span class="hljs-type">atomic_long_t</span>		last_finalized_seq;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="下载-FlameGraph"><a href="#下载-FlameGraph" class="headerlink" title="下载 FlameGraph"></a>下载 FlameGraph</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/brendangregg/FlameGraph.git<br></code></pre></td></tr></table></figure>
 
-<p>主要就是两个核心数组 <code>descs</code> 和 <code>infos</code>，其中 <code>descs</code> 记录日志的状态，<code>infos</code> 记录日志信息，示意如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6m4mr5ug0y.webp" srcset="/img/loading.svg" lazyload></p>
-<p>继续看 <code>text_data_ring</code>，简单理解就是一个 <code>char data[]</code> 存放真正的日志字符串。</p>
-<p>我们举个例子来看，假设日志如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
+<h3 id="生成"><a href="#生成" class="headerlink" title="生成"></a>生成</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">perl FlameGraph/stackcollapse-perf.pl \<br>    record_test.perf \<br>    &gt; record_test.folded<br><br>perl FlameGraph/flamegraph.pl \<br>    --title &quot;record_test CPU Flame Graph&quot; \<br>    record_test.folded \<br>    &gt; record_test.svg<br></code></pre></td></tr></table></figure>
 
-<p>则其被拆解为：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvv876cau.png" srcset="/img/loading.svg" lazyload></p>
-<p>上面还有两个东西，一个是 <code>head</code>，一个是 <code>tail</code>。我们之前说过了，新的日志会覆盖旧的，就需要两个指针，指明新的日志写在哪里、旧的写在哪里。当空间不够时，<code>tail</code> 会向前移动，旧日志将被淘汰，具体代码我们在后面讨论。</p>
-<p>上面这个流程的示意图如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.64el2kygnc.webp" srcset="/img/loading.svg" lazyload></p>
-<h1 id="3-一条日志如何写入-Ring-Buffer"><a href="#3-一条日志如何写入-Ring-Buffer" class="headerlink" title="3 一条日志如何写入 Ring Buffer"></a>3 一条日志如何写入 Ring Buffer</h1><p>我们假设一条日志为：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">printk(KERN_INFO <span class="hljs-string">&quot;temperature=%d\n&quot;</span>, <span class="hljs-number">25</span>);<br></code></pre></td></tr></table></figure>
-
-<p>其写入的整体流程我们在上一章看过了，这里我们只关注它是怎么写入 ring buffer 的。</p>
-<p>之前我们说过日志等级：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_SOH  <span class="hljs-string">&quot;\001&quot;</span>  <span class="hljs-comment">// ASCII 码 1，即 SOH 控制字符</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> KERN_INFO KERN_SOH <span class="hljs-string">&quot;6&quot;</span></span><br></code></pre></td></tr></table></figure>
-
-<p>上面的信息在编译时被拼接为 <code>&quot;\0016temperature=%d\n&quot;</code>：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">vprintk_store</span><span class="hljs-params">(...)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">prb_reserved_entry</span> <span class="hljs-title">e</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br>    u16 reserve_size;<br>    u16 text_len;<br><br>    <span class="hljs-comment">/* 1. 计算正文需要多少空间 */</span><br>    reserve_size = vsnprintf(..., fmt, args) + <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">/* 2. 解析日志等级 */</span><br>    printk_parse_prefix(..., &amp;level, &amp;flags);<br><br>    <span class="hljs-comment">/* 3. 初始化记录 */</span><br>    prb_rec_init_wr(&amp;r, reserve_size);<br><br>    <span class="hljs-comment">/* 4. 预留descriptor和文本空间 */</span><br>    <span class="hljs-keyword">if</span> (!prb_reserve(&amp;e, prb, &amp;r))<br>        ...;<br><br>    <span class="hljs-comment">/* 5. 写入日志正文 */</span><br>    text_len = printk_sprint(r.text_buf, ...,<br>                             fmt, args);<br><br>    <span class="hljs-comment">/* 6. 填写元数据 */</span><br>    r.info-&gt;text_len = text_len;<br>    r.info-&gt;level = level;<br>    r.info-&gt;flags = flags;<br>    r.info-&gt;ts_nsec = ts_nsec;<br>    r.info-&gt;caller_id = caller_id;<br><br>    <span class="hljs-comment">/* 7. 提交记录 */</span><br>    <span class="hljs-keyword">if</span> (flags &amp; LOG_NEWLINE)<br>        prb_final_commit(&amp;e);<br>    <span class="hljs-keyword">else</span><br>        prb_commit(&amp;e);<br><br>    <span class="hljs-keyword">return</span> text_len;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>其核心函数就是 <code>vprintk_store()</code>，printk 的参数经过解析后传入其中，如图所示。接着开始获取日志信息，包括产生时间和调用者（日志是谁产生的）：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">ts_nsec = local_clock();<br>caller_id = printk_caller_id();<br></code></pre></td></tr></table></figure>
-
-<p>保存日志前先计算日志所需的空间大小，计算完成后，把要写入的东西和大小记录下来。</p>
-<p>接着就是最核心的一步：去 ring buffer 中拿空间。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">prb_reserve(&amp;e, prb, &amp;r)<br><br><span class="hljs-comment">// r 定义</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> &#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_info</span>	*<span class="hljs-title">info</span>;</span><br>  <span class="hljs-type">char</span>			*text_buf;<br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>		text_buf_size;<br>&#125;;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">printk_record</span> <span class="hljs-title">r</span>;</span><br></code></pre></td></tr></table></figure>
-
-<p>其中：</p>
-<ul>
-<li><code>prb</code>：指向 ring buffer</li>
-<li><code>r</code>：希望写入的日志和大小</li>
-</ul>
-<p>上面说过 ring buffer 由两类组成，所以需要完成 descriptor ring 和 text data ring 的空间预留，一个是记录槽位，一个是正文槽位。</p>
-<p>然后填写 <code>infos</code> 里面的信息，最后提交即可，其流程图如下：</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.wjaj5w731.png" srcset="/img/loading.svg" lazyload></p>
-<h1 id="4-prb-reserve"><a href="#4-prb-reserve" class="headerlink" title="4 prb_reserve()"></a>4 prb_reserve()</h1><p>根据上面的流程我们知道，<code>prb_reserve()</code> 的核心作用就是预留空间，分两部分。为一条新日志预留一个 descriptor，并在 text data ring 中预留正文空间，然后把可写地址返回给调用者。</p>
-<p>其定义为：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">bool</span> <span class="hljs-title function_">prb_reserve</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> prb_reserved_entry *e,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_ringbuffer *rb,</span><br><span class="hljs-params">                 <span class="hljs-keyword">struct</span> printk_record *r)</span>;<br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>未完待续……</p>
-</blockquote>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6wrgzzb2j0.webp" srcset="/img/loading.svg" lazyload></p>
 
                 
               </div>
@@ -485,7 +521,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
+  <a href="/categories/Linux-Kernel/perf/" class="category-chain-item">perf</a>
   
   
 
@@ -502,7 +538,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux-Logging-subsystem/" class="print-no-link">#Linux Logging subsystem</a>
+        <a href="/tags/Linux-perf/" class="print-no-link">#Linux perf</a>
       
     </div>
   
@@ -514,8 +550,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Kernel Log Buffer源码分析</div>
-      <div>https://cj0510.github.io/2026/08/18/Linux Kernel/Logging subsystem/ring buffer/</div>
+      <div>perf初探</div>
+      <div>https://cj0510.github.io/2026/08/30/Linux Kernel/perf/p0_perf/</div>
     </div>
     <div class="license-meta">
       
@@ -527,7 +563,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年8月18日</div>
+          <div>2026年8月30日</div>
         </div>
       
       
@@ -552,18 +588,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux调度子系统整体架构">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux调度子系统整体架构</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="printk源码分析">
-                        <span class="hidden-mobile">printk源码分析</span>
+                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="schedule() 主流程源码分析">
+                        <span class="hidden-mobile">schedule() 主流程源码分析</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

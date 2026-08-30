@@ -33,8 +33,10 @@
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et8wibanv.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8l0tntrtbz.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2dpfno7svs.png">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et94giscn.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9gxbat7t54.webp">
 <meta property="article:published_time" content="2026-08-23T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-23T23:56:47.505Z">
+<meta property="article:modified_time" content="2026-08-30T13:36:37.495Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
@@ -342,7 +344,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          1.3k 字
+          3k 字
         
       </span>
     
@@ -354,7 +356,7 @@
         
         
           <!-- compatible with older versions-->
-          11 分钟
+          25 分钟
         
       </span>
     
@@ -398,22 +400,16 @@
             
               <div class="markdown-body">
                 
-                <h1 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h1><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task 的各类内核信息。<br>比如身份信息，内存信息，调度信息等。</p>
+                <h2 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h2><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task 的各类内核信息。<br>比如身份信息，内存信息，调度信息等。</p>
 <p>调度器拿到一个task后需要根据携带的调度信息进行判断。<br>其中携带的核心调度信息如下</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> &#123;</span><br>    <span class="hljs-comment">/* 任务状态 */</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> __state;<br><br>    <span class="hljs-comment">/* 调度策略 */</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> policy;<br><br>    <span class="hljs-comment">/* 优先级 */</span><br>    <span class="hljs-type">int</span> prio;<br>    <span class="hljs-type">int</span> static_prio;<br>    <span class="hljs-type">int</span> normal_prio;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> rt_priority;<br><br>    <span class="hljs-comment">/* 调度类 */</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> *<span class="hljs-title">sched_class</span>;</span><br><br>    <span class="hljs-comment">/* 不同调度类使用的调度实体 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_entity</span> <span class="hljs-title">se</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_rt_entity</span> <span class="hljs-title">rt</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_dl_entity</span> <span class="hljs-title">dl</span>;</span><br><br>    <span class="hljs-comment">/* runqueue状态 */</span><br>    <span class="hljs-type">int</span> on_rq;<br><br>    <span class="hljs-comment">/* CPU归属和CPU亲和性 */</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">cpumask_t</span> *cpus_ptr;<br>    <span class="hljs-type">cpumask_t</span> cpus_mask;<br>    <span class="hljs-type">int</span> nr_cpus_allowed;<br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<ol>
-<li>policy调度策略</li>
-</ol>
-<p>常见的调度策略定义为</p>
+<h3 id="1-policy调度策略"><a href="#1-policy调度策略" class="headerlink" title="1. policy调度策略"></a>1. policy调度策略</h3><p>常见的调度策略定义为</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_NORMAL    0</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_FIFO    1</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_RR    2</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_BATCH    3</span><br><span class="hljs-comment">/* SCHED_ISO: reserved but not implemented yet */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_IDLE    5</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> SCHED_DEADLINE    6</span><br></code></pre></td></tr></table></figure>
 
 <p>其分类如图</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.96ah97nokd.webp" srcset="/img/loading.svg" lazyload></p>
-<ol start="2">
-<li>优先级</li>
-</ol>
-<p>这几个优先级之前我们讲过，在回顾一下</p>
+<h3 id="2-优先级"><a href="#2-优先级" class="headerlink" title="2. 优先级"></a>2. 优先级</h3><p>这几个优先级之前我们讲过，在回顾一下</p>
 <ul>
 <li>static_prio：普通任务的静态基础值，主要来自nice</li>
 <li>rt_priority：实时任务的用户可见实时优先级</li>
@@ -428,19 +424,34 @@
 <p>对于用户空间，看见的就是nice值，范围在-20~19，static_prio尤其转换来。</p>
 <p>整个优先级的分布和转换如图所示</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et8wibanv.webp" srcset="/img/loading.svg" lazyload></p>
-<ol start="3">
-<li>调度类<br>核心字段：</li>
-</ol>
+<h3 id="3-调度类"><a href="#3-调度类" class="headerlink" title="3. 调度类"></a>3. 调度类</h3><p>核心字段：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> *<span class="hljs-title">sched_class</span>;</span><br></code></pre></td></tr></table></figure>
 <p>就是调度算法的具体操作，怎么调度。决定task怎样入队和出队，如何判断抢占等操作。</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8l0tntrtbz.webp" srcset="/img/loading.svg" lazyload></p>
-<ol start="4">
-<li>调度实体<br>被调度的具体对象</li>
-</ol>
+<h3 id="4-调度实体"><a href="#4-调度实体" class="headerlink" title="4. 调度实体"></a>4. 调度实体</h3><p>被调度的具体对象</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_entity</span> *<span class="hljs-title">parent</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cfs_rq</span> *<span class="hljs-title">cfs_rq</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cfs_rq</span> *<span class="hljs-title">my_q</span>;</span><br></code></pre></td></tr></table></figure>
 
 <p>整体框架</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2dpfno7svs.png" srcset="/img/loading.svg" lazyload></p>
+<h2 id="2-runqueue"><a href="#2-runqueue" class="headerlink" title="2 runqueue"></a>2 runqueue</h2><p>之前我们说了，per-CPU都有一个管理就绪任务的运行队列。<br>虽然叫队列，但他的底层并没有队列那么简单。其核心功能主要有以下几点</p>
+<ol>
+<li>保存可运行任务集合</li>
+<li>按调度类组织任务</li>
+<li>保存当前任务</li>
+<li>保存CPU局部调度状态</li>
+<li>为选择下一个任务提供选择依据<br>其简化模型如下</li>
+</ol>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.et94giscn.webp" srcset="/img/loading.svg" lazyload></p>
+<p>对应核心代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> &#123;</span><br>    <span class="hljs-type">raw_spinlock_t</span> __lock; <span class="hljs-comment">//rq 自旋锁</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> nr_running; <span class="hljs-comment">//计数</span><br><br>    <span class="hljs-comment">//调度类子队列</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cfs_rq</span> <span class="hljs-title">cfs</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rt_rq</span>  <span class="hljs-title">rt</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dl_rq</span>  <span class="hljs-title">dl</span>;</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">curr</span>;</span> <span class="hljs-comment">//当前运行的任务</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">idle</span>;</span> <span class="hljs-comment">//idle task</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">stop</span>;</span> <span class="hljs-comment">//stop task</span><br><br>    <span class="hljs-comment">//调度时钟</span><br>    u64 clock;<br>    u64 clock_task;<br><br>    <span class="hljs-comment">//调度统计</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> nr_uninterruptible;<br>    <span class="hljs-type">atomic_t</span> nr_iowait;<br><br>    <span class="hljs-comment">/* load / utilization */</span><br>    <span class="hljs-comment">/* scheduling statistics */</span><br>    <span class="hljs-comment">/* load balance */</span><br>    <span class="hljs-comment">/* task migration */</span><br>    <span class="hljs-comment">/* CPU topology */</span><br>    <span class="hljs-comment">/* uclamp */</span><br>    <span class="hljs-comment">/* NOHZ */</span><br>    <span class="hljs-comment">/* conditionally compiled fields */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-shed-class"><a href="#3-shed-class" class="headerlink" title="3 shed_class"></a>3 shed_class</h2><p>调度的核心，就是为每一种调度算法提供统一的回调函数。<br>其核心结构如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> &#123;</span><br>    <span class="hljs-comment">//入队和出队</span><br>    <span class="hljs-type">void</span> (*enqueue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">void</span> (*dequeue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-comment">//主动让出CPU</span><br>    <span class="hljs-type">void</span> (*yield_task)(<span class="hljs-keyword">struct</span> rq *rq);<br><br>    <span class="hljs-comment">//抢占检查</span><br>    <span class="hljs-type">void</span> (*check_preempt_curr)(<span class="hljs-keyword">struct</span> rq *rq,<br>                               <span class="hljs-keyword">struct</span> task_struct *p,<br>                               <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-comment">//选择和切换任务</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *(*<span class="hljs-title">pick_next_task</span>)(<span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> *<span class="hljs-title">rq</span>);</span><br><br>    <span class="hljs-type">void</span> (*put_prev_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p);<br><br>    <span class="hljs-type">void</span> (*set_next_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p,<br>                          <span class="hljs-type">bool</span> first);<br><br>    <span class="hljs-comment">//周期性调度</span><br>    <span class="hljs-type">void</span> (*task_tick)(<span class="hljs-keyword">struct</span> rq *rq,<br>                      <span class="hljs-keyword">struct</span> task_struct *p,<br>                      <span class="hljs-type">int</span> queued);<br><br>    <span class="hljs-comment">/* SMP选核与迁移操作 */</span><br>    <span class="hljs-comment">/* task创建、退出操作 */</span><br>    <span class="hljs-comment">/* policy/priority改变通知 */</span><br>    <span class="hljs-comment">/* 运行时间更新操作 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>就是一张调度操作函数指针表。</p>
+<p>具体的实现有</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9gxbat7t54.webp" srcset="/img/loading.svg" lazyload></p>
+<p>以fair_sched_class为例子，其会在以下绑定上面的回调函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c">DEFINE_SCHED_CLASS(fair) = &#123;<br><br>  .enqueue_task		= enqueue_task_fair,<br>  .dequeue_task		= dequeue_task_fair,<br>  .yield_task		= yield_task_fair,<br>  .yield_to_task		= yield_to_task_fair,<br><br>  .wakeup_preempt		= check_preempt_wakeup_fair,<br><br>  .pick_next_task		= __pick_next_task_fair,<br>  .put_prev_task		= put_prev_task_fair,<br>  .set_next_task          = set_next_task_fair,<br>  ...<br>&#125;<br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -530,6 +541,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="schedule() 主流程源码分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">schedule() 主流程源码分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">

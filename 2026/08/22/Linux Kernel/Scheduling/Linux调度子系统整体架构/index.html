@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvvdagnwt.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2a5topyo3a.webp">
 <meta property="article:published_time" content="2026-08-22T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-23T14:13:56.303Z">
+<meta property="article:modified_time" content="2026-08-30T13:36:36.112Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
@@ -399,7 +399,7 @@
             
               <div class="markdown-body">
                 
-                <h1 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1 为什么需要进程调度</h1><p>我们实际的情况其实是任务数多于CPU数量的，并且一个时刻CPU只能运行一个任务。<br>假设只有一个CPU，有三个任务ABC，这时候如果A占用CPU，那么B和C就只能等待，<br>那为什么我们有时候感觉所有任务都是一起运行的呢？<br>这是因为操作系统让任务在CPU上并发执行，简单的说就是不停的快速切换任务。<br>把CPU想象成超人就行了。</p>
+                <h2 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1 为什么需要进程调度</h2><p>我们实际的情况其实是任务数多于CPU数量的，并且一个时刻CPU只能运行一个任务。<br>假设只有一个CPU，有三个任务ABC，这时候如果A占用CPU，那么B和C就只能等待，<br>那为什么我们有时候感觉所有任务都是一起运行的呢？<br>这是因为操作系统让任务在CPU上并发执行，简单的说就是不停的快速切换任务。<br>把CPU想象成超人就行了。</p>
 <p>那什么是进程调度呢？就是决定那个任务在当前时刻可以获取CPU的使用权，以及任务可以运行多长时间。<br>内核中的调度对象是一个task</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span></span><br></code></pre></td></tr></table></figure>
 
@@ -415,7 +415,7 @@
 <li>CPU亲和性：有些任务只允许在指定 CPU 上运行。</li>
 </ul>
 <p>把调度器想成一个选择器，输入是各种调度指标，输出是下一个占用CPU的task。</p>
-<h1 id="2-进程、线程和-task"><a href="#2-进程、线程和-task" class="headerlink" title="2 进程、线程和 task"></a>2 进程、线程和 task</h1><p>这三个东西，傻傻分不清吧？😛<br>进程就是运行的程序，比如你在终端执行的</p>
+<h2 id="2-进程、线程和-task"><a href="#2-进程、线程和-task" class="headerlink" title="2 进程、线程和 task"></a>2 进程、线程和 task</h2><p>这三个东西，傻傻分不清吧？😛<br>进程就是运行的程序，比如你在终端执行的</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">./app<br></code></pre></td></tr></table></figure>
 
 <p>不同的进程都是隔离，有自己独立的资源，就像QQ农场里面的一块一块的田地。</p>
@@ -456,7 +456,7 @@
 <td align="right">1000</td>
 </tr>
 </tbody></table>
-<h1 id="3-task状态"><a href="#3-task状态" class="headerlink" title="3 task状态"></a>3 task状态</h1><p>进程和线程的整个生命周期由五个状态，如图</p>
+<h2 id="3-task状态"><a href="#3-task状态" class="headerlink" title="3 task状态"></a>3 task状态</h2><p>进程和线程的整个生命周期由五个状态，如图</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.73uokqbxbz.webp" srcset="/img/loading.svg" lazyload></p>
 <p>对于调度而言，有三个非常重要的概念</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Running    正在CPU上执行<br>Runnable   已经具备运行条件，正在等待CPU<br>Sleeping   暂时不能运行，正在等待某个事件<br></code></pre></td></tr></table></figure>
@@ -472,7 +472,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">TASK_INTERRUPTIBLE<br>TASK_UNINTERRUPTIBLE<br></code></pre></td></tr></table></figure>
 
 <p>可中断睡眠：表示 task 正在等待某个事件，但信号也可以唤醒或中断它。<br>不可中断睡眠：表示 task 正在等待某个内核事件，普通信号不能使它立即离开等待状态；预期由它正在等待的事件完成后唤醒，而不是随意被普通信号打断</p>
-<h1 id="4-runqueue-是什么"><a href="#4-runqueue-是什么" class="headerlink" title="4 runqueue 是什么"></a>4 runqueue 是什么</h1><p>runqueue就是每个CPU管理可运行task的数据结构，调度器从当前 CPU 的 runqueue 中选择下一个要运行的 task。<br>在内核中定义为</p>
+<h2 id="4-runqueue-是什么"><a href="#4-runqueue-是什么" class="headerlink" title="4 runqueue 是什么"></a>4 runqueue 是什么</h2><p>runqueue就是每个CPU管理可运行task的数据结构，调度器从当前 CPU 的 runqueue 中选择下一个要运行的 task。<br>在内核中定义为</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span></span><br></code></pre></td></tr></table></figure>
 
 <p>为什么需要呢？统一时刻具备运行条件的task不止一个。<br>虽然它叫runqueue，但是并不是一个队列，内核支持多种调度策略，<br>不同类型任务的选择规则不同，struct rq内部包含多套调度类队列</p>
@@ -480,7 +480,7 @@
 <p>与其说是队列，不如说是调度状态容器，其核心结构如下</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> &#123;</span><br>    <span class="hljs-type">raw_spinlock_t</span> __lock;      <span class="hljs-comment">/* 保护当前 runqueue */</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> nr_running;    <span class="hljs-comment">/* 可运行 task 数量 */</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">curr</span>;</span>   <span class="hljs-comment">/* 当前 CPU 正在运行的 task */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">idle</span>;</span>   <span class="hljs-comment">/* 当前 CPU 的 idle task */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">stop</span>;</span>   <span class="hljs-comment">/* 当前 CPU 的 stop task */</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cfs_rq</span> <span class="hljs-title">cfs</span>;</span>          <span class="hljs-comment">/* 普通任务调度队列 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rt_rq</span> <span class="hljs-title">rt</span>;</span>            <span class="hljs-comment">/* 实时任务调度队列 */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dl_rq</span> <span class="hljs-title">dl</span>;</span>            <span class="hljs-comment">/* Deadline 任务调度队列 */</span><br><br>    u64 clock;                  <span class="hljs-comment">/* 调度器使用的时钟 */</span><br>    u64 clock_task;<br><br>    <span class="hljs-type">int</span> cpu;                    <span class="hljs-comment">/* 这个 rq 属于哪个 CPU */</span><br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<h1 id="5-sched-class"><a href="#5-sched-class" class="headerlink" title="5 sched_class"></a>5 sched_class</h1><p>内核中有很多调度算法，sched_class是 Linux 调度器定义的一套统一接口。<br>不同类型的调度算法分别实现这套接口，调度核心通过函数指针调用具体算法。<br>跟C++的面向对象的编程思想差不多。<br>不需要知道task属于什么任务，提供接口就行。<br>整体框架如图</p>
+<h2 id="5-sched-class"><a href="#5-sched-class" class="headerlink" title="5 sched_class"></a>5 sched_class</h2><p>内核中有很多调度算法，sched_class是 Linux 调度器定义的一套统一接口。<br>不同类型的调度算法分别实现这套接口，调度核心通过函数指针调用具体算法。<br>跟C++的面向对象的编程思想差不多。<br>不需要知道task属于什么任务，提供接口就行。<br>整体框架如图</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2rvvdagnwt.webp" srcset="/img/loading.svg" lazyload></p>
 <p>先看其核心代码</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> &#123;</span><br>    <span class="hljs-type">void</span> (*enqueue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">void</span> (*dequeue_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                         <span class="hljs-keyword">struct</span> task_struct *p,<br>                         <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">void</span> (*yield_task)(<span class="hljs-keyword">struct</span> rq *rq);<br><br>    <span class="hljs-type">void</span> (*check_preempt_curr)(<span class="hljs-keyword">struct</span> rq *rq,<br>                               <span class="hljs-keyword">struct</span> task_struct *p,<br>                               <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *(*<span class="hljs-title">pick_next_task</span>)(</span><br><span class="hljs-class">                         <span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> *<span class="hljs-title">rq</span>);</span><br><br>    <span class="hljs-type">void</span> (*put_prev_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p);<br><br>    <span class="hljs-type">void</span> (*set_next_task)(<span class="hljs-keyword">struct</span> rq *rq,<br>                          <span class="hljs-keyword">struct</span> task_struct *p,<br>                          <span class="hljs-type">bool</span> first);<br><br>    <span class="hljs-type">void</span> (*task_tick)(<span class="hljs-keyword">struct</span> rq *rq,<br>                      <span class="hljs-keyword">struct</span> task_struct *p,<br>                      <span class="hljs-type">int</span> queued);<br><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_SMP</span><br>    <span class="hljs-type">int</span> (*select_task_rq)(<span class="hljs-keyword">struct</span> task_struct *p,<br>                          <span class="hljs-type">int</span> task_cpu,<br>                          <span class="hljs-type">int</span> flags);<br><br>    <span class="hljs-type">int</span> (*balance)(<span class="hljs-keyword">struct</span> rq *rq,<br>                   <span class="hljs-keyword">struct</span> task_struct *prev,<br>                   <span class="hljs-keyword">struct</span> rq_flags *rf);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
@@ -591,8 +591,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/22/Linux%20Kernel/ebpf/P0/" title="ebpf使用">
-                        <span class="hidden-mobile">ebpf使用</span>
+                      <a href="/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/" title="Kernel Log Buffer源码分析">
+                        <span class="hidden-mobile">Kernel Log Buffer源码分析</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -21,18 +21,20 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https:&#x2F;&#x2F;github.com&#x2F;rockchip-linux&#x2F;u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch&#x2F;arm&#x2F;mach-rockchip&#x2F;├── rk3568├── rk3399└── rk3588">
+    <meta name="description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建1234sudo apt-get install -y \    gcc-aarch64-linux-gnu \    python3-pyelftools \    zstd  项目结构1234567891011121314151617181920212223242526272829303132333435363738394041">
 <meta property="og:type" content="article">
 <meta property="og:title" content="RK3566 BSP">
 <meta property="og:url" content="https://cj0510.github.io/2026/07/13/rk3566/P1/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建Uboot下载uboot源码 1git clone https:&#x2F;&#x2F;github.com&#x2F;rockchip-linux&#x2F;u-boot.git  源码结构 soc先看源码结构这是 RK3566 SoC相关代码。例如：  12345arch&#x2F;arm&#x2F;mach-rockchip&#x2F;├── rk3568├── rk3399└── rk3588">
+<meta property="og:description" content="简介本项目基于泰山派编写一款属于自己Linux SDK。 环境搭建1234sudo apt-get install -y \    gcc-aarch64-linux-gnu \    python3-pyelftools \    zstd  项目结构1234567891011121314151617181920212223242526272829303132333435363738394041">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.szovzspem.png">
 <meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T12:59:11.938Z">
+<meta property="article:modified_time" content="2026-08-30T13:35:52.116Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.szovzspem.png">
   
   
   
@@ -336,7 +338,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.3k 字
+          1.4k 字
         
       </span>
     
@@ -348,7 +350,7 @@
         
         
           <!-- compatible with older versions-->
-          19 分钟
+          12 分钟
         
       </span>
     
@@ -392,60 +394,41 @@
             
               <div class="markdown-body">
                 
-                <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
-<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h2 id="Uboot"><a href="#Uboot" class="headerlink" title="Uboot"></a>Uboot</h2><p>下载uboot源码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/rockchip-linux/u-boot.git<br></code></pre></td></tr></table></figure>
+                <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">sudo apt-get install -y \<br>    gcc-aarch64-linux-gnu \<br>    python3-pyelftools \<br>    zstd<br></code></pre></td></tr></table></figure>
 
-<h3 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a>源码结构</h3><ol>
-<li>soc<br>先看源码结构<br>这是 RK3566 SoC相关代码。<br>例如：</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">arch</span>/arm/mach-rockchip/<br><br>├── rk3568<br>├── rk3399<br>└── rk3588<br></code></pre></td></tr></table></figure>
-<p>里面负责：CPU初始化、时钟、DDR、电源<br>因为 RK3566 和 RK3568 接近：<br>很多代码：<br>rk3568&#x2F;</p>
-<ol start="2">
-<li><p>板级代码。<br>例如：<br>board&#x2F;rockchip&#x2F;<br>里面：<br>evb_rk3568<br>类似：<br>board&#x2F;rockchip&#x2F;evb_rk3568&#x2F;<br>负责：<br>开发板差异。<br>比如：<br>GPIO<br>LED<br>电源<br>按键</p>
-</li>
-<li><p>驱动代码<br>drivers&#x2F;<br>硬件驱动。<br>比如：<br>MMC<br>drivers&#x2F;mmc&#x2F;<br>对应：<br>eMMC</p>
-</li>
-</ol>
-<p>UART<br>drivers&#x2F;serial&#x2F;<br>对应<br>串口输出<br>Clock<br>drivers&#x2F;clk&#x2F;<br>对应：<br>时钟</p>
-<ol start="5">
-<li>cmd&#x2F;<br>U-Boot命令。<br>例如：<br>cmd&#x2F;mmc.c<br>cmd&#x2F;bootm.c<br>cmd&#x2F;load.c<br>对应：<br>&#x3D;&gt; mmc list<br>&#x3D;&gt; boot</li>
-</ol>
-<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>进入源码目录，查看板级支持</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ls configs | grep rk3566<br></code></pre></td></tr></table></figure>
-<p>显示</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">rk3566-ebook.config<br>rk3566-nand.config<br>rk3566.config<br></code></pre></td></tr></table></figure>
-<p>下载rkbin文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/rockchip-linux/rkbin.git<br></code></pre></td></tr></table></figure>
-<p>下载编译工具</p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">gcc</span>-linaro-<span class="hljs-number">6</span>.<span class="hljs-number">3</span>.<span class="hljs-number">1</span>-<span class="hljs-number">2017</span>.<span class="hljs-number">05</span>-x86_64_arm-linux-gnueabihf.tar.xz<br><span class="hljs-attribute">gcc</span>-linaro-<span class="hljs-number">6</span>.<span class="hljs-number">3</span>.<span class="hljs-number">1</span>-<span class="hljs-number">2017</span>.<span class="hljs-number">05</span>-x86_64_aarch64-linux-gnu.tar.xz<br></code></pre></td></tr></table></figure>
-<p>修改make.sh</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">CROSS_COMPILE_ARM32=../toolchain/arm32/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-<br>CROSS_COMPILE_ARM64=../toolchain/arm64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-<br></code></pre></td></tr></table></figure>
-<p>编译</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs vim">./<span class="hljs-keyword">make</span>.<span class="hljs-keyword">sh</span> clean<br>./<span class="hljs-keyword">make</span>.<span class="hljs-keyword">sh</span><br></code></pre></td></tr></table></figure>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs shell">rk3566-sdk/<br>│<br>├── bootloader/<br>│   │<br>│   ├── rkbin/<br>│   │<br>│   └── u-boot/<br>│<br>├── kernel/<br>│   └── linux-6.1/<br>│<br>├── rootfs/<br>│   └── buildroot/<br>│<br>├── board/<br>│   └── tspi-rk3566/<br>│       │<br>│       ├── dts/<br>│       ├── defconfig/<br>│       ├── rootfs-overlay/<br>│       ├── partition/<br>│       └── config/<br>│<br>├── scripts/<br>│   ├── env.sh<br>│   ├── build_uboot.sh<br>│   ├── build_kernel.sh<br>│   ├── build_rootfs.sh<br>│   ├── pack.sh<br>│   ├── flash.sh<br>│   └── clean.sh<br>│<br>├── tools/<br>│<br>├── output/<br>│   ├── bootloader/<br>│   ├── kernel/<br>│   ├── rootfs/<br>│   └── images/<br>│<br>├── docs/<br>│   ├── 00_hardware/<br>│   ├── 01_bootrom/<br>│   ├── 02_ddr/<br>│   ├── 03_uboot/<br>│   ├── 04_kernel/<br>│   ├── 05_dts/<br>│   ├── 06_rootfs/<br>│   └── 07_drivers/<br>│<br>├── README.md<br>└── build.sh<br></code></pre></td></tr></table></figure>
 
-<h3 id="代码学习"><a href="#代码学习" class="headerlink" title="代码学习"></a>代码学习</h3><p>按照启动顺序看</p>
-<ol>
-<li>board_init_f()<br>位置：u-boot&#x2F;common&#x2F;board_f.c<br>作用：Uboot启动过程中前半段初始化函数，在 U-Boot 重定位之前，完成最基本的硬件和运行环境初始化，并计算后续 U-Boot 应该搬到内存的什么位置。<br>整个启动过程</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">CPU 上电 / 复位<br>      ↓<br>汇编启动代码 start.S<br>      ↓<br>board_init_f()<br>      ↓<br>执行 init_sequence_f[] 中的初始化函数<br>      ↓<br>计算 U-Boot 重定位地址<br>      ↓<br>relocate_code()<br>      ↓<br>board_init_r()<br>      ↓<br>进入完整的 U-Boot 命令行环境<br></code></pre></td></tr></table></figure>
-<p>board_init_f() 自己并没有把所有初始化逻辑都写出来，而是按照顺序执行 init_sequence_f[] 中登记的函数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">board_init_f</span><span class="hljs-params">(ulong boot_flags)</span><br>&#123;<br>  gd-&gt;flags = boot_flags;<br>  gd-&gt;have_console = <span class="hljs-number">0</span>;<br><br>  <span class="hljs-keyword">if</span> (initcall_run_list(init_sequence_f))<br>    hang();<br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> !defined(CONFIG_ARM) &amp;&amp; !defined(CONFIG_SANDBOX) &amp;&amp; \</span><br><span class="hljs-meta">    !defined(CONFIG_EFI_APP) &amp;&amp; !CONFIG_IS_ENABLED(X86_64)</span><br>  <span class="hljs-comment">/* NOTREACHED - jump_to_copy() does not return */</span><br>  hang();<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>init_sequence_f[]是一张函数指针表，里面有几个重要的初始化函数：</p>
-<ul>
-<li>dram_init()：用于初始化或探测 DRAM，并记录内存容量</li>
-<li>timer_init()：初始化早期定时器，让 U-Boot 能够获得时间基准</li>
-<li>serial_init()：初始化早期串口，主要用于输出启动日志</li>
+<h2 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h2><ul>
+<li>控制器：<code>UART2</code></li>
+<li>Linux 设备：<code>ttyFIQ0</code></li>
+<li>寄存器地址：<code>0xFE660000</code></li>
+<li>波特率：<code>1500000</code></li>
+<li>数据格式：通常为 <code>8N1</code></li>
+<li>引脚复用：<ul>
+<li>RX：<code>GPIO0_D0</code></li>
+<li>TX：<code>GPIO0_D1</code></li>
 </ul>
-<ol start="2">
-<li>board_init_r()<br>位置：common&#x2F;board_r.c<br>作用：完成设备、存储、环境变量、网络等完整初始化，最终执行 bootcmd 或进入命令行。<br>简化代码：</li>
-</ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">board_init_r</span><span class="hljs-params">(<span class="hljs-type">gd_t</span> *new_gd, ulong dest_addr)</span><br>&#123;<br>    gd = new_gd;<br><br>    <span class="hljs-keyword">if</span> (initcall_run_list(init_sequence_r))<br>        hang();<br><br>    hang();<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>与 board_init_f() 类似，真正的初始化工作主要由函数指针数组完成：init_sequence_r[]<br>里面有几个重要函数</p>
-<ul>
-<li>initr_mmc：MMC 初始化主要负责准备，SD 卡、eMMCMMC 控制器、对应块设备</li>
+</li>
 </ul>
+<h2 id="BOOTROM"><a href="#BOOTROM" class="headerlink" title="BOOTROM"></a>BOOTROM</h2><p>BootROM 是烧录在 RK3566 芯片内部的一小段只读程序，<br>是由芯片厂提供，芯片生产时已经固化，用户不能修改，往往是CPU复位后执行。<br>此时的状态是：</p>
+<ul>
+<li>外部 DDR 尚未初始化，不能正常使用</li>
+<li>BootROM 只能使用片内 ROM、片内 SRAM 和少量已支持的外设</li>
+<li>它负责寻找启动介质、验证并读取首级启动镜像</li>
+<li>找不到镜像时，进入USB下载模式</li>
+</ul>
+<p>这一阶段需要先拿到原厂提供的引导固件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone https://github.com/rockchip-linux/rkbin.git<br>git clone https://github.com/rockchip-linux/u-boot.git<br></code></pre></td></tr></table></figure>
+
+<p>其中rkbin是引导固件，后面的就是uboot代码。</p>
+<p>我们进入uboot查看</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">chengjing@chengjing:~/pro/rk3566SDK/bootloader/u-boot$ cat configs/rk3566.config<br>CONFIG_BASE_DEFCONFIG=&quot;rk3568_defconfig&quot;<br>CONFIG_LOADER_INI=&quot;RK3566MINIALL.ini&quot;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到板级配置文件依赖rk3568_defconfig<br>RK3566MINIALL.ini就在下载的rkbin目录里面，主要是Loader 打包清单</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.szovzspem.png" srcset="/img/loading.svg" lazyload></p>
+<p>uboot阶段使用的设备树文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">rk3568-evb.dts<br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -536,9 +519,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
+                      <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" title="Memory Management">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">问题及思考</span>
+                        <span class="hidden-mobile">Memory Management</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -546,8 +529,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/" title="Memory Management">
-                        <span class="hidden-mobile">Memory Management</span>
+                      <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" title="进程优先级">
+                        <span class="hidden-mobile">进程优先级</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

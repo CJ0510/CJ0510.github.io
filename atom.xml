@@ -10,7 +10,45 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-08-23T23:56:47.505Z</updated>
+  <updated>2026-08-30T13:34:01.395Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="perf" scheme="https://cj0510.github.io/categories/Linux-Kernel/perf/"/>
+    <category term="Linux perf" scheme="https://cj0510.github.io/tags/Linux-perf/"/>
+    <id>https://cj0510.github.io/2026/08/30/Linux%20Kernel/perf/p0_perf/</id>
+    <link href="https://cj0510.github.io/2026/08/30/Linux%20Kernel/perf/p0_perf/"/>
+    <published>2026-08-30T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="perf基础"><a href="#perf基础" class="headerlink" title="perf基础"></a>perf基础</h2><p>Perf 是 Linux 内核提供的一套性能分析工具，它通过 Linux perf_event 子系统获取 CPU、内核和程序运行时的性能数据。</p>
+<p>其原理大致如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1vze7syyey.webp"></p>
+<p>PMU全称Performance]]>
+    </summary>
+    <title>perf初探</title>
+    <updated>2026-08-30T13:34:01.395Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-23T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="schedule"><a href="#schedule" class="headerlink" title="schedule"></a>schedule</h2><p>task被调度的原因主要分为一下几类</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp"></p>
+<p>我们看函数的部分</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
+    </summary>
+    <title>schedule() 主流程源码分析</title>
+    <updated>2026-08-30T13:36:36.754Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -22,10 +60,10 @@
     <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
     <published>2026-08-23T14:11:55.000Z</published>
     <summary>
-      <![CDATA[<h1 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h1><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
+      <![CDATA[<h2 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h2><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
     </summary>
     <title>task_struct 中的调度信息</title>
-    <updated>2026-08-23T23:56:47.505Z</updated>
+    <updated>2026-08-30T13:36:37.495Z</updated>
   </entry>
   <entry>
     <author>
@@ -38,26 +76,10 @@
     <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
     <published>2026-08-22T14:11:55.000Z</published>
     <summary>
-      <![CDATA[<h1 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1]]>
+      <![CDATA[<h2 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1]]>
     </summary>
     <title>Linux调度子系统整体架构</title>
-    <updated>2026-08-23T14:13:56.303Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="ebpf" scheme="https://cj0510.github.io/categories/Linux-Kernel/ebpf/"/>
-    <category term="Linux ebpf" scheme="https://cj0510.github.io/tags/Linux-ebpf/"/>
-    <id>https://cj0510.github.io/2026/08/22/Linux%20Kernel/ebpf/P0/</id>
-    <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/ebpf/P0/"/>
-    <published>2026-08-22T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="泰山派libbpf使用"><a href="#泰山派libbpf使用" class="headerlink" title="泰山派libbpf使用"></a>泰山派libbpf使用</h1><p>SoC：RK3566<br>架构：AArch64<br>内核：Linux]]>
-    </summary>
-    <title>ebpf使用</title>
-    <updated>2026-08-23T13:01:09.955Z</updated>
+    <updated>2026-08-30T13:36:36.112Z</updated>
   </entry>
   <entry>
     <author>
@@ -219,6 +241,22 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -228,22 +266,6 @@
     </summary>
     <title>SPI协议基础：从四根线理解Linux SPI框架</title>
     <updated>2026-08-02T02:33:24.124Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
-    </summary>
-    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
-    <updated>2026-08-02T09:45:56.855Z</updated>
   </entry>
   <entry>
     <author>
@@ -283,24 +305,6 @@
     <author>
       <name>CJ1018</name>
     </author>
-    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
-    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
-    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
-<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h2 id="Uboot"><a href="#Uboot" class="headerlink" title="Uboot"></a>Uboot</h2><p>下载uboot源码</p>
-<figure class="highlight]]>
-    </summary>
-    <title>RK3566 BSP</title>
-    <updated>2026-08-01T12:59:11.938Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
@@ -312,6 +316,23 @@
     </summary>
     <title>Memory Management</title>
     <updated>2026-08-01T12:59:35.125Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
+    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
+    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
+    </summary>
+    <title>RK3566 BSP</title>
+    <updated>2026-08-30T13:35:52.116Z</updated>
   </entry>
   <entry>
     <author>
