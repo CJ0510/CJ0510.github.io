@@ -37,25 +37,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
     <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
-    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-23T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="schedule"><a href="#schedule" class="headerlink" title="schedule"></a>schedule</h2><p>task被调度的原因主要分为一下几类</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp"></p>
-<p>我们看函数的部分</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
-    </summary>
-    <title>schedule() 主流程源码分析</title>
-    <updated>2026-08-30T13:36:36.754Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
-    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
     <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/</id>
     <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
     <published>2026-08-23T14:11:55.000Z</published>
@@ -64,6 +45,25 @@
     </summary>
     <title>task_struct 中的调度信息</title>
     <updated>2026-08-30T13:36:37.495Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-23T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="schedule"><a href="#schedule" class="headerlink" title="schedule"></a>schedule</h2><p>task被调度的原因主要分为一下几类</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp"></p>
+<p>我们看函数的部分</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
+    </summary>
+    <title>schedule() 主流程源码分析</title>
+    <updated>2026-09-07T00:21:00.021Z</updated>
   </entry>
   <entry>
     <author>
@@ -224,23 +224,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-SPI-Framework"><a href="#1-SPI-Framework" class="headerlink" title="1. SPI Framework"></a>1. SPI Framework</h1><p>上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：</p>
-<p><img]]>
-    </summary>
-    <title>Linux SPI Framework整体架构分析</title>
-    <updated>2026-08-02T02:34:30.155Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -266,6 +249,23 @@
     </summary>
     <title>SPI协议基础：从四根线理解Linux SPI框架</title>
     <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-SPI-Framework"><a href="#1-SPI-Framework" class="headerlink" title="1. SPI Framework"></a>1. SPI Framework</h1><p>上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：</p>
+<p><img]]>
+    </summary>
+    <title>Linux SPI Framework整体架构分析</title>
+    <updated>2026-08-02T02:34:30.155Z</updated>
   </entry>
   <entry>
     <author>
@@ -305,22 +305,6 @@
     <author>
       <name>CJ1018</name>
     </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/</id>
-    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="理论"><a href="#理论" class="headerlink"]]>
-    </summary>
-    <title>Memory Management</title>
-    <updated>2026-08-01T12:59:35.125Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
     <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
     <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
     <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
@@ -333,6 +317,25 @@
     </summary>
     <title>RK3566 BSP</title>
     <updated>2026-08-30T13:35:52.116Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
+    <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
+    <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="虚拟内存管理"><a href="#虚拟内存管理" class="headerlink" title="虚拟内存管理"></a>虚拟内存管理</h1><p>Linux内存管理子系统负责管理虚拟内存、物理内存、地址转换和内存分配等，包含多个层次。<br>其整体架构如下，之后会一一分析。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6f1fl7iokr.webp"></p>
+<h1 id="虚拟内存管理-1"><a href="#虚拟内存管理-1"]]>
+    </summary>
+    <title>虚拟内存管理</title>
+    <updated>2026-09-06T13:43:07.921Z</updated>
   </entry>
   <entry>
     <author>

@@ -21,24 +21,31 @@
   <meta name="author" content="CJ1018">
   <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
   
-    <meta name="description" content="理论">
+    <meta name="description" content="虚拟内存管理Linux内存管理子系统负责管理虚拟内存、物理内存、地址转换和内存分配等，包含多个层次。其整体架构如下，之后会一一分析。  虚拟内存管理先从虚拟地址入手，看名字就知道，就是内核虚拟的内存空间，共各个进程使用。物理内存是死的，只有那么多，每个进程都想独占，于是内核就创造了个假的，让每个进程都以为自己在独享物理内存空间。我们要学习就是内核怎么把这个假的东西造出来的，又是怎么欺上瞒下管理的，">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Memory Management">
-<meta property="og:url" content="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E7%90%86%E8%AE%BA/">
+<meta property="og:title" content="虚拟内存管理">
+<meta property="og:url" content="https://cj0510.github.io/2026/07/13/Linux%20Kernel/Memory%20Management/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
-<meta property="og:description" content="理论">
+<meta property="og:description" content="虚拟内存管理Linux内存管理子系统负责管理虚拟内存、物理内存、地址转换和内存分配等，包含多个层次。其整体架构如下，之后会一一分析。  虚拟内存管理先从虚拟地址入手，看名字就知道，就是内核虚拟的内存空间，共各个进程使用。物理内存是死的，只有那么多，每个进程都想独占，于是内核就创造了个假的，让每个进程都以为自己在独享物理内存空间。我们要学习就是内核怎么把这个假的东西造出来的，又是怎么欺上瞒下管理的，">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6f1fl7iokr.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfhvcfse2.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3nsdd6vjcx.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1764yfvykz.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7q1lapgh4.webp">
 <meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-08-01T12:59:35.125Z">
+<meta property="article:modified_time" content="2026-09-06T13:43:07.921Z">
 <meta property="article:author" content="CJ1018">
-<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Linux Memory">
+<meta property="article:tag" content="Memory Management">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6f1fl7iokr.webp">
   
   
   
     <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
   
-  <title>Memory Management · CJ&#39;s Tech Notes</title>
+  <title>虚拟内存管理 · CJ&#39;s Tech Notes</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -312,7 +319,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">Memory Management</span>
+            <span id="subtitle">虚拟内存管理</span>
           
         </div>
 
@@ -336,7 +343,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2 字
+          2.3k 字
         
       </span>
     
@@ -348,7 +355,7 @@
         
         
           <!-- compatible with older versions-->
-          1 分钟
+          20 分钟
         
       </span>
     
@@ -387,12 +394,38 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Memory Management</h1>
+            <h1 id="seo-header">虚拟内存管理</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h1>
+                <h1 id="虚拟内存管理"><a href="#虚拟内存管理" class="headerlink" title="虚拟内存管理"></a>虚拟内存管理</h1><p>Linux内存管理子系统负责管理虚拟内存、物理内存、地址转换和内存分配等，包含多个层次。<br>其整体架构如下，之后会一一分析。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6f1fl7iokr.webp" srcset="/img/loading.svg" lazyload></p>
+<h1 id="虚拟内存管理-1"><a href="#虚拟内存管理-1" class="headerlink" title="虚拟内存管理"></a>虚拟内存管理</h1><p>先从虚拟地址入手，看名字就知道，就是内核虚拟的内存空间，共各个进程使用。<br>物理内存是死的，只有那么多，每个进程都想独占，于是内核就创造了个假的，<br>让每个进程都以为自己在独享物理内存空间。<br>我们要学习就是内核怎么把这个假的东西造出来的，又是怎么欺上瞒下管理的，就这么简单。</p>
+<p>先看一下虚拟内存的分布</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfhvcfse2.webp" srcset="/img/loading.svg" lazyload></p>
+<p>从下往上看，首先是代码段，存放的程序编译后的机器码。<br>程序运行起来后需要的数据被放到数据段和BSS段，<br>其中，指定了初始值的全局变量和静态变量被放到数据段，</p>
+<p>程序在运行期间往往需要动态的申请内存，所以在虚拟内存空间中也需要一块区域来存放这些动态申请的内存，这块区域就叫做堆。</p>
+<p>初次之外，程序在运行的时候还依赖动态链接库，这些库也动态链接库也有自己的对应的代码段，数据段，BSS 段，也需要一起被加载进内存中。</p>
+<p>还有用于内存文件映射的系统调用 mmap，会将文件与内存进行映射，这块内存（虚拟内存）也需要在虚拟地址空间中有一块区域存储。</p>
+<p>这些动态链接库中的代码段，数据段，BSS 段，以及通过 mmap 系统调用映射的共享内存区，在虚拟内存空间的存储区域叫做文件映射与匿名映射区。</p>
+<p>最后，程序运行的时候总要调用各种函数，那么调用函数过程中使用到的局部变量和函数参数也需要一块内存区域来保存。这一块区域在虚拟内存空间中叫做栈。</p>
+<p>上面只是一个简化分布，但是都是核心部分，<br>大概就是内核给进程呈现的假象空间。</p>
+<p>之前讲过task_struct各类内核信息，其中就有内存信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> &#123;</span><br>      <span class="hljs-type">pid_t</span>				pid;<br>      <span class="hljs-type">pid_t</span>				tgid;<br>      <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">files_struct</span>    *<span class="hljs-title">files</span>;</span><br>      <span class="hljs-comment">// 内存描述符表示进程虚拟地址空间</span><br>      <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span>    *<span class="hljs-title">mm</span>;</span><br><br>      .......... 省略 .......<br>&#125;<br>是用mm_struct结构体描述虚拟内存空间。<br><br>从代码层面我们看一下内核是如何布局虚拟内存空间的。<br>```c<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">maple_tree</span> <span class="hljs-title">mm_mt</span>;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> mmap_base;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> task_size;<br>    <span class="hljs-type">pgd_t</span> *pgd;<br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> total_vm; <span class="hljs-comment">//表示在进程虚拟内存空间中总共与物理内存映射的页的总数。</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> locked_vm; <span class="hljs-comment">// 不能被换出的页的总数</span><br>    <span class="hljs-type">atomic64_t</span> pinned_vm; <span class="hljs-comment">// 既不能换出，也不能移动的内存页总数</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> data_vm; <span class="hljs-comment">// 数据段中映射的内存页数目</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> exec_vm; <span class="hljs-comment">// 代码段中存放可执行文件的内存页数目</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> stack_vm; <span class="hljs-comment">// 栈中所映射的内存页数目</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_code, end_code;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_data, end_data;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_brk, brk;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_stack;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> arg_start, arg_end;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> env_start, env_end;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">percpu_counter</span> <span class="hljs-title">rss_stat</span>[<span class="hljs-title">NR_MM_COUNTERS</span>];</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>整个映射关系如图</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3nsdd6vjcx.webp" srcset="/img/loading.svg" lazyload></p>
+<p>首先是task_size变量，讲虚拟内存空间分为两部分内核空间和用户空间。<br>start_code和end_code定义代码段的起始和结束位置，存放程序编译后的机器码。</p>
+<p>start_stack 是栈的起始位置在 RBP 寄存器中存储，栈顶指针 stack pointer 在 RSP 寄存器中存储。</p>
+<p>虚拟地址空间Virtual Memory Area通过上面的mm_stuct进行了划分，而一段具体的、连续的虚拟地址区间<br>使用struct vm_area_struct进行管理。<br>核心为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">vm_area_struct</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> vm_start; <span class="hljs-comment">// 起始地址</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> vm_end;  <span class="hljs-comment">// 结束地址</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> *<span class="hljs-title">vm_mm</span>;</span><br><br>    <span class="hljs-type">pgprot_t</span> vm_page_prot; <span class="hljs-comment">// 页级别访问权限</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> vm_flags; <span class="hljs-comment">// VAM虚拟内存区域访问权限</span><br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">anon_vma</span> *<span class="hljs-title">anon_vma</span>;</span><br><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">vm_operations_struct</span> *<span class="hljs-title">vm_ops</span>;</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> vm_pgoff;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">file</span> *<span class="hljs-title">vm_file</span>;</span><br><br>    <span class="hljs-type">void</span> *vm_private_data;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>表示的地址范围[vm_start, vm_end)，一个 mm_struct 对应多个 VMA，使用struct maple_tree mm_mt进行管理。</p>
+<p>如图所示</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1764yfvykz.webp" srcset="/img/loading.svg" lazyload></p>
+<p>每个虚拟内存区域VAM都由许多虚拟页构成，经过页表转换对应到物理页。<br>每个页面都是有访问权限的。<br>其中vm_page_prot是页级别的访问权限，<br>vm_flags则是整个虚拟内存区域的访问权限。<br>两者通过vma-&gt;vm_page_prot &#x3D; vm_get_page_prot(vma-&gt;vm_flags)进行转换。</p>
+<p>常用定义的vm_flags</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7q1lapgh4.webp" srcset="/img/loading.svg" lazyload></p>
+
                 
               </div>
             
@@ -415,7 +448,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
+  <a href="/categories/Linux-Kernel/Memory-Management/" class="category-chain-item">Memory Management</a>
   
   
 
@@ -432,7 +465,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+        <a href="/tags/Linux-Memory/" class="print-no-link">#Linux Memory</a>
+      
+        <a href="/tags/Memory-Management/" class="print-no-link">#Memory Management</a>
       
     </div>
   
@@ -444,8 +479,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Memory Management</div>
-      <div>https://cj0510.github.io/2026/07/13/Linux Kernel/Memory Management/理论/</div>
+      <div>虚拟内存管理</div>
+      <div>https://cj0510.github.io/2026/07/13/Linux Kernel/Memory Management/虚拟内存管理/</div>
     </div>
     <div class="license-meta">
       
@@ -482,9 +517,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
+                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">问题及思考</span>
+                        <span class="hidden-mobile">RK3566 BSP</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -492,8 +527,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
-                        <span class="hidden-mobile">RK3566 BSP</span>
+                      <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" title="进程优先级">
+                        <span class="hidden-mobile">进程优先级</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

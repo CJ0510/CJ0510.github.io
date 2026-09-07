@@ -24,14 +24,17 @@
     <meta name="description" content="scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk &#x3D; current; &#x2F;&#x2F;保存当前任务    sched_submit_work(tsk);    do &#123;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="schedule() 主流程源码分析">
-<meta property="og:url" content="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/schedule()%20%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+<meta property="og:url" content="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
 <meta property="og:description" content="scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk &#x3D; current; &#x2F;&#x2F;保存当前任务    sched_submit_work(tsk);    do &#123;">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5flbwmpn8g.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7lkqko7ru3.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.icvdq1deo.png">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1apqvgjdg0.webp">
 <meta property="article:published_time" content="2026-08-23T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-08-30T13:36:36.754Z">
+<meta property="article:modified_time" content="2026-09-07T00:21:00.021Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
@@ -339,7 +342,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          1.3k 字
+          3.1k 字
         
       </span>
     
@@ -351,7 +354,7 @@
         
         
           <!-- compatible with older versions-->
-          12 分钟
+          26 分钟
         
       </span>
     
@@ -408,6 +411,28 @@
 
 <p>整个思路如下</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5flbwmpn8g.webp" srcset="/img/loading.svg" lazyload></p>
+<p>接着向下看，接下来就是选择下一个要运行的任务pick_next_task</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">next = pick_next_task(rq, prev, &amp;rf);<br></code></pre></td></tr></table></figure>
+<p>其选择的步骤是先选择调度类，再由调度类选择下一个任务</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7lkqko7ru3.webp" srcset="/img/loading.svg" lazyload></p>
+<p>具体代码后续分析。</p>
+<p>完整调度逻辑如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.icvdq1deo.png" srcset="/img/loading.svg" lazyload></p>
+<h1 id="pick-next-task"><a href="#pick-next-task" class="headerlink" title="pick_next_task"></a>pick_next_task</h1><p>上一小节说了在__schedule里会执行pick_next_task选择要切换的task，这一节主要<br>讲深入分析这个函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">next = pick_next_task(rq, prev, &amp;rf);<br>rq：当前CPU的runqueue<br>prev：前一个任务<br>rf：runqueue锁状态<br></code></pre></td></tr></table></figure>
+
+<p>之前说过，内核中有很多种类的任务，pick_next_task是总入口。<br>在选择任务的时候分两大步，先根据调度类的优先级确定调度类，再根据调度类的<br>内部算法选择下一个任务。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">struct</span> task_struct *<br><span class="hljs-title function_">pick_next_task</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> rq *rq,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *prev,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> rq_flags *rf)</span><br>&#123;<br>    <span class="hljs-keyword">return</span> __pick_next_task(rq, prev, rf);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>先屏蔽其他代码，跟schedule一样，真正业务在__pick_next_task里面。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *</span><br><span class="hljs-class">__<span class="hljs-title">pick_next_task</span>(<span class="hljs-keyword">struct</span> <span class="hljs-title">rq</span> *<span class="hljs-title">rq</span>,</span><br><span class="hljs-class">                 <span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">prev</span>,</span><br><span class="hljs-class">                 <span class="hljs-keyword">struct</span> <span class="hljs-title">rq_flags</span> *<span class="hljs-title">rf</span>)</span><br><span class="hljs-class">&#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span> *<span class="hljs-keyword">class</span>;</span> <span class="hljs-comment">// 指向某个调度类</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">p</span>;</span>  <span class="hljs-comment">// 选出来的具体任务</span><br><br>    <span class="hljs-comment">/* 公平调度类快速路径 */</span><br>    <span class="hljs-keyword">if</span> (likely(<br>        !sched_class_above(prev-&gt;sched_class,<br>                           &amp;fair_sched_class) &amp;&amp;<br>        rq-&gt;nr_running == rq-&gt;cfs.h_nr_running)) &#123;<br><br>        p = pick_next_task_fair(rq, prev, rf);<br><br>        <span class="hljs-keyword">if</span> (unlikely(p == RETRY_TASK))<br>            <span class="hljs-keyword">goto</span> restart;<br><br>        <span class="hljs-keyword">if</span> (!p) &#123;<br>            put_prev_task(rq, prev);<br>            p = pick_next_task_idle(rq);<br>        &#125;<br><br>        <span class="hljs-keyword">return</span> p;<br>    &#125;<br><br>restart:<br>    put_prev_task_balance(rq, prev, rf);<br><br>    ...<br><br>    <span class="hljs-comment">/* 通用调度类遍历 */</span><br>    for_each_class(class) &#123;<br>        p = class-&gt;pick_next_task(rq);<br><br>        <span class="hljs-keyword">if</span> (p)<br>            <span class="hljs-keyword">return</span> p;<br>    &#125;<br><br>    BUG();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>主要分了两条路，一条公平调度类快速路径，一条通用慢路径。<br>这样做的目的是为了优化全是普通任务的场景，不用每次都<br>判断到底是那个调度类。</p>
+<p>整个选择逻辑如下</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1apqvgjdg0.webp" srcset="/img/loading.svg" lazyload></p>
+<h1 id="context-switch"><a href="#context-switch" class="headerlink" title="context_switch()"></a>context_switch()</h1><p>在选出next并与prev，会进行上下文切换，核心代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> __always_inline <span class="hljs-keyword">struct</span> rq *<br><span class="hljs-title function_">context_switch</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> rq *rq,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *prev,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *next,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> rq_flags *rf)</span><br>&#123;<br>    prepare_task_switch(rq, prev, next);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换或处理地址空间</span><br><span class="hljs-comment">     */</span><br>    ...<br><br>    prepare_lock_switch(rq, next, rf);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换寄存器和内核栈</span><br><span class="hljs-comment">     */</span><br>    switch_to(prev, next, prev);<br><br>    barrier();<br><br>    <span class="hljs-keyword">return</span> finish_task_switch(prev);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>一次完整的切换过程，并不只是切换几个寄存器，而是要让CPU从 prev 的地址空间、内核栈和线程状态，过渡到 next 的对应状态。</p>
 
                 
               </div>
@@ -461,7 +486,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>schedule() 主流程源码分析</div>
-      <div>https://cj0510.github.io/2026/08/23/Linux Kernel/Scheduling/schedule() 主流程源码分析/</div>
+      <div>https://cj0510.github.io/2026/08/23/Linux Kernel/Scheduling/调度主流程源码分析/</div>
     </div>
     <div class="license-meta">
       
@@ -498,9 +523,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/08/30/Linux%20Kernel/perf/p0_perf/" title="perf初探">
+                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" title="task_struct 中的调度信息">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">perf初探</span>
+                        <span class="hidden-mobile">task_struct 中的调度信息</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -508,8 +533,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" title="task_struct 中的调度信息">
-                        <span class="hidden-mobile">task_struct 中的调度信息</span>
+                      <a href="/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" title="Linux调度子系统整体架构">
+                        <span class="hidden-mobile">Linux调度子系统整体架构</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
