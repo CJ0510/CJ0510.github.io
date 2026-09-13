@@ -33,8 +33,11 @@
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7lkqko7ru3.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.icvdq1deo.png">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1apqvgjdg0.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9kgxlqg19w.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.83asqz0pzu.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.szpfx0olb.webp">
 <meta property="article:published_time" content="2026-08-23T14:11:55.000Z">
-<meta property="article:modified_time" content="2026-09-07T00:21:00.021Z">
+<meta property="article:modified_time" content="2026-09-12T09:38:41.777Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Scheduling">
 <meta name="twitter:card" content="summary_large_image">
@@ -342,7 +345,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          3.1k 字
+          3.9k 字
         
       </span>
     
@@ -354,7 +357,7 @@
         
         
           <!-- compatible with older versions-->
-          26 分钟
+          33 分钟
         
       </span>
     
@@ -430,9 +433,28 @@
 <p>整个选择逻辑如下</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1apqvgjdg0.webp" srcset="/img/loading.svg" lazyload></p>
 <h1 id="context-switch"><a href="#context-switch" class="headerlink" title="context_switch()"></a>context_switch()</h1><p>在选出next并与prev，会进行上下文切换，核心代码</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> __always_inline <span class="hljs-keyword">struct</span> rq *<br><span class="hljs-title function_">context_switch</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> rq *rq,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *prev,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *next,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> rq_flags *rf)</span><br>&#123;<br>    prepare_task_switch(rq, prev, next);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换或处理地址空间</span><br><span class="hljs-comment">     */</span><br>    ...<br><br>    prepare_lock_switch(rq, next, rf);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换寄存器和内核栈</span><br><span class="hljs-comment">     */</span><br>    switch_to(prev, next, prev);<br><br>    barrier();<br><br>    <span class="hljs-keyword">return</span> finish_task_switch(prev);<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> __always_inline <span class="hljs-keyword">struct</span> rq *<br><span class="hljs-title function_">context_switch</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> rq *rq,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *prev,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> task_struct *next,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> rq_flags *rf)</span><br>&#123;<br>    prepare_task_switch(rq, prev, next); <span class="hljs-comment">// 切换前准备</span><br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换或处理地址空间</span><br><span class="hljs-comment">     */</span><br>    ...<br><br>    prepare_lock_switch(rq, next, rf);<br><br>    <span class="hljs-comment">/*</span><br><span class="hljs-comment">     * 切换寄存器和内核栈</span><br><span class="hljs-comment">     */</span><br>    switch_to(prev, next, prev);<br><br>    barrier();<br><br>    <span class="hljs-keyword">return</span> finish_task_switch(prev); <span class="hljs-comment">// 切换后收尾工作</span><br>&#125;<br></code></pre></td></tr></table></figure>
 
-<p>一次完整的切换过程，并不只是切换几个寄存器，而是要让CPU从 prev 的地址空间、内核栈和线程状态，过渡到 next 的对应状态。</p>
+<p>一次完整的切换过程，并不只是切换几个寄存器，而是要让CPU从 prev 的地址空间、内核栈和线程状态，过渡到 next 的对应状态。主要有两部分，一部分是地址空间上下文，一部分是CPU执行上下文。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9kgxlqg19w.webp" srcset="/img/loading.svg" lazyload></p>
+<p>先看地址空间切换的核心代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (!next-&gt;mm) &#123;                     <span class="hljs-comment">/* 切到内核线程 */</span><br>    enter_lazy_tlb(prev-&gt;active_mm, next);<br>    next-&gt;active_mm = prev-&gt;active_mm;<br><br>    <span class="hljs-keyword">if</span> (prev-&gt;mm)                    <span class="hljs-comment">/* 用户任务 → 内核线程 */</span><br>        mmgrab(prev-&gt;active_mm);<br>    <span class="hljs-keyword">else</span>                             <span class="hljs-comment">/* 内核线程 → 内核线程 */</span><br>        prev-&gt;active_mm = <span class="hljs-literal">NULL</span>;<br>&#125; <span class="hljs-keyword">else</span> &#123;                             <span class="hljs-comment">/* 切到用户任务 */</span><br>    membarrier_switch_mm(rq, prev-&gt;active_mm, next-&gt;mm);<br><br>    switch_mm_irqs_off(prev-&gt;active_mm, next-&gt;mm, next);<br>    lru_gen_use_mm(next-&gt;mm);<br><br>    <span class="hljs-keyword">if</span> (!prev-&gt;mm) &#123;                 <span class="hljs-comment">/* 内核线程 → 用户任务 */</span><br>        rq-&gt;prev_mm = prev-&gt;active_mm;<br>        prev-&gt;active_mm = <span class="hljs-literal">NULL</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>task的地址相关信息页保存在task_struct中，有关切换的信息有两个</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> *<span class="hljs-title">mm</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> *<span class="hljs-title">active_mm</span>;</span><br></code></pre></td></tr></table></figure>
+
+<p>其中mm表示任务自己的虚拟空间地址</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.83asqz0pzu.webp" srcset="/img/loading.svg" lazyload></p>
+<p>active_mm表示这个任务运行时，CPU实际关联的地址空间。</p>
+<p>上面的代码处理四种情况：</p>
+<ul>
+<li>用户任务切换到用户任务</li>
+<li>用户任务切换到内核线程</li>
+<li>内核线程切换到用户任务</li>
+<li>内核线程切换到内核线程</li>
+</ul>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.szpfx0olb.webp" srcset="/img/loading.svg" lazyload></p>
+<p>当从用户任务切换到用户任务的时候，会走右边的分支<br>当从用户任务切换到内核线程时，走左边的分支</p>
 
                 
               </div>

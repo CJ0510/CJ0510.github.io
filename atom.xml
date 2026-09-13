@@ -63,7 +63,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
     </summary>
     <title>schedule() 主流程源码分析</title>
-    <updated>2026-09-07T00:21:00.021Z</updated>
+    <updated>2026-09-12T09:38:41.777Z</updated>
   </entry>
   <entry>
     <author>
@@ -123,24 +123,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
     <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/</id>
-    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/"/>
-    <published>2026-08-09T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
-<p>这条链路是这样的：</p>
-<p><img]]>
-    </summary>
-    <title>printk机制基础</title>
-    <updated>2026-08-16T11:12:09.420Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
     <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
     <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
     <published>2026-08-09T14:11:55.000Z</published>
@@ -151,6 +133,24 @@
     </summary>
     <title>Linux日志系统整体架构</title>
     <updated>2026-08-09T10:08:39.008Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
+<p>这条链路是这样的：</p>
+<p><img]]>
+    </summary>
+    <title>printk机制基础</title>
+    <updated>2026-08-16T11:12:09.420Z</updated>
   </entry>
   <entry>
     <author>
@@ -224,39 +224,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
     <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
-    </summary>
-    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
-    <updated>2026-08-02T09:45:56.855Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
-    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
-    <published>2026-08-01T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-What-is-SPI"><a href="#1-What-is-SPI" class="headerlink" title="1. What is SPI?"></a>1. What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
-<p>在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。<br>例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如]]>
-    </summary>
-    <title>SPI协议基础：从四根线理解Linux SPI框架</title>
-    <updated>2026-08-02T02:33:24.124Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
     <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
     <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
     <published>2026-08-01T05:32:55.000Z</published>
@@ -290,6 +257,39 @@
       <name>CJ1018</name>
     </author>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-What-is-SPI"><a href="#1-What-is-SPI" class="headerlink" title="1. What is SPI?"></a>1. What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
+<p>在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。<br>例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如]]>
+    </summary>
+    <title>SPI协议基础：从四根线理解Linux SPI框架</title>
+    <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
     <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
@@ -300,23 +300,6 @@
     </summary>
     <title>问题及思考</title>
     <updated>2026-08-01T12:59:11.047Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
-    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
-    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
-    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
-    <published>2026-07-13T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
-<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
-    </summary>
-    <title>RK3566 BSP</title>
-    <updated>2026-08-30T13:35:52.116Z</updated>
   </entry>
   <entry>
     <author>
@@ -335,7 +318,24 @@
 <h1 id="虚拟内存管理-1"><a href="#虚拟内存管理-1"]]>
     </summary>
     <title>虚拟内存管理</title>
-    <updated>2026-09-06T13:43:07.921Z</updated>
+    <updated>2026-09-12T08:22:47.838Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
+    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
+    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
+    </summary>
+    <title>RK3566 BSP</title>
+    <updated>2026-08-30T13:35:52.116Z</updated>
   </entry>
   <entry>
     <author>

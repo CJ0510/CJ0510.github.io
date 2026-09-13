@@ -30,11 +30,18 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.6f1fl7iokr.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.2vfhvcfse2.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3gp5o9uye7.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9ddpwsc8ls.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3nsdd6vjcx.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1764yfvykz.webp">
 <meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7q1lapgh4.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.32ipt327cj.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.51ewmaa5o8.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.92qw3nt4p0.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1sfssmkmv4.webp">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8dxmjqr3gf.webp">
 <meta property="article:published_time" content="2026-07-13T05:32:55.000Z">
-<meta property="article:modified_time" content="2026-09-06T13:43:07.921Z">
+<meta property="article:modified_time" content="2026-09-12T08:22:47.838Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="Linux Memory">
 <meta property="article:tag" content="Memory Management">
@@ -343,7 +350,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.3k 字
+          5.8k 字
         
       </span>
     
@@ -355,7 +362,7 @@
         
         
           <!-- compatible with older versions-->
-          20 分钟
+          49 分钟
         
       </span>
     
@@ -411,6 +418,15 @@
 <p>这些动态链接库中的代码段，数据段，BSS 段，以及通过 mmap 系统调用映射的共享内存区，在虚拟内存空间的存储区域叫做文件映射与匿名映射区。</p>
 <p>最后，程序运行的时候总要调用各种函数，那么调用函数过程中使用到的局部变量和函数参数也需要一块内存区域来保存。这一块区域在虚拟内存空间中叫做栈。</p>
 <p>上面只是一个简化分布，但是都是核心部分，<br>大概就是内核给进程呈现的假象空间。</p>
+<p>我们看一下真实机器的虚拟内存布局，以32位和64位机器为例子。</p>
+<p>32位机器上，能寻址的范围是2^32，虚拟空间的大小是4GB，范围是0x00000000-0xFFFFFFFF。<br>用户态大小3GB，范围0x00000000 - 0xC0000000<br>内核态 1 GB，范围为：0xC0000000 - 0xFFFFFFFF</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.3gp5o9uye7.webp" srcset="/img/loading.svg" lazyload></p>
+<p>用户空间虚拟地址从0x08048000开始，保留区为不可访问。</p>
+<p>64位机器上，寻址范围为 2^64，理论上所能表达的虚拟内存空间为 16 EB，范围是0x00000000000000000000-0xFFFF FFFFFFFFFFFF。<br>但其实只使用了48 位来描述虚拟内存空间，寻址范围为 2^48 ，所能表达的虚拟内存空间为 256TB。</p>
+<p>其中低 128 T 表示用户态虚拟内存空间，虚拟内存地址范围为：0x0000 0000 0000 0000 -0x0000 7FFF FFFF FFFF 。</p>
+<p>高 128 T 表示内核态虚拟内存空间，虚拟内存地址范围为：0xFFFF 8000 0000 0000 - 0xFFFF FFFF FFFF FFFF 。</p>
+<p>中间有一段 0x0000 8000 0000 0000 - 0xFFFF 7FFF FFFF FFFF 的地址空洞，canonical address 空洞。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.9ddpwsc8ls.webp" srcset="/img/loading.svg" lazyload></p>
 <p>之前讲过task_struct各类内核信息，其中就有内存信息。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> &#123;</span><br>      <span class="hljs-type">pid_t</span>				pid;<br>      <span class="hljs-type">pid_t</span>				tgid;<br>      <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">files_struct</span>    *<span class="hljs-title">files</span>;</span><br>      <span class="hljs-comment">// 内存描述符表示进程虚拟地址空间</span><br>      <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span>    *<span class="hljs-title">mm</span>;</span><br><br>      .......... 省略 .......<br>&#125;<br>是用mm_struct结构体描述虚拟内存空间。<br><br>从代码层面我们看一下内核是如何布局虚拟内存空间的。<br>```c<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">maple_tree</span> <span class="hljs-title">mm_mt</span>;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> mmap_base;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> task_size;<br>    <span class="hljs-type">pgd_t</span> *pgd;<br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> total_vm; <span class="hljs-comment">//表示在进程虚拟内存空间中总共与物理内存映射的页的总数。</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> locked_vm; <span class="hljs-comment">// 不能被换出的页的总数</span><br>    <span class="hljs-type">atomic64_t</span> pinned_vm; <span class="hljs-comment">// 既不能换出，也不能移动的内存页总数</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> data_vm; <span class="hljs-comment">// 数据段中映射的内存页数目</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> exec_vm; <span class="hljs-comment">// 代码段中存放可执行文件的内存页数目</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> stack_vm; <span class="hljs-comment">// 栈中所映射的内存页数目</span><br><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_code, end_code;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_data, end_data;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_brk, brk;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> start_stack;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> arg_start, arg_end;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> env_start, env_end;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">percpu_counter</span> <span class="hljs-title">rss_stat</span>[<span class="hljs-title">NR_MM_COUNTERS</span>];</span><br>&#125;;<br></code></pre></td></tr></table></figure>
 <p>整个映射关系如图</p>
@@ -425,6 +441,30 @@
 <p>每个虚拟内存区域VAM都由许多虚拟页构成，经过页表转换对应到物理页。<br>每个页面都是有访问权限的。<br>其中vm_page_prot是页级别的访问权限，<br>vm_flags则是整个虚拟内存区域的访问权限。<br>两者通过vma-&gt;vm_page_prot &#x3D; vm_get_page_prot(vma-&gt;vm_flags)进行转换。</p>
 <p>常用定义的vm_flags</p>
 <p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7q1lapgh4.webp" srcset="/img/loading.svg" lazyload></p>
+<p>虚拟内存映射由两条路可以走，一条是直接与物理内存映射称为匿名映射，一条是映射到文件中称为文件映射。<br>后面三个参数anon_vma，vm_file，vm_pgoff就是与文件映射有关的。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.32ipt327cj.webp" srcset="/img/loading.svg" lazyload></p>
+<p>以malloc为例子，当申请大内存时，会在文件映射与匿名映射区穿件VMA内存区域，即匿名映射。<br>并使用struct anon_vma表示，vm_file关联映射的文件，vm_pgoff表示映射进虚拟内存中的文件内容，在文件中的偏移。</p>
+<p>继续看剩下的vm_ops，是搭配 VMA 使用的相关操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">vm_operations_struct</span> &#123;</span><br>  <span class="hljs-type">void</span> (*open)(<span class="hljs-keyword">struct</span> vm_area_struct * area); <span class="hljs-comment">// VMA建立</span><br>  <span class="hljs-type">void</span> (*close)(<span class="hljs-keyword">struct</span> vm_area_struct * area); <span class="hljs-comment">// VMA销毁</span><br>    <span class="hljs-type">vm_fault_t</span> (*fault)(<span class="hljs-keyword">struct</span> vm_fault *vmf); <span class="hljs-comment">// 处理缺页</span><br>    <span class="hljs-type">vm_fault_t</span> (*page_mkwrite)(<span class="hljs-keyword">struct</span> vm_fault *vmf);<br><br>    .....<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>就是一些回调函数。</p>
+<p>现在我们有了VMA虚拟内存区域和它对应的操作函数vm_ops，接下来把多个VAM组织起来就行了。<br>内核使用mm_mt进行管理，其在mm_struct中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">maple_tree</span> <span class="hljs-title">mm_mt</span>;</span>  <span class="hljs-comment">/* 管理该地址空间的全部VMA */</span><br>        <span class="hljs-comment">/* ... */</span><br>    &#125; __randomize_layout;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>使用一棵 Maple Tree 按虚拟地址范围统一保存全部 VMA；<br>它既支持快速地址查找，也支持按地址顺序遍历以及空闲区间查找。</p>
+<p>根据上面的内容，对虚拟内存的布局，以及如何管理都有了认知。<br>接下来就是进程的虚拟内存空间 mm_struct 以及虚拟内存区域 vm_area_struct 是如何被创建并初始化的。</p>
+<p>一个进程在运行前会变编译成ELF(Executable and Linkable Format)格式的二进制文件，这个文件只有被加载进内存才能执行。<br>根据过程不同，有两种视图形式，一种是编译链接时候的链接视图，一种是运行过程中运行视图。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.51ewmaa5o8.webp" srcset="/img/loading.svg" lazyload></p>
+<p>其不同之处就在于运行视角中链接器把目标文件中多个 section 整合成一个segment，方便一起加载进内存。</p>
+<p>内核专门提供了这个函数完成这个过程，load_elf_binary</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">load_elf_binary</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> linux_binprm *bprm)</span><br>&#123;<br>    <span class="hljs-comment">/* 1. 检查ELF Header */</span><br>    elf_ex = (<span class="hljs-keyword">struct</span> elfhdr *)bprm-&gt;buf;<br><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">memcmp</span>(elf_ex-&gt;e_ident, ELFMAG, SELFMAG) != <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> -ENOEXEC;<br><br>    <span class="hljs-keyword">if</span> (elf_ex-&gt;e_type != ET_EXEC &amp;&amp;<br>        elf_ex-&gt;e_type != ET_DYN)<br>        <span class="hljs-keyword">return</span> -ENOEXEC;<br><br>    <span class="hljs-keyword">if</span> (!elf_check_arch(elf_ex))<br>        <span class="hljs-keyword">return</span> -ENOEXEC;<br><br>    <span class="hljs-comment">/* 2. 读取主程序Program Header */</span><br>    elf_phdata = load_elf_phdrs(elf_ex, bprm-&gt;file);<br><br>    <span class="hljs-comment">/* 3. 查找并打开PT_INTERP指定的动态链接器 */</span><br>    interpreter = find_and_open_elf_interpreter(<br>            bprm-&gt;file, elf_phdata);<br><br>    <span class="hljs-comment">/* 4. 用新mm替换旧程序的mm */</span><br>    retval = begin_new_exec(bprm);<br><br>    <span class="hljs-comment">/* 5. 选择mmap布局和ASLR布局 */</span><br>    setup_new_exec(bprm);<br><br>    <span class="hljs-comment">/* 6. 将临时参数栈移动到最终位置 */</span><br>    retval = setup_arg_pages(<br>            bprm,<br>            randomize_stack_top(STACK_TOP),<br>            executable_stack);<br><br>    <span class="hljs-comment">/* 7. 遍历并映射主程序的PT_LOAD */</span><br>    for_each_program_header(elf_ppnt, elf_phdata) &#123;<br>        <span class="hljs-keyword">if</span> (elf_ppnt-&gt;p_type != PT_LOAD)<br>            <span class="hljs-keyword">continue</span>;<br><br>        elf_prot = make_prot(elf_ppnt-&gt;p_flags, ...);<br><br>        error = elf_map(<br>                bprm-&gt;file,<br>                load_bias + elf_ppnt-&gt;p_vaddr,<br>                elf_ppnt,<br>                elf_prot,<br>                elf_flags,<br>                total_size);<br><br>        <span class="hljs-comment">/* 统计代码、数据和BSS边界 */</span><br>        update_elf_boundaries(elf_ppnt);<br>    &#125;<br><br>    <span class="hljs-comment">/* 8. 清零并映射BSS，设置初始brk */</span><br>    padzero(elf_bss);<br>    set_brk(elf_bss, elf_brk, bss_prot);<br><br>    <span class="hljs-comment">/* 9. 映射动态链接器；静态程序不需要 */</span><br>    <span class="hljs-keyword">if</span> (interpreter)<br>        elf_entry = load_elf_interp(...);<br>    <span class="hljs-keyword">else</span><br>        elf_entry = elf_ex-&gt;e_entry + load_bias;<br><br>    <span class="hljs-comment">/* 10. 构造argc、argv、envp和辅助向量 */</span><br>    create_elf_tables(...);<br><br>    <span class="hljs-comment">/* 11. 记录重要虚拟地址边界 */</span><br>    current-&gt;mm-&gt;start_code  = start_code;<br>    current-&gt;mm-&gt;end_code    = end_code;<br>    current-&gt;mm-&gt;start_data  = start_data;<br>    current-&gt;mm-&gt;end_data    = end_data;<br>    current-&gt;mm-&gt;start_stack = bprm-&gt;p;<br><br>    <span class="hljs-comment">/* 12. 设置用户态PC和SP */</span><br>    START_THREAD(elf_ex, regs, elf_entry, bprm-&gt;p);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;&#x27;<br></code></pre></td></tr></table></figure>
+
+<p>上面说的都是进程用户空间的虚拟内存布局。<br>内核态也有自己的虚拟地址空间，内核态的虚拟地址空间是各个进程共享的。</p>
+<p>先看32位的内核虚拟地址，前面说过其大小为1GB。<br>在这1GB的内存里面，最前面有一段896 MiB的直接映射区，它是内核访问低端物理内存的一种虚拟地址窗口。<br>对应映射的物理地址中存放内核代码和只读数据、内核全局数据和BSS、页表和slab对象等。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.92qw3nt4p0.webp" srcset="/img/loading.svg" lazyload></p>
+<p>受硬件影响，这896MiB的物理内存又被分为两部分，一部分是前16M的ZONE_DMA，一部分是后16M 到 896M这段区域，称之为 ZONE_NORMAL。前 16M 专门让内核用来为 DMA 分配内存，后面就是正常页框。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1sfssmkmv4.webp" srcset="/img/loading.svg" lazyload></p>
+<p>最上面的区域被称为高端存储区，其的对应关系如下</p>
+<p>在向上由8M的空洞区间<br>继续是vmalloc动态映射区间，vmalloc 分配的内存在虚拟内存上是连续的，但是物理内存是不连续的。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.8dxmjqr3gf.webp" srcset="/img/loading.svg" lazyload></p>
 
                 
               </div>
@@ -517,9 +557,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
+                      <a href="/2026/07/13/Linux%20Kernel/problem/" title="问题及思考">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">RK3566 BSP</span>
+                        <span class="hidden-mobile">问题及思考</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -527,8 +567,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/12/Linux%20Kernel/process_management/%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7/" title="进程优先级">
-                        <span class="hidden-mobile">进程优先级</span>
+                      <a href="/2026/07/13/rk3566/P1/" title="RK3566 BSP">
+                        <span class="hidden-mobile">RK3566 BSP</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
