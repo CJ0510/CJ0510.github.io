@@ -343,6 +343,45 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
+          
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
+        <div>
+          perf-ninja项目配置拉取仓库 1git clone https://github.com/dendibakh/perf-ninja.git 安装环境 12345678910111213141516171819202122232425sudo apt updatesudo apt install -y \    build-essential \    cmake \    git \
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-10-05 18:56" pubdate>
+              2026-10-05
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/09/14/Linux%20Kernel/Memory%20Management/%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="物理内存管理">
         </a>
@@ -493,23 +532,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="task_struct 中的调度信息">
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="schedule() 主流程源码分析">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
-          task_struct 中的调度信息
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          schedule() 主流程源码分析
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
         <div>
-          1 task_struct调度信息上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。完整的 task_struct非常庞大，包含一个 task 的各类内核信息。比如身份信息，内存信息，调度信息等。 调度器拿到一个task后需要根据携带的调度信息进行判断。其中携带的核心调度信息如下 123456789101112131415161718192
+          scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk = current; //保存当前任务    sched_submit_work(tsk);    do &#123;
         </div>
       </a>
 
@@ -567,23 +606,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="schedule() 主流程源码分析">
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="task_struct 中的调度信息">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
-          schedule() 主流程源码分析
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+          task_struct 中的调度信息
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
         <div>
-          scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk = current; //保存当前任务    sched_submit_work(tsk);    do &#123;
+          1 task_struct调度信息上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。完整的 task_struct非常庞大，包含一个 task 的各类内核信息。比如身份信息，内存信息，调度信息等。 调度器拿到一个task后需要根据携带的调度信息进行判断。其中携带的核心调度信息如下 123456789101112131415161718192
         </div>
       </a>
 
@@ -815,80 +854,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2026-08-16 22:11" pubdate>
               2026-08-16
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/Logging-subsystem/" class="category-chain-item">Logging subsystem</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-Logging-subsystem/">#Linux Logging subsystem</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux日志系统整体架构">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          Linux日志系统整体架构
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-        <div>
-          1 为什么需要Kernel日志系统为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。 我们可以注入类似 1dev_err(dev,&quot;init failed\n&quot;);  在内核启动时将问题暴露出来。 所以Kernel日
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-09 22:11" pubdate>
-              2026-08-09
             </time>
           </div>
         

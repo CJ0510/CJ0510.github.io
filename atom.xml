@@ -10,7 +10,27 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-07T08:08:39.112Z</updated>
+  <updated>2026-10-07T23:35:48.440Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="GPU" scheme="https://cj0510.github.io/categories/Linux-Kernel/GPU/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="GPU" scheme="https://cj0510.github.io/tags/GPU/"/>
+    <category term="NPU" scheme="https://cj0510.github.io/tags/NPU/"/>
+    <category term="DRM" scheme="https://cj0510.github.io/tags/DRM/"/>
+    <category term="Accelerator" scheme="https://cj0510.github.io/tags/Accelerator/"/>
+    <id>https://cj0510.github.io/2026/10/08/Linux%20Kernel/GPU/Linux-GPU-NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84-%E7%AC%AC1%E7%AB%A0-CPU-GPU-NPU%E6%9C%AC%E8%B4%A8%E5%8C%BA%E5%88%AB/</id>
+    <link href="https://cj0510.github.io/2026/10/08/Linux%20Kernel/GPU/Linux-GPU-NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84-%E7%AC%AC1%E7%AB%A0-CPU-GPU-NPU%E6%9C%AC%E8%B4%A8%E5%8C%BA%E5%88%AB/"/>
+    <published>2026-10-08T04:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第1章：CPU、GPU、NPU到底有什么本质区别——执行模型、调度模型和内存模型"><a href="#第1章：CPU、GPU、NPU到底有什么本质区别——执行模型、调度模型和内存模型" class="headerlink" title="第1章：CPU、GPU、NPU到底有什么本质区别——执行模型、调度模型和内存模型"></a>第1章：CPU、GPU、NPU到底有什么本质区别——执行模型、调度模型和内存模型</h1><p>后面学习Linux]]>
+    </summary>
+    <title>Linux GPU/NPU加速器总体架构：CPU、GPU、NPU的本质区别</title>
+    <updated>2026-10-07T23:35:48.440Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -78,26 +98,6 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
-    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
-    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
-    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
-    <published>2026-10-06T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
-    <updated>2026-10-07T22:45:58.329Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
     <category term="Loop" scheme="https://cj0510.github.io/tags/Loop/"/>
     <category term="Retry" scheme="https://cj0510.github.io/tags/Retry/"/>
     <category term="Fallback" scheme="https://cj0510.github.io/tags/Fallback/"/>
@@ -130,6 +130,26 @@
     </summary>
     <title>Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠</title>
     <updated>2026-10-07T22:46:02.522Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
+    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
+    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
+    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
+    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
+    <published>2026-10-06T16:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
+    </summary>
+    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
+    <updated>2026-10-07T22:45:58.329Z</updated>
   </entry>
   <entry>
     <author>
@@ -209,22 +229,6 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
     <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
-    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/</id>
-    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
-    <published>2026-08-23T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h2><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
-    </summary>
-    <title>task_struct 中的调度信息</title>
-    <updated>2026-08-30T13:36:37.495Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
-    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
     <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
     <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     <published>2026-08-23T14:11:55.000Z</published>
@@ -236,6 +240,22 @@
     </summary>
     <title>schedule() 主流程源码分析</title>
     <updated>2026-09-12T09:38:41.777Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/</id>
+    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
+    <published>2026-08-23T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h2><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
+    </summary>
+    <title>task_struct 中的调度信息</title>
+    <updated>2026-08-30T13:36:37.495Z</updated>
   </entry>
   <entry>
     <author>
@@ -366,27 +386,5 @@
     </summary>
     <title>Linux SPI调试方法</title>
     <updated>2026-08-08T08:19:57.694Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-03T12:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么需要同步和异步接口"><a href="#1-为什么需要同步和异步接口" class="headerlink" title="1 为什么需要同步和异步接口"></a>1 为什么需要同步和异步接口</h1><p>先说下什么是同步和异步。就是字面意思啦。</p>
-<ul>
-<li>同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。</li>
-<li>异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理</li>
-</ul>
-<p>我们看一个场景</p>
-<p><img]]>
-    </summary>
-    <title>Linux SPI同步/异步接口分析</title>
-    <updated>2026-08-06T14:10:29.192Z</updated>
   </entry>
 </feed>
