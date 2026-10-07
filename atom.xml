@@ -10,288 +10,7 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-06T03:33:01.558Z</updated>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Agent" scheme="https://cj0510.github.io/tags/Agent/"/>
-    <category term="Prompt" scheme="https://cj0510.github.io/tags/Prompt/"/>
-    <category term="Tool" scheme="https://cj0510.github.io/tags/Tool/"/>
-    <category term="MCP" scheme="https://cj0510.github.io/tags/MCP/"/>
-    <category term="RAG" scheme="https://cj0510.github.io/tags/RAG/"/>
-    <category term="Memory" scheme="https://cj0510.github.io/tags/Memory/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/02-Skill-Prompt-Agent-Tool-MCP%E7%9A%84%E5%8C%BA%E5%88%AB/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/02-Skill-Prompt-Agent-Tool-MCP%E7%9A%84%E5%8C%BA%E5%88%AB/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第2章：Skill、Prompt、Agent、Tool、MCP到底有什么区别"><a href="#第2章：Skill、Prompt、Agent、Tool、MCP到底有什么区别" class="headerlink" title="第2章：Skill、Prompt、Agent、Tool、MCP到底有什么区别"></a>第2章：Skill、Prompt、Agent、Tool、MCP到底有什么区别</h1><h2 id="1-总体分层"><a href="#1-总体分层" class="headerlink" title="1. 总体分层"></a>1.]]>
-    </summary>
-    <title>Skill、Prompt、Agent、Tool、MCP到底有什么区别</title>
-    <updated>2026-10-06T03:33:01.558Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Lifecycle" scheme="https://cj0510.github.io/tags/Lifecycle/"/>
-    <category term="Discovery" scheme="https://cj0510.github.io/tags/Discovery/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <category term="Evaluation" scheme="https://cj0510.github.io/tags/Evaluation/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/03-%E4%B8%80%E4%B8%AASkill%E7%9A%84%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/03-%E4%B8%80%E4%B8%AASkill%E7%9A%84%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第3章：一个Skill的完整生命周期"><a href="#第3章：一个Skill的完整生命周期" class="headerlink" title="第3章：一个Skill的完整生命周期"></a>第3章：一个Skill的完整生命周期</h1><h2 id="1-两条生命周期"><a href="#1-两条生命周期" class="headerlink" title="1. 两条生命周期"></a>1. 两条生命周期</h2><p>Skill同时具有管理生命周期和执行生命周期。</p>
-<h3 id="1-1-管理生命周期"><a href="#1-1-管理生命周期"]]>
-    </summary>
-    <title>一个Skill的完整生命周期</title>
-    <updated>2026-10-06T03:33:02.098Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="SKILL.md" scheme="https://cj0510.github.io/tags/SKILL-md/"/>
-    <category term="references" scheme="https://cj0510.github.io/tags/references/"/>
-    <category term="scripts" scheme="https://cj0510.github.io/tags/scripts/"/>
-    <category term="assets" scheme="https://cj0510.github.io/tags/assets/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/04-Skill%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84%E4%B8%8ESKILL.md/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/04-Skill%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84%E4%B8%8ESKILL.md/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第4章：Skill目录结构与SKILL-md"><a href="#第4章：Skill目录结构与SKILL-md" class="headerlink" title="第4章：Skill目录结构与SKILL.md"></a>第4章：Skill目录结构与<code>SKILL.md</code></h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Skill目录结构与SKILL.md</title>
-    <updated>2026-10-06T03:34:47.972Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Discovery" scheme="https://cj0510.github.io/tags/Discovery/"/>
-    <category term="Evaluation" scheme="https://cj0510.github.io/tags/Evaluation/"/>
-    <category term="YAML" scheme="https://cj0510.github.io/tags/YAML/"/>
-    <category term="Frontmatter" scheme="https://cj0510.github.io/tags/Frontmatter/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/05-YAML-Frontmatter-name%E5%92%8Cdescription/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/05-YAML-Frontmatter-name%E5%92%8Cdescription/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第5章：YAML-Frontmatter——name和description为什么最重要"><a href="#第5章：YAML-Frontmatter——name和description为什么最重要" class="headerlink" title="第5章：YAML Frontmatter——name和description为什么最重要"></a>第5章：YAML Frontmatter——<code>name</code>和<code>description</code>为什么最重要</h1><h2 id="1-核心结论"><a href="#1-核心结论"]]>
-    </summary>
-    <title>YAML Frontmatter：name和description为什么最重要</title>
-    <updated>2026-10-06T03:33:02.624Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Agent" scheme="https://cj0510.github.io/tags/Agent/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <category term="SKILL.md" scheme="https://cj0510.github.io/tags/SKILL-md/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/01-Skill%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88-%E4%BB%8EPrompt%E5%88%B0%E5%8F%AF%E5%A4%8D%E7%94%A8Workflow/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/01-Skill%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88-%E4%BB%8EPrompt%E5%88%B0%E5%8F%AF%E5%A4%8D%E7%94%A8Workflow/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第1章：Skill到底是什么——从Prompt到可复用Workflow"><a href="#第1章：Skill到底是什么——从Prompt到可复用Workflow" class="headerlink" title="第1章：Skill到底是什么——从Prompt到可复用Workflow"></a>第1章：Skill到底是什么——从Prompt到可复用Workflow</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Skill到底是什么：从Prompt到可复用Workflow</title>
-    <updated>2026-10-06T03:33:01.024Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="SKILL.md" scheme="https://cj0510.github.io/tags/SKILL-md/"/>
-    <category term="Progressive Disclosure" scheme="https://cj0510.github.io/tags/Progressive-Disclosure/"/>
-    <category term="Context Engineering" scheme="https://cj0510.github.io/tags/Context-Engineering/"/>
-    <category term="Token" scheme="https://cj0510.github.io/tags/Token/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/07-Progressive-Disclosure-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AC%A1%E5%8A%A0%E8%BD%BD%E5%85%A8%E9%83%A8%E5%86%85%E5%AE%B9/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/07-Progressive-Disclosure-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AC%A1%E5%8A%A0%E8%BD%BD%E5%85%A8%E9%83%A8%E5%86%85%E5%AE%B9/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第7章：Progressive-Disclosure——为什么不能一次加载全部内容"><a href="#第7章：Progressive-Disclosure——为什么不能一次加载全部内容" class="headerlink" title="第7章：Progressive Disclosure——为什么不能一次加载全部内容"></a>第7章：Progressive Disclosure——为什么不能一次加载全部内容</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Progressive Disclosure：为什么不能一次加载全部内容</title>
-    <updated>2026-10-06T03:49:12.280Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Discovery" scheme="https://cj0510.github.io/tags/Discovery/"/>
-    <category term="Evaluation" scheme="https://cj0510.github.io/tags/Evaluation/"/>
-    <category term="Routing" scheme="https://cj0510.github.io/tags/Routing/"/>
-    <category term="Trigger" scheme="https://cj0510.github.io/tags/Trigger/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/06-Skill-Discovery-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Skill/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/06-Skill-Discovery-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Skill/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第6章：Skill-Discovery——模型如何知道该用哪个Skill"><a href="#第6章：Skill-Discovery——模型如何知道该用哪个Skill" class="headerlink" title="第6章：Skill Discovery——模型如何知道该用哪个Skill"></a>第6章：Skill Discovery——模型如何知道该用哪个Skill</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Skill Discovery：模型如何知道该用哪个Skill</title>
-    <updated>2026-10-06T03:43:47.704Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <category term="State Machine" scheme="https://cj0510.github.io/tags/State-Machine/"/>
-    <category term="Validation" scheme="https://cj0510.github.io/tags/Validation/"/>
-    <category term="Idempotency" scheme="https://cj0510.github.io/tags/Idempotency/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/08-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%A8%B3%E5%AE%9A%E7%9A%84Workflow/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/08-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%A8%B3%E5%AE%9A%E7%9A%84Workflow/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第8章：如何设计一个稳定的Workflow"><a href="#第8章：如何设计一个稳定的Workflow" class="headerlink" title="第8章：如何设计一个稳定的Workflow"></a>第8章：如何设计一个稳定的Workflow</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>如何设计一个稳定的Workflow</title>
-    <updated>2026-10-06T03:52:49.918Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Contract" scheme="https://cj0510.github.io/tags/Contract/"/>
-    <category term="Input" scheme="https://cj0510.github.io/tags/Input/"/>
-    <category term="Output" scheme="https://cj0510.github.io/tags/Output/"/>
-    <category term="JSON Schema" scheme="https://cj0510.github.io/tags/JSON-Schema/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第9章：Inputs、Outputs与Contract设计"><a href="#第9章：Inputs、Outputs与Contract设计" class="headerlink" title="第9章：Inputs、Outputs与Contract设计"></a>第9章：Inputs、Outputs与Contract设计</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Inputs、Outputs与Contract设计</title>
-    <updated>2026-10-06T04:13:06.269Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Validation" scheme="https://cj0510.github.io/tags/Validation/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Precondition" scheme="https://cj0510.github.io/tags/Precondition/"/>
-    <category term="Postcondition" scheme="https://cj0510.github.io/tags/Postcondition/"/>
-    <category term="Final Check" scheme="https://cj0510.github.io/tags/Final-Check/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十一）：Precondition、Postcondition-与-Final-Check"><a href="#Agent-Skill-原理与工程实践（十一）：Precondition、Postcondition-与-Final-Check" class="headerlink" title="Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check"></a>Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check</title>
-    <updated>2026-10-06T07:01:40.321Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Skill" scheme="https://cj0510.github.io/tags/Skill/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <category term="Evaluation" scheme="https://cj0510.github.io/tags/Evaluation/"/>
-    <category term="Instruction" scheme="https://cj0510.github.io/tags/Instruction/"/>
-    <category term="Prompt Engineering" scheme="https://cj0510.github.io/tags/Prompt-Engineering/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="第10章：Step-by-Step-Instruction怎么写"><a href="#第10章：Step-by-Step-Instruction怎么写" class="headerlink" title="第10章：Step-by-Step Instruction怎么写"></a>第10章：Step-by-Step Instruction怎么写</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1.]]>
-    </summary>
-    <title>Step-by-Step Instruction怎么写</title>
-    <updated>2026-10-06T04:33:53.331Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="SKILL.md" scheme="https://cj0510.github.io/tags/SKILL-md/"/>
-    <category term="references" scheme="https://cj0510.github.io/tags/references/"/>
-    <category term="Progressive Disclosure" scheme="https://cj0510.github.io/tags/Progressive-Disclosure/"/>
-    <category term="Context Engineering" scheme="https://cj0510.github.io/tags/Context-Engineering/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十二）：references-——什么时候该把知识拆出去"><a href="#Agent-Skill-原理与工程实践（十二）：references-——什么时候该把知识拆出去" class="headerlink" title="Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去"></a>Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去</h1><p>前面几章已经完成了 Skill]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</title>
-    <updated>2026-10-06T07:17:37.525Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="SKILL.md" scheme="https://cj0510.github.io/tags/SKILL-md/"/>
-    <category term="scripts" scheme="https://cj0510.github.io/tags/scripts/"/>
-    <category term="Validation" scheme="https://cj0510.github.io/tags/Validation/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Deterministic Operations" scheme="https://cj0510.github.io/tags/Deterministic-Operations/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十三）：scripts-——什么时候-Prompt-不够，需要代码"><a href="#Agent-Skill-原理与工程实践（十三）：scripts-——什么时候-Prompt-不够，需要代码" class="headerlink" title="Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码"></a>Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码</h1><p>上一章把]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码</title>
-    <updated>2026-10-06T07:29:10.284Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="assets" scheme="https://cj0510.github.io/tags/assets/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Template" scheme="https://cj0510.github.io/tags/Template/"/>
-    <category term="Schema" scheme="https://cj0510.github.io/tags/Schema/"/>
-    <category term="Reusable Resources" scheme="https://cj0510.github.io/tags/Reusable-Resources/"/>
-    <id>https://cj0510.github.io/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/</id>
-    <link href="https://cj0510.github.io/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/"/>
-    <published>2026-10-05T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十四）：assets-——模板、Schema-与可复用资源"><a href="#Agent-Skill-原理与工程实践（十四）：assets-——模板、Schema-与可复用资源" class="headerlink" title="Agent Skill 原理与工程实践（十四）：assets&#x2F;——模板、Schema 与可复用资源"></a>Agent Skill 原理与工程实践（十四）：assets&#x2F;——模板、Schema 与可复用资源</h1><p>前两章分别讨论了]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十四）：assets/——模板、Schema 与可复用资源</title>
-    <updated>2026-10-06T07:38:39.484Z</updated>
-  </entry>
+  <updated>2026-10-05T11:31:52.005Z</updated>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -395,5 +114,258 @@
     </summary>
     <title>task_struct 中的调度信息</title>
     <updated>2026-08-30T13:36:37.495Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
+    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
+    <id>https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-22T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1]]>
+    </summary>
+    <title>Linux调度子系统整体架构</title>
+    <updated>2026-08-30T13:36:36.112Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/</id>
+    <link href="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/"/>
+    <published>2026-08-18T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么-printk-需要-Ring-Buffer"><a href="#1-为什么-printk-需要-Ring-Buffer" class="headerlink" title="1 为什么 printk 需要 Ring Buffer"></a>1 为什么 printk 需要 Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？</p>
+<p>因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz]]>
+    </summary>
+    <title>Kernel Log Buffer源码分析</title>
+    <updated>2026-08-22T12:18:17.560Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-16T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="printk-源码"><a href="#printk-源码" class="headerlink" title="printk 源码"></a>printk 源码</h1><p>之前我们讲了整个调用过程，本章从源码进行分析。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
+    </summary>
+    <title>printk源码分析</title>
+    <updated>2026-08-22T03:35:00.261Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
+<p>这条链路是这样的：</p>
+<p><img]]>
+    </summary>
+    <title>printk机制基础</title>
+    <updated>2026-08-16T11:12:09.420Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
+    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
+    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-09T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
+<p>我们可以注入类似</p>
+<figure class="highlight]]>
+    </summary>
+    <title>Linux日志系统整体架构</title>
+    <updated>2026-08-09T10:08:39.008Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</id>
+    <link href="https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"/>
+    <published>2026-08-08T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-SPI性能指标"><a href="#1-SPI性能指标" class="headerlink" title="1 SPI性能指标"></a>1 SPI性能指标</h1><p>无论优化什么，明确衡量指标永远是第一步。</p>
+<p>我们先来看几个关键的性能指标：</p>
+<ul>
+<li>吞吐量：单位时间内传输的数据量</li>
+<li>延迟：单次传输所需的时间</li>
+<li>CPU 占用率</li>
+<li>功耗</li>
+</ul>
+<p>回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。</p>
+<h1]]>
+    </summary>
+    <title>Linux SPI性能优化</title>
+    <updated>2026-08-08T08:20:55.892Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/</id>
+    <link href="https://cj0510.github.io/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/"/>
+    <published>2026-08-06T14:11:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-SPI调试整体思路"><a href="#1-SPI调试整体思路" class="headerlink" title="1 SPI调试整体思路"></a>1 SPI调试整体思路</h1><p>前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？</p>
+<p>前面对整个框架都有了概念，简化模型如下：</p>
+<p><img]]>
+    </summary>
+    <title>Linux SPI调试方法</title>
+    <updated>2026-08-08T08:19:57.694Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-03T12:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么需要同步和异步接口"><a href="#1-为什么需要同步和异步接口" class="headerlink" title="1 为什么需要同步和异步接口"></a>1 为什么需要同步和异步接口</h1><p>先说下什么是同步和异步。就是字面意思啦。</p>
+<ul>
+<li>同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。</li>
+<li>异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理</li>
+</ul>
+<p>我们看一个场景</p>
+<p><img]]>
+    </summary>
+    <title>Linux SPI同步/异步接口分析</title>
+    <updated>2026-08-06T14:10:29.192Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-SPI-Framework"><a href="#1-SPI-Framework" class="headerlink" title="1. SPI Framework"></a>1. SPI Framework</h1><p>上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：</p>
+<p><img]]>
+    </summary>
+    <title>Linux SPI Framework整体架构分析</title>
+    <updated>2026-08-02T02:34:30.155Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-spi-controller"><a href="#1-spi-controller" class="headerlink" title="1. spi_controller"></a>1. spi_controller</h1><p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axvl7557d.webp"></p>
+<p>之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。</p>
+<p>首先来看一下]]>
+    </summary>
+    <title>Linux SPI核心数据结构分析</title>
+    <updated>2026-08-06T23:33:36.328Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-What-is-SPI"><a href="#1-What-is-SPI" class="headerlink" title="1. What is SPI?"></a>1. What is SPI?</h1><p>在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？</p>
+<p>在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。<br>例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如]]>
+    </summary>
+    <title>SPI协议基础：从四根线理解Linux SPI框架</title>
+    <updated>2026-08-02T02:33:24.124Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
+    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
+    <id>https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/</id>
+    <link href="https://cj0510.github.io/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/"/>
+    <published>2026-08-01T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="1-为什么SPI设备需要DTS描述"><a href="#1-为什么SPI设备需要DTS描述" class="headerlink" title="1 为什么SPI设备需要DTS描述"></a>1 为什么SPI设备需要DTS描述</h1><p>对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有<strong>设备枚举机制</strong>。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 <code>struct device</code>]]>
+    </summary>
+    <title>Linux SPI设备如何从Device Tree走到driver probe</title>
+    <updated>2026-08-02T09:45:56.855Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1]]>
+    </summary>
+    <title>问题及思考</title>
+    <updated>2026-08-01T12:59:11.047Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
+    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
+    <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
+    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
+    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
+    <published>2026-07-13T05:32:55.000Z</published>
+    <summary>
+      <![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
+<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
+    </summary>
+    <title>RK3566 BSP</title>
+    <updated>2026-08-30T13:35:52.116Z</updated>
   </entry>
 </feed>
