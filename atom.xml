@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-07T02:57:22.014Z</updated>
+  <updated>2026-10-07T04:46:52.982Z</updated>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -19,8 +19,28 @@
     <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
     <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
     <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
-    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
+    <category term="alloc_pages" scheme="https://cj0510.github.io/tags/alloc-pages/"/>
     <category term="Page Allocator" scheme="https://cj0510.github.io/tags/Page-Allocator/"/>
+    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
+    <id>https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-alloc_pages%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D/</id>
+    <link href="https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-alloc_pages%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D/"/>
+    <published>2026-10-07T13:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第8章：alloc-pages-——一个物理页到底是怎么从Linux中分配出来的？"><a href="#第8章：alloc-pages-——一个物理页到底是怎么从Linux中分配出来的？" class="headerlink" title="第8章：alloc_pages()——一个物理页到底是怎么从Linux中分配出来的？"></a>第8章：<code>alloc_pages()</code>——一个物理页到底是怎么从Linux中分配出来的？</h1><p>上一章建立了Buddy]]>
+    </summary>
+    <title>Linux内存管理子系统源码分析：alloc_pages物理页分配</title>
+    <updated>2026-10-07T04:46:52.982Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
+    <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
+    <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
+    <category term="Page Allocator" scheme="https://cj0510.github.io/tags/Page-Allocator/"/>
+    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
     <id>https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/</id>
     <link href="https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/"/>
     <published>2026-10-07T12:00:00.000Z</published>
@@ -43,24 +63,6 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone]]>
     </summary>
     <updated>2026-10-05T11:31:52.005Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="GPU NPU" scheme="https://cj0510.github.io/categories/Linux-Kernel/GPU-NPU/"/>
-    <category term="Linux GPU NPU" scheme="https://cj0510.github.io/tags/Linux-GPU-NPU/"/>
-    <id>https://cj0510.github.io/2026/09/29/Linux%20Kernel/GPU/Linux_GPU_NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E6%A1%86%E6%9E%B6/</id>
-    <link href="https://cj0510.github.io/2026/09/29/Linux%20Kernel/GPU/Linux_GPU_NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E6%A1%86%E6%9E%B6/"/>
-    <published>2026-09-29T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="CPU、GPU、NPU"><a href="#CPU、GPU、NPU" class="headerlink" title="CPU、GPU、NPU"></a>CPU、GPU、NPU</h1><p>CPU面对的是指令，是控制流中心；<br>GPU面对的是大量数据，是数据并行中心；<br>NPU面对网络，计算图和数据流中心。</p>
-<p>整个CPU的执行模型如下</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
-    </summary>
-    <title>Linux GPU/NPU 加速器总体架构</title>
-    <updated>2026-10-01T08:19:54.688Z</updated>
   </entry>
   <entry>
     <author>
@@ -359,17 +361,16 @@
     <author>
       <name>CJ1018</name>
     </author>
-    <category term="嵌入式" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/"/>
-    <category term="RK3566" scheme="https://cj0510.github.io/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/RK3566/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="内存管理" scheme="https://cj0510.github.io/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     <category term="Linux" scheme="https://cj0510.github.io/tags/Linux/"/>
-    <id>https://cj0510.github.io/2026/07/13/rk3566/P1/</id>
-    <link href="https://cj0510.github.io/2026/07/13/rk3566/P1/"/>
+    <id>https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/</id>
+    <link href="https://cj0510.github.io/2026/07/13/Linux%20Kernel/problem/"/>
     <published>2026-07-13T05:32:55.000Z</published>
     <summary>
-      <![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本项目基于泰山派编写一款属于自己Linux SDK。</p>
-<h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span]]>
+      <![CDATA[<h1 id="0-问题"><a href="#0-问题" class="headerlink" title="0 问题"></a>0 问题</h1><h2 id="1-内存"><a href="#1-内存" class="headerlink" title="1 内存"></a>1 内存</h2><h3 id="1-1-内存空洞是什么？外部碎片和内部碎片又是什么？"><a href="#1-1-内存空洞是什么？外部碎片和内部碎片又是什么？" class="headerlink" title="1.1 内存空洞是什么？外部碎片和内部碎片又是什么？"></a>1.1]]>
     </summary>
-    <title>RK3566 BSP</title>
-    <updated>2026-08-30T13:35:52.116Z</updated>
+    <title>问题及思考</title>
+    <updated>2026-08-01T12:59:11.047Z</updated>
   </entry>
 </feed>
