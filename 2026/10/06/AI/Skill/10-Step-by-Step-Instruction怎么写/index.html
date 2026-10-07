@@ -1,0 +1,1324 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第10章：Step-by-Step Instruction怎么写1. 本章目标上一章定义了输入、输出和Contract。本章聚焦Workflow内部最小的可执行单元：Instruction。 需要解决： 12345678什么样的步骤才算可执行？为什么“分析一下”“确保正确”是坏指令？每一步应该包含哪些信息？指令应该写多细？何时给模型自由，何时使用脚本和精确命令？如何表达顺序、条件、禁止项和完成信号">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Step-by-Step Instruction怎么写">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第10章：Step-by-Step Instruction怎么写1. 本章目标上一章定义了输入、输出和Contract。本章聚焦Workflow内部最小的可执行单元：Instruction。 需要解决： 12345678什么样的步骤才算可执行？为什么“分析一下”“确保正确”是坏指令？每一步应该包含哪些信息？指令应该写多细？何时给模型自由，何时使用脚本和精确命令？如何表达顺序、条件、禁止项和完成信号">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T04:33:53.331Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Evaluation">
+<meta property="article:tag" content="Instruction">
+<meta property="article:tag" content="Prompt Engineering">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="Workflow">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Step-by-Step Instruction怎么写 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Step-by-Step Instruction怎么写</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          112 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Step-by-Step Instruction怎么写</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第10章：Step-by-Step-Instruction怎么写"><a href="#第10章：Step-by-Step-Instruction怎么写" class="headerlink" title="第10章：Step-by-Step Instruction怎么写"></a>第10章：Step-by-Step Instruction怎么写</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1. 本章目标</h2><p>上一章定义了输入、输出和Contract。本章聚焦Workflow内部最小的可执行单元：Instruction。</p>
+<p>需要解决：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">什么样的步骤才算可执行？<br>为什么“分析一下”“确保正确”是坏指令？<br>每一步应该包含哪些信息？<br>指令应该写多细？<br>何时给模型自由，何时使用脚本和精确命令？<br>如何表达顺序、条件、禁止项和完成信号？<br>如何减少漏步、误解和过度执行？<br>怎样评测指令是否真正被遵循？<br></code></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>好的Step-by-Step Instruction不是把任务切成更多句子，而是让每一步都有明确动作、对象、前置条件、产物、验证方式和下一步条件。</p>
+</blockquote>
+<hr>
+<h2 id="2-指令的目标不是“让模型理解”，而是“让行为可预测”"><a href="#2-指令的目标不是“让模型理解”，而是“让行为可预测”" class="headerlink" title="2. 指令的目标不是“让模型理解”，而是“让行为可预测”"></a>2. 指令的目标不是“让模型理解”，而是“让行为可预测”</h2><p>模糊指令：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 分析代码。<br><span class="hljs-bullet">2.</span> 找出问题。<br><span class="hljs-bullet">3.</span> 提供改进建议。<br></code></pre></td></tr></table></figure>
+
+<p>模型当然理解这些词，但执行空间过大：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">分析哪些文件？<br>关注正确性、安全还是风格？<br>什么算问题？<br>是否必须提供证据？<br>是否修改代码？<br>建议需要到什么粒度？<br>什么时候结束？<br></code></pre></td></tr></table></figure>
+
+<p>更好的写法：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Read the changed files and the diff context required to understand<br>   each change. Do not inspect unrelated files unless a referenced<br>   symbol requires it.<br><span class="hljs-bullet">2.</span> Identify correctness, security, and regression risks introduced by<br>   the change. Do not report pre-existing issues outside the diff.<br><span class="hljs-bullet">3.</span> For each finding, record severity, file, line, evidence, impact, and<br>   a concrete remediation.<br><span class="hljs-bullet">4.</span> Discard findings that cannot be tied to a specific changed behavior.<br><span class="hljs-bullet">5.</span> Return findings ordered by severity, followed by a short summary.<br></code></pre></td></tr></table></figure>
+
+<p>行为边界因此变得可观察、可测试。</p>
+<hr>
+<h2 id="3-一个步骤的六要素"><a href="#3-一个步骤的六要素" class="headerlink" title="3. 一个步骤的六要素"></a>3. 一个步骤的六要素</h2><p>稳定步骤可使用以下模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">When      什么时候执行<br>Actor     谁执行，通常是当前Agent<br>Action    执行什么动作<br>Object    对什么对象执行<br>Output    产生什么中间结果<br>Check     如何判断完成或失败<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown">After confirming the trace is readable, run<br><span class="hljs-code">`python scripts/inventory_events.py &lt;trace&gt;`</span>.<br><br>Save the JSON output as <span class="hljs-code">`event-inventory.json`</span>.<br><br>The step succeeds only when the command exits with code 0 and the<br>output contains a non-empty <span class="hljs-code">`events`</span> array. If it fails, preserve the<br>error and stop trace-dependent analysis.<br></code></pre></td></tr></table></figure>
+
+<p>拆解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">When   → trace可读后<br>Action → 运行脚本<br>Object → 指定trace<br>Output → event-inventory.json<br>Check  → exit code为0且events非空<br>Failure→ 保存错误并停止相关分析<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-使用明确的动作动词"><a href="#4-使用明确的动作动词" class="headerlink" title="4. 使用明确的动作动词"></a>4. 使用明确的动作动词</h2><p>优先使用可观察动词：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs text">read<br>list<br>extract<br>normalize<br>compare<br>classify<br>calculate<br>validate<br>write<br>save<br>call<br>render<br>verify<br>report<br>stop<br>ask<br></code></pre></td></tr></table></figure>
+
+<p>谨慎使用模糊动词：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">understand<br>consider<br>handle<br>deal with<br>ensure<br>properly process<br>appropriately analyze<br></code></pre></td></tr></table></figure>
+
+<p>不是说这些词绝对不能用，而是它们需要可观察补充。</p>
+<p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Ensure the report is accurate.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Verify that every root-cause claim references at least one evidence<br>item and that high-confidence claims reference two independent<br>signals. Remove or lower the confidence of claims that fail this check.<br></code></pre></td></tr></table></figure>
+
+<p>“确保准确”被改写成了可验证行为。</p>
+<hr>
+<h2 id="5-每一步只承担一个主要目的"><a href="#5-每一步只承担一个主要目的" class="headerlink" title="5. 每一步只承担一个主要目的"></a>5. 每一步只承担一个主要目的</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read the logs, identify errors, correlate deployments, check metrics,<br>find the root cause, and write the report.<br></code></pre></td></tr></table></figure>
+
+<p>这实际上包含六个步骤，任何一个都可能被跳过。</p>
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Query error logs for the incident window.<br><span class="hljs-bullet">2.</span> Group repeated errors by normalized signature.<br><span class="hljs-bullet">3.</span> Retrieve deployments that overlap the incident window.<br><span class="hljs-bullet">4.</span> Correlate the top error groups with deployment and metric changes.<br><span class="hljs-bullet">5.</span> Rank supported hypotheses by evidence strength.<br><span class="hljs-bullet">6.</span> Produce the report from the validated findings.<br></code></pre></td></tr></table></figure>
+
+<p>判断标准：</p>
+<blockquote>
+<p>如果一个步骤失败时无法清楚指出是哪一个动作失败，它通常包含太多责任。</p>
+</blockquote>
+<hr>
+<h2 id="6-明确对象和范围"><a href="#6-明确对象和范围" class="headerlink" title="6. 明确对象和范围"></a>6. 明确对象和范围</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read the files.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read the files changed between <span class="hljs-code">`&lt;base&gt;`</span> and <span class="hljs-code">`&lt;head&gt;`</span>. Read unchanged<br>files only when needed to resolve a referenced symbol or verify a<br>behavioral assumption. Do not scan generated files or dependencies.<br></code></pre></td></tr></table></figure>
+
+<p>范围应说明：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">目标集合<br>包含条件<br>排除条件<br>时间范围<br>最大数量<br>目录边界<br></code></pre></td></tr></table></figure>
+
+<p>范围不清会导致Agent过度探索、浪费上下文或访问不必要数据。</p>
+<hr>
+<h2 id="7-明确输入来自哪里"><a href="#7-明确输入来自哪里" class="headerlink" title="7. 明确输入来自哪里"></a>7. 明确输入来自哪里</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Use the project conventions.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read project conventions from <span class="hljs-code">`AGENTS.md`</span> and<br><span class="hljs-code">`references/review-policy.md`</span>. If they conflict, follow the<br>higher-priority project instruction and record the conflict.<br></code></pre></td></tr></table></figure>
+
+<p>一个步骤的输入来源可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">用户Prompt<br>Canonical Input<br>前一步Artifact<br>Reference<br>Tool Result<br>Memory<br>项目文件<br></code></pre></td></tr></table></figure>
+
+<p>明确来源可以防止模型凭常识补齐不存在的项目规则。</p>
+<hr>
+<h2 id="8-明确步骤产物"><a href="#8-明确步骤产物" class="headerlink" title="8. 明确步骤产物"></a>8. 明确步骤产物</h2><p>每个复杂步骤最好产生可观察产物：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">normalized-input.json<br>event-inventory.json<br>hypotheses.json<br>changes.json<br>validation-report.json<br>final-report.md<br></code></pre></td></tr></table></figure>
+
+<p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Analyze the evidence and continue.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Create <span class="hljs-code">`hypotheses.json`</span>. For each hypothesis include:<br><br><span class="hljs-bullet">-</span> <span class="hljs-code">`id`</span>;<br><span class="hljs-bullet">-</span> <span class="hljs-code">`claim`</span>;<br><span class="hljs-bullet">-</span> <span class="hljs-code">`supporting_evidence_ids`</span>;<br><span class="hljs-bullet">-</span> <span class="hljs-code">`contradicting_evidence_ids`</span>;<br><span class="hljs-bullet">-</span> <span class="hljs-code">`status`</span>: supported, contradicted, or unknown;<br><span class="hljs-bullet">-</span> <span class="hljs-code">`confidence`</span>: low, medium, or high.<br></code></pre></td></tr></table></figure>
+
+<p>有了产物，下一步不再依赖模型模糊记忆。</p>
+<hr>
+<h2 id="9-明确完成信号"><a href="#9-明确完成信号" class="headerlink" title="9. 明确完成信号"></a>9. 明确完成信号</h2><p>步骤需要知道什么时候完成。</p>
+<p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Collect enough evidence.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Evidence collection is complete when:<br><br><span class="hljs-bullet">-</span> every candidate hypothesis has at least one supporting or<br>  contradicting observation;<br><span class="hljs-bullet">-</span> all required tools either succeeded or have a recorded error;<br><span class="hljs-bullet">-</span> additional collection would repeat an existing source; and<br><span class="hljs-bullet">-</span> unresolved gaps are listed in <span class="hljs-code">`limitations`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>完成信号不一定都是数量阈值，也可以是状态、覆盖度或无新增信息条件。</p>
+<hr>
+<h2 id="10-明确失败行为"><a href="#10-明确失败行为" class="headerlink" title="10. 明确失败行为"></a>10. 明确失败行为</h2><p>步骤可能：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">succeed<br>partially succeed<br>fail retryably<br>fail permanently<br>be inapplicable<br></code></pre></td></tr></table></figure>
+
+<p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If the tool fails, handle the error.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If <span class="hljs-code">`query_logs`</span> times out, retry once with the same time range and a<br>smaller result limit. If it fails again, record <span class="hljs-code">`LOG_QUERY_TIMEOUT`</span>,<br>set the log evidence status to <span class="hljs-code">`unavailable`</span>, and continue only if at<br>least one independent evidence source remains. Do not interpret the<br>failure as an empty log result.<br></code></pre></td></tr></table></figure>
+
+<p>失败指令应包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">failure condition<br>retryability<br>what changes on retry<br>retry limit<br>fallback<br>stop/degrade condition<br>how to report<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="11-顺序必须说明“为什么不能交换”"><a href="#11-顺序必须说明“为什么不能交换”" class="headerlink" title="11. 顺序必须说明“为什么不能交换”"></a>11. 顺序必须说明“为什么不能交换”</h2><p>编号不一定能阻止模型重新排序。关键依赖应显式说明。</p>
+<p>不够强：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Validate the plan.<br><span class="hljs-bullet">2.</span> Apply the changes.<br></code></pre></td></tr></table></figure>
+
+<p>更明确：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Validate <span class="hljs-code">`changes.json`</span> before modifying any target file. Do not begin<br>the apply step unless validation exits with code 0. If validation<br>fails, revise the plan and validate again.<br></code></pre></td></tr></table></figure>
+
+<p>常用顺序表达：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">before<br>after<br>only after<br>do not continue until<br>immediately after<br>for each<br>once all<br></code></pre></td></tr></table></figure>
+
+<p>依赖关系比数字编号更重要。</p>
+<hr>
+<h2 id="12-条件分支要基于可观察信号"><a href="#12-条件分支要基于可观察信号" class="headerlink" title="12. 条件分支要基于可观察信号"></a>12. 条件分支要基于可观察信号</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If necessary, do deeper analysis.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run focused scheduler analysis if any of the following is observed:<br><br><span class="hljs-bullet">-</span> runnable latency exceeds the configured threshold;<br><span class="hljs-bullet">-</span> wakeup-to-run delay aligns with the incident window;<br><span class="hljs-bullet">-</span> cgroup throttling increases during the delay;<br><span class="hljs-bullet">-</span> tasks remain runnable while host CPU is not saturated.<br></code></pre></td></tr></table></figure>
+
+<p>条件应尽量来自：</p>
+<ul>
+<li>输入字段；</li>
+<li>Tool状态；</li>
+<li>Validator输出；</li>
+<li>可计算阈值；</li>
+<li>明确枚举；</li>
+<li>用户选择。</li>
+</ul>
+<p>避免仅使用“看起来”“适当”“可能需要”等无法验证的条件。</p>
+<hr>
+<h2 id="13-正向指令优先于纯否定"><a href="#13-正向指令优先于纯否定" class="headerlink" title="13. 正向指令优先于纯否定"></a>13. 正向指令优先于纯否定</h2><p>纯否定告诉模型不能做什么，却没有给出替代行为。</p>
+<p>较弱：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Do not hallucinate missing values.<br></code></pre></td></tr></table></figure>
+
+<p>更好：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">When a required value is unavailable, set it to <span class="hljs-code">`null`</span>, add the field<br>name to <span class="hljs-code">`missing_inputs`</span>, and explain which analysis cannot be<br>performed. Do not estimate or invent the value.<br></code></pre></td></tr></table></figure>
+
+<p>结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">When X happens<br>→ do Y<br>→ record Z<br>→ do not do W<br></code></pre></td></tr></table></figure>
+
+<p>正向替代路径使模型更容易遵循限制。</p>
+<hr>
+<h2 id="14-MUST、SHOULD、MAY与自然语言强度"><a href="#14-MUST、SHOULD、MAY与自然语言强度" class="headerlink" title="14. MUST、SHOULD、MAY与自然语言强度"></a>14. MUST、SHOULD、MAY与自然语言强度</h2><p>可以借用规范语言：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">MUST      不满足即Contract失败<br>MUST NOT  绝对禁止<br>SHOULD    默认遵循，偏离需说明理由<br>MAY       可选<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Every finding MUST include file and line evidence.<br><span class="hljs-bullet">-</span> The reviewer MUST NOT submit comments without user confirmation.<br><span class="hljs-bullet">-</span> The reviewer SHOULD group duplicate findings.<br><span class="hljs-bullet">-</span> The reviewer MAY include a short patch example when it clarifies the fix.<br></code></pre></td></tr></table></figure>
+
+<p>不要滥用全大写。所有句子都是MUST会使优先级失去区分，并可能产生无法同时满足的规则。</p>
+<hr>
+<h2 id="15-选择合适的自由度"><a href="#15-选择合适的自由度" class="headerlink" title="15. 选择合适的自由度"></a>15. 选择合适的自由度</h2><p>Anthropic官方Skill最佳实践把指令自由度分为三类。</p>
+<h3 id="15-1-High-Freedom"><a href="#15-1-High-Freedom" class="headerlink" title="15.1 High Freedom"></a>15.1 High Freedom</h3><p>适合：</p>
+<ul>
+<li>多种方法都正确；</li>
+<li>依赖上下文判断；</li>
+<li>风险低；</li>
+<li>结果主要由质量而非固定流程衡量。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Review the code for correctness, maintainability, and project<br>conventions. Prioritize findings that materially affect behavior.<br></code></pre></td></tr></table></figure>
+
+<h3 id="15-2-Medium-Freedom"><a href="#15-2-Medium-Freedom" class="headerlink" title="15.2 Medium Freedom"></a>15.2 Medium Freedom</h3><p>适合：</p>
+<ul>
+<li>存在推荐模式；</li>
+<li>允许参数或局部调整；</li>
+<li>输出结构相对稳定。</li>
+</ul>
+<p>示例：提供伪代码、模板或带参数脚本。</p>
+<h3 id="15-3-Low-Freedom"><a href="#15-3-Low-Freedom" class="headerlink" title="15.3 Low Freedom"></a>15.3 Low Freedom</h3><p>适合：</p>
+<ul>
+<li>操作脆弱；</li>
+<li>顺序不能变化；</li>
+<li>一致性非常重要；</li>
+<li>具有高风险副作用。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run exactly:<br><span class="hljs-code">`python scripts/migrate.py --verify --backup`</span><br><br>Do not add flags or continue if the command exits nonzero.<br></code></pre></td></tr></table></figure>
+
+<p>原则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">风险越高、路径越窄、验证越确定<br>→ 指令自由度越低<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="16-什么时候Instruction不够，需要Script"><a href="#16-什么时候Instruction不够，需要Script" class="headerlink" title="16. 什么时候Instruction不够，需要Script"></a>16. 什么时候Instruction不够，需要Script</h2><p>使用Instruction：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">需要语义判断<br>多种路径有效<br>依赖上下文权衡<br>输出具有开放性<br></code></pre></td></tr></table></figure>
+
+<p>使用Script：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">精确计算<br>稳定解析<br>格式转换<br>批量机械修改<br>Schema校验<br>不可容忍算术或语法漂移<br></code></pre></td></tr></table></figure>
+
+<p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Manually calculate P99 from all latency values.<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run <span class="hljs-code">`python scripts/calc_percentiles.py &lt;input&gt;`</span> and use the returned<br>JSON values. Do not recompute or round them unless the report template<br>requires display rounding.<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI官方也建议：只有在Workflow需要确定性计算或文件处理时才加入Script；如果现有工具和清晰指令已能可靠完成，不要无意义增加脚本。</p>
+<hr>
+<h2 id="17-Tool调用指令怎么写"><a href="#17-Tool调用指令怎么写" class="headerlink" title="17. Tool调用指令怎么写"></a>17. Tool调用指令怎么写</h2><p>坏例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Use the monitoring tools as needed.<br></code></pre></td></tr></table></figure>
+
+<p>好例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Call <span class="hljs-code">`query_metrics`</span> for the normalized incident window and target.<br><span class="hljs-bullet">2.</span> Request CPU utilization, throttling, memory pressure, and IO latency.<br><span class="hljs-bullet">3.</span> Save the query, time range, and returned series IDs in<br>   <span class="hljs-code">`evidence-index.json`</span>.<br><span class="hljs-bullet">4.</span> If a metric is unavailable, record its status as <span class="hljs-code">`unavailable`</span>;<br>   do not replace it with zero.<br><span class="hljs-bullet">5.</span> Do not request a window larger than 24 hours without user approval.<br></code></pre></td></tr></table></figure>
+
+<p>Tool指令至少说明：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">哪个Tool<br>何时调用<br>参数来源<br>调用范围<br>怎样保存结果<br>怎样解释空值与错误<br>失败后怎么办<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="18-Reference读取指令怎么写"><a href="#18-Reference读取指令怎么写" class="headerlink" title="18. Reference读取指令怎么写"></a>18. Reference读取指令怎么写</h2><p>坏例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read the references if needed.<br></code></pre></td></tr></table></figure>
+
+<p>好例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Before classifying reclaim or swap behavior, read<br><span class="hljs-code">`references/memory.md`</span>. Use its evidence rules to distinguish sustained<br>pressure from a short, harmless reclaim burst. Do not read scheduler<br>or IO references unless corresponding signals are present.<br></code></pre></td></tr></table></figure>
+
+<p>一个好的Reference指令包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Condition<br>File<br>Purpose<br>Timing<br>Exclusion<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="19-输出指令怎么写"><a href="#19-输出指令怎么写" class="headerlink" title="19. 输出指令怎么写"></a>19. 输出指令怎么写</h2><p>坏例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Write a detailed report.<br></code></pre></td></tr></table></figure>
+
+<p>好例子：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Write <span class="hljs-code">`report.md`</span> using <span class="hljs-code">`assets/report-template.md`</span>.<br><br>Include:<br><br><span class="hljs-bullet">-</span> a one-paragraph executive summary;<br><span class="hljs-bullet">-</span> an evidence table with source IDs;<br><span class="hljs-bullet">-</span> supported, contradicted, and unknown hypotheses;<br><span class="hljs-bullet">-</span> confidence and limitations;<br><span class="hljs-bullet">-</span> ordered next actions.<br><br>Do not include a root-cause section when classification is <span class="hljs-code">`unknown`</span>;<br>use <span class="hljs-code">`Evidence gaps`</span> instead.<br></code></pre></td></tr></table></figure>
+
+<p>输出指令应明确：</p>
+<ul>
+<li>产物位置；</li>
+<li>格式；</li>
+<li>必需字段或章节；</li>
+<li>条件性章节；</li>
+<li>禁止内容；</li>
+<li>长度或粒度；</li>
+<li>最终Validator。</li>
+</ul>
+<hr>
+<h2 id="20-示例的正确用法"><a href="#20-示例的正确用法" class="headerlink" title="20. 示例的正确用法"></a>20. 示例的正确用法</h2><p>示例适合表达难以用规则描述的风格、粒度和边界。</p>
+<p>例如Commit Message：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Input:<br>Added JWT authentication and token validation middleware.<br><br>Output:<br>feat(auth): implement JWT-based authentication<br><br>Add login endpoint and token validation middleware.<br></code></pre></td></tr></table></figure>
+
+<p>示例的风险：</p>
+<ul>
+<li>模型照抄具体值；</li>
+<li>把案例当规则；</li>
+<li>只覆盖Happy Path；</li>
+<li>旧API和旧事实影响当前结果。</li>
+</ul>
+<p>因此示例应：</p>
+<ul>
+<li>与抽象规则配套；</li>
+<li>明确哪些部分可变；</li>
+<li>覆盖边界和反例；</li>
+<li>避免真实敏感数据；</li>
+<li>不与Contract冲突。</li>
+</ul>
+<hr>
+<h2 id="21-避免代词和隐含引用"><a href="#21-避免代词和隐含引用" class="headerlink" title="21. 避免代词和隐含引用"></a>21. 避免代词和隐含引用</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read it and compare it with the previous result. If it differs, fix it.<br></code></pre></td></tr></table></figure>
+
+<p>多个对象存在时，<code>it</code>和<code>previous result</code>含义不明确。</p>
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read <span class="hljs-code">`validation-report.json`</span> and compare its <span class="hljs-code">`errors`</span> array with the<br>errors from the immediately preceding validation attempt. If an error<br>persists, revise the corresponding entry in <span class="hljs-code">`changes.json`</span> before<br>running validation again.<br></code></pre></td></tr></table></figure>
+
+<p>关键对象应使用稳定名称、路径、ID或字段名。</p>
+<hr>
+<h2 id="22-保持术语一致"><a href="#22-保持术语一致" class="headerlink" title="22. 保持术语一致"></a>22. 保持术语一致</h2><p>如果同一对象被称为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">incident window<br>time range<br>observation period<br>analysis interval<br></code></pre></td></tr></table></figure>
+
+<p>模型可能把它们理解为不同概念。选择Canonical Term：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">统一使用incident_window<br></code></pre></td></tr></table></figure>
+
+<p>首次出现时定义：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-code">`incident_window`</span> means the normalized start and end timestamps used<br>for every evidence query in this run.<br></code></pre></td></tr></table></figure>
+
+<p>后续不要随意换词。</p>
+<hr>
+<h2 id="23-指令层级与冲突"><a href="#23-指令层级与冲突" class="headerlink" title="23. 指令层级与冲突"></a>23. 指令层级与冲突</h2><p>Skill不是最高优先级指令。它仍需遵守系统、开发者、项目和用户的有效高优先级要求。</p>
+<p>Skill内部也可能冲突：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">“始终使用模板”<br>vs<br>“根据用户要求调整格式”<br></code></pre></td></tr></table></figure>
+
+<p>应明确优先规则：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Use the default report template unless the user explicitly requests a<br>different format. User-requested formatting may change presentation,<br>but MUST NOT remove the evidence, confidence, or limitations fields.<br></code></pre></td></tr></table></figure>
+
+<p>这样区分可覆盖的偏好和不可移除的Contract要求。</p>
+<p>OpenAI官方建议审查Skill及Supporting Files中的模糊和冲突指令，并明确用户显式要求与Skill默认指导之间的关系。</p>
+<hr>
+<h2 id="24-指令不要描述不存在的能力"><a href="#24-指令不要描述不存在的能力" class="headerlink" title="24. 指令不要描述不存在的能力"></a>24. 指令不要描述不存在的能力</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Search the web for the latest kernel documentation.<br></code></pre></td></tr></table></figure>
+
+<p>如果运行环境没有网络工具，这条指令无法执行。</p>
+<p>Skill应声明依赖并提供Fallback：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If an approved web or documentation search tool is available, retrieve<br>the documentation for the target kernel version. Otherwise, use the<br>bundled references and state that current upstream behavior was not<br>verified online.<br></code></pre></td></tr></table></figure>
+
+<p>指令必须与运行环境、Tool、权限和依赖一致。</p>
+<hr>
+<h2 id="25-安全指令要具体且可强制"><a href="#25-安全指令要具体且可强制" class="headerlink" title="25. 安全指令要具体且可强制"></a>25. 安全指令要具体且可强制</h2><p>较弱：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Be careful with user data.<br></code></pre></td></tr></table></figure>
+
+<p>更具体：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Do not include credentials, tokens, cookies, or raw customer records<br>  in reports.<br><span class="hljs-bullet">-</span> Replace detected secrets with <span class="hljs-code">`[REDACTED]`</span> before writing artifacts.<br><span class="hljs-bullet">-</span> Do not send data to external services.<br><span class="hljs-bullet">-</span> Stop and report <span class="hljs-code">`PERMISSION_REQUIRED`</span> before accessing paths outside<br>  the approved workspace.<br></code></pre></td></tr></table></figure>
+
+<p>但自然语言仍不能替代实际安全控制。Tool权限、沙箱、Secret Store、网络策略和服务端授权必须同步实施。</p>
+<hr>
+<h2 id="26-指令的可扫描性"><a href="#26-指令的可扫描性" class="headerlink" title="26. 指令的可扫描性"></a>26. 指令的可扫描性</h2><p>模型和人类都需要快速找到关键规则。推荐结构：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Preconditions</span><br><span class="hljs-section">## Workflow</span><br><span class="hljs-section">### Step 1: Normalize input</span><br><span class="hljs-section">### Step 2: Validate evidence</span><br><span class="hljs-section">### Step 3: Analyze</span><br><span class="hljs-section">## Failure handling</span><br><span class="hljs-section">## Output requirements</span><br><span class="hljs-section">## Final check</span><br></code></pre></td></tr></table></figure>
+
+<p>设计原则：</p>
+<ul>
+<li>使用稳定标题；</li>
+<li>步骤编号连续；</li>
+<li>关键MUST靠近相关步骤；</li>
+<li>不把关键规则藏在长段落末尾；</li>
+<li>命令独立成代码块；</li>
+<li>路径和字段使用反引号；</li>
+<li>表格用于映射，不用于长篇流程。</li>
+</ul>
+<hr>
+<h2 id="27-Instruction的压缩与去重"><a href="#27-Instruction的压缩与去重" class="headerlink" title="27. Instruction的压缩与去重"></a>27. Instruction的压缩与去重</h2><p>重复规则不一定增强遵循，反而可能：</p>
+<ul>
+<li>浪费上下文；</li>
+<li>产生轻微措辞差异；</li>
+<li>让维护者只修改其中一处；</li>
+<li>导致冲突。</li>
+</ul>
+<p>例如“不得编造证据”应有一个Canonical Rule，然后在关键步骤引用：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Follow the evidence rule in <span class="hljs-code">`## Evidence policy`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>但真正关键的局部Guard可以在步骤附近简短重复：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Do not continue when validation fails.<br></code></pre></td></tr></table></figure>
+
+<p>去重目标是减少语义重复，不是追求最短文本。</p>
+<hr>
+<h2 id="28-从坏指令到好指令"><a href="#28-从坏指令到好指令" class="headerlink" title="28. 从坏指令到好指令"></a>28. 从坏指令到好指令</h2><h3 id="示例一：日志分析"><a href="#示例一：日志分析" class="headerlink" title="示例一：日志分析"></a>示例一：日志分析</h3><p>坏：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Analyze the logs carefully.<br></code></pre></td></tr></table></figure>
+
+<p>好：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Query logs for <span class="hljs-code">`target`</span> during <span class="hljs-code">`incident_window`</span>. Normalize dynamic IDs<br>and timestamps before grouping messages. Save the top 20 signatures<br>with count, first occurrence, last occurrence, and one representative<br>example. Record query failures separately from empty results.<br></code></pre></td></tr></table></figure>
+
+<h3 id="示例二：修复代码"><a href="#示例二：修复代码" class="headerlink" title="示例二：修复代码"></a>示例二：修复代码</h3><p>坏：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Fix all issues and make sure tests pass.<br></code></pre></td></tr></table></figure>
+
+<p>好：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown">For each confirmed finding, make the smallest change that resolves the<br>documented behavior without modifying unrelated code. Run the focused<br>test for the changed module immediately after each fix. After all fixes,<br>run the project-prescribed test command. Report failing pre-existing<br>tests separately; do not alter them unless they are in scope.<br></code></pre></td></tr></table></figure>
+
+<h3 id="示例三：生成报告"><a href="#示例三：生成报告" class="headerlink" title="示例三：生成报告"></a>示例三：生成报告</h3><p>坏：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Create a comprehensive report.<br></code></pre></td></tr></table></figure>
+
+<p>好：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Generate <span class="hljs-code">`report.md`</span> from the validated result. Use at most one paragraph<br>for the executive summary, include every high-severity finding, link each<br>claim to an evidence ID, and end with ordered next actions. Put uncertain<br>claims in <span class="hljs-code">`Open questions`</span>, not <span class="hljs-code">`Root cause`</span>.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="29-Instruction-Eval"><a href="#29-Instruction-Eval" class="headerlink" title="29. Instruction Eval"></a>29. Instruction Eval</h2><p>指令质量不能只通过阅读判断，需要观察行为。</p>
+<h3 id="29-1-Step-Coverage"><a href="#29-1-Step-Coverage" class="headerlink" title="29.1 Step Coverage"></a>29.1 Step Coverage</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">是否执行所有MUST步骤？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-2-Step-Order"><a href="#29-2-Step-Order" class="headerlink" title="29.2 Step Order"></a>29.2 Step Order</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">是否在修改前验证计划？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-3-Scope-Compliance"><a href="#29-3-Scope-Compliance" class="headerlink" title="29.3 Scope Compliance"></a>29.3 Scope Compliance</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">是否读取或修改范围外文件？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-4-Output-Artifact"><a href="#29-4-Output-Artifact" class="headerlink" title="29.4 Output Artifact"></a>29.4 Output Artifact</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">是否生成指定中间产物？<br>字段是否完整？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-5-Failure-Behavior"><a href="#29-5-Failure-Behavior" class="headerlink" title="29.5 Failure Behavior"></a>29.5 Failure Behavior</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool超时后是否错误解释为空结果？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-6-Negative-Constraint"><a href="#29-6-Negative-Constraint" class="headerlink" title="29.6 Negative Constraint"></a>29.6 Negative Constraint</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">是否在未确认时发送外部消息？<br></code></pre></td></tr></table></figure>
+
+<h3 id="29-7-Model-Robustness"><a href="#29-7-Model-Robustness" class="headerlink" title="29.7 Model Robustness"></a>29.7 Model Robustness</h3><p>Skill效果依赖底层模型。计划使用多个模型时，应在每个模型上测试：较弱模型是否需要更多结构，较强模型是否被过度说明束缚。</p>
+<hr>
+<h2 id="30-可机器检查的执行轨迹"><a href="#30-可机器检查的执行轨迹" class="headerlink" title="30. 可机器检查的执行轨迹"></a>30. 可机器检查的执行轨迹</h2><p>如果Agent运行环境提供事件Trace，可以定义：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;required_events&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;file_read&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;references/memory.md&quot;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tool_call&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;query_metrics&quot;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;script&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scripts/validate_report.py&quot;</span><span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;forbidden_events&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tool_call&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;modify_production&quot;</span><span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;ordering&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;validate_plan&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;apply_changes&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;apply_changes&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;verify_output&quot;</span><span class="hljs-punctuation">]</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>这比只对最终答案评分更容易发现漏步和顺序错误。</p>
+<hr>
+<h2 id="31-Instruction-Review-Checklist"><a href="#31-Instruction-Review-Checklist" class="headerlink" title="31. Instruction Review Checklist"></a>31. Instruction Review Checklist</h2><h3 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h3><ul>
+<li>每步是否有明确动作动词？</li>
+<li>是否避免“适当处理”“确保正确”等空泛表达？</li>
+<li>是否一个步骤只承担一个主要目的？</li>
+</ul>
+<h3 id="Object与Scope"><a href="#Object与Scope" class="headerlink" title="Object与Scope"></a>Object与Scope</h3><ul>
+<li>操作对象是否明确？</li>
+<li>是否定义包含、排除、数量和目录边界？</li>
+<li>输入来源是否清楚？</li>
+</ul>
+<h3 id="Output与Check"><a href="#Output与Check" class="headerlink" title="Output与Check"></a>Output与Check</h3><ul>
+<li>每步是否产生可观察结果？</li>
+<li>是否有完成信号？</li>
+<li>是否定义失败行为？</li>
+</ul>
+<h3 id="Order与Branch"><a href="#Order与Branch" class="headerlink" title="Order与Branch"></a>Order与Branch</h3><ul>
+<li>关键依赖是否使用<code>only after</code>等语言明确？</li>
+<li>分支是否基于可观察信号？</li>
+<li>是否提供正向Fallback而不只是禁止？</li>
+</ul>
+<h3 id="Freedom"><a href="#Freedom" class="headerlink" title="Freedom"></a>Freedom</h3><ul>
+<li>指令自由度是否匹配风险？</li>
+<li>确定性操作是否下沉到Script？</li>
+<li>高风险操作是否采用精确命令和Validator？</li>
+</ul>
+<h3 id="Tools与Resources"><a href="#Tools与Resources" class="headerlink" title="Tools与Resources"></a>Tools与Resources</h3><ul>
+<li>Tool名称、参数来源和结果语义是否明确？</li>
+<li>Reference是否说明Condition、Purpose和Timing？</li>
+<li>指令是否依赖运行环境不存在的能力？</li>
+</ul>
+<h3 id="Safety"><a href="#Safety" class="headerlink" title="Safety"></a>Safety</h3><ul>
+<li>是否明确敏感数据和副作用规则？</li>
+<li>是否由实际权限机制强制关键限制？</li>
+</ul>
+<h3 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h3><ul>
+<li>是否测试Step Coverage、Order和Failure？</li>
+<li>是否测试多个计划使用的模型？</li>
+<li>是否把真实失败样例加入Regression？</li>
+</ul>
+<hr>
+<h2 id="32-本章实践"><a href="#32-本章实践" class="headerlink" title="32. 本章实践"></a>32. 本章实践</h2><p>将以下指令重写为可执行步骤：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">分析性能数据，找到问题，必要时运行工具，最后生成准确报告。<br></code></pre></td></tr></table></figure>
+
+<p>要求重写后包含：</p>
+<ol>
+<li>输入归一化；</li>
+<li>数据可用性检查；</li>
+<li>Tool名称和参数来源；</li>
+<li>中间Artifact；</li>
+<li>至少两个可观察分支条件；</li>
+<li>Tool失败行为；</li>
+<li>Evidence要求；</li>
+<li>输出模板；</li>
+<li>Final Validator；</li>
+<li>明确终止条件。</li>
+</ol>
+<p>然后分别写出：</p>
+<ul>
+<li>High Freedom版本；</li>
+<li>Medium Freedom版本；</li>
+<li>Low Freedom版本；</li>
+<li>适合模型执行的部分；</li>
+<li>应下沉到Script的部分。</li>
+</ul>
+<hr>
+<h2 id="33-学完检查题"><a href="#33-学完检查题" class="headerlink" title="33. 学完检查题"></a>33. 学完检查题</h2><ol>
+<li>为什么模型理解一句话不代表它能稳定执行？</li>
+<li>一个稳定步骤包含哪六个要素？</li>
+<li>为什么每一步最好只有一个主要目的？</li>
+<li>“确保准确”应怎样改写？</li>
+<li>为什么要明确操作对象和范围？</li>
+<li>中间Artifact有什么作用？</li>
+<li>完成信号和Definition of Done有什么关系？</li>
+<li>失败指令至少应包含什么？</li>
+<li>为什么编号本身不足以保证执行顺序？</li>
+<li>条件分支为什么应基于可观察信号？</li>
+<li>为什么纯否定指令通常不够？</li>
+<li>MUST、SHOULD和MAY如何区分？</li>
+<li>哪些任务适合Low Freedom指令？</li>
+<li>什么时候应该用Script而不是自然语言Instruction？</li>
+<li>一个好的Tool调用指令应说明哪些内容？</li>
+<li>为什么要保持Canonical Terminology？</li>
+<li>Skill内部指令冲突时应该怎样处理？</li>
+<li>Instruction Eval为什么要检查执行轨迹？</li>
+</ol>
+<hr>
+<h2 id="34-本章总结"><a href="#34-本章总结" class="headerlink" title="34. 本章总结"></a>34. 本章总结</h2><blockquote>
+<p>Step-by-Step Instruction的质量取决于行为是否可观察，而不是步骤数量。好的步骤使用明确动词，限定对象和范围，说明输入来源，产生可验证中间结果，并定义成功、失败和下一步条件。指令自由度应与任务风险匹配：开放分析可保留模型判断空间，脆弱或高风险操作则应使用精确顺序、结构化计划、确定性脚本和Validator。最终要通过执行轨迹验证模型是否真正遵循，而不能只看最终答案是否“像是正确的”。</p>
+</blockquote>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI：Build Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI：Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/plugins">OpenAI：Plugin Architecture</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Claude：Skill编写最佳实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Claude：Agent Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview">Claude：Prompt Engineering Overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Claude：Skills for Enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+        <a href="/tags/Workflow/" class="print-no-link">#Workflow</a>
+      
+        <a href="/tags/Evaluation/" class="print-no-link">#Evaluation</a>
+      
+        <a href="/tags/Instruction/" class="print-no-link">#Instruction</a>
+      
+        <a href="/tags/Prompt-Engineering/" class="print-no-link">#Prompt Engineering</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Step-by-Step Instruction怎么写</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/10-Step-by-Step-Instruction怎么写/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/" title="Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/" title="Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,1436 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码上一章把 references&#x2F; 定位为 Skill 的按需知识层。本章继续按照专题大纲，进入 scripts&#x2F;：当自然语言指令不足以稳定完成任务时，如何把关键操作固化成可执行代码。 一个 Skill 并不是脚本越多越好，也不是所有步骤都应该交给 LLM。真正的设计问题是：  哪些步">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码上一章把 references&#x2F; 定位为 Skill 的按需知识层。本章继续按照专题大纲，进入 scripts&#x2F;：当自然语言指令不足以稳定完成任务时，如何把关键操作固化成可执行代码。 一个 Skill 并不是脚本越多越好，也不是所有步骤都应该交给 LLM。真正的设计问题是：  哪些步">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T07:29:10.284Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Deterministic Operations">
+<meta property="article:tag" content="SKILL.md">
+<meta property="article:tag" content="Validation">
+<meta property="article:tag" content="scripts">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          89 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（十三）：scripts-——什么时候-Prompt-不够，需要代码"><a href="#Agent-Skill-原理与工程实践（十三）：scripts-——什么时候-Prompt-不够，需要代码" class="headerlink" title="Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码"></a>Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码</h1><p>上一章把 <code>references/</code> 定位为 Skill 的按需知识层。本章继续按照专题大纲，进入 <code>scripts/</code>：当自然语言指令不足以稳定完成任务时，如何把关键操作固化成可执行代码。</p>
+<p>一个 Skill 并不是脚本越多越好，也不是所有步骤都应该交给 LLM。真正的设计问题是：</p>
+<blockquote>
+<p>哪些步骤需要模型的语义理解与灵活判断，哪些步骤需要程序的确定性、可重复性和可验证性？</p>
+</blockquote>
+<p>本章的核心认知是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">LLM<br>→ 理解意图、分析语义、制定计划、处理歧义<br><br>scripts/<br>→ 计算、解析、转换、校验、执行稳定重复操作<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-这一章要解决什么问题"><a href="#1-这一章要解决什么问题" class="headerlink" title="1. 这一章要解决什么问题"></a>1. 这一章要解决什么问题</h2><p>本章集中回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">什么时候 Prompt 已经不够？<br>哪些任务适合写成 script？<br>LLM 与 script 的职责边界在哪里？<br>Skill 应怎样调用脚本？<br>脚本的输入、输出和退出码应该怎样设计？<br>为什么验证脚本特别重要？<br>怎样处理依赖、路径、错误和副作用？<br>如何测试 bundled scripts？<br></code></pre></td></tr></table></figure>
+
+<p>目标不是教某一种编程语言，而是学习如何把脚本设计成 <strong>Agent 能可靠调用的确定性组件</strong>。</p>
+<hr>
+<h2 id="2-为什么-Prompt-会不够"><a href="#2-为什么-Prompt-会不够" class="headerlink" title="2. 为什么 Prompt 会不够"></a>2. 为什么 Prompt 会不够</h2><p>自然语言指令适合表达目标、约束和决策规则，但它不天然保证每次执行都得到完全相同的过程。</p>
+<p>假设在 <code>SKILL.md</code> 中写：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read the trace file, compute P50, P95, and P99 latency, then output JSON.<br></code></pre></td></tr></table></figure>
+
+<p>这段指令存在许多隐含问题：</p>
+<ul>
+<li>使用哪种分位数算法？</li>
+<li>空数据怎样处理？</li>
+<li>单位如何统一？</li>
+<li>是否忽略非法行？</li>
+<li>大文件能否全部放入上下文？</li>
+<li>JSON 字段是否每次一致？</li>
+<li>浮点精度和舍入规则是什么？</li>
+</ul>
+<p>模型可能每次采取不同方法，也可能为了完成任务而临时生成一段未经测试的代码。</p>
+<p>如果这些差异会影响正确性，就应该把逻辑固化成脚本：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">scripts/calc_latency.py<br></code></pre></td></tr></table></figure>
+
+<p>然后让 Skill 负责：</p>
+<ol>
+<li>判断何时应该计算；</li>
+<li>准备正确输入；</li>
+<li>调用脚本；</li>
+<li>验证脚本结果；</li>
+<li>把结构化结果解释给用户。</li>
+</ol>
+<hr>
+<h2 id="3-整体架构：LLM-决策，Script-执行"><a href="#3-整体架构：LLM-决策，Script-执行" class="headerlink" title="3. 整体架构：LLM 决策，Script 执行"></a>3. 整体架构：LLM 决策，Script 执行</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs text">User Request<br>      │<br>      ▼<br>   SKILL.md<br>      │<br>      ├── 理解任务<br>      ├── 验证前置条件<br>      ├── 选择执行路径<br>      │<br>      ▼<br> scripts/&lt;operation&gt;.py<br>      │<br>      ├── 解析输入<br>      ├── 确定性处理<br>      ├── 产生结构化结果<br>      └── 返回退出状态<br>      │<br>      ▼<br>   SKILL.md<br>      │<br>      ├── 检查 Postcondition<br>      ├── 结合上下文解释<br>      └── 生成最终输出<br></code></pre></td></tr></table></figure>
+
+<p>这里有一个关键分工：</p>
+<ul>
+<li>Skill 定义“为什么调用、何时调用、调用后怎么办”；</li>
+<li>Script 定义“这个具体操作怎样稳定执行”。</li>
+</ul>
+<p>脚本不能替代完整 Workflow，Workflow 也不应该反复即兴实现同一个确定性算法。</p>
+<hr>
+<h2 id="4-什么任务适合放进-scripts"><a href="#4-什么任务适合放进-scripts" class="headerlink" title="4. 什么任务适合放进 scripts&#x2F;"></a>4. 什么任务适合放进 scripts&#x2F;</h2><p>专题大纲列出了四类典型任务：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">计算<br>格式转换<br>校验<br>数据解析<br>稳定重复操作<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-1-计算"><a href="#4-1-计算" class="headerlink" title="4.1 计算"></a>4.1 计算</h3><p>例如：</p>
+<ul>
+<li>分位数、聚合和统计；</li>
+<li>时间单位转换；</li>
+<li>哈希与校验和；</li>
+<li>差异计算；</li>
+<li>图布局坐标；</li>
+<li>成本或资源估算。</li>
+</ul>
+<p>计算通常要求明确算法和边界行为，比自然语言推算更适合脚本。</p>
+<h3 id="4-2-格式转换"><a href="#4-2-格式转换" class="headerlink" title="4.2 格式转换"></a>4.2 格式转换</h3><p>例如：</p>
+<ul>
+<li>CSV 转 JSON；</li>
+<li>Markdown 转结构化中间表示；</li>
+<li>文档解包与重新打包；</li>
+<li>图片格式转换；</li>
+<li>日志规范化；</li>
+<li>Schema 版本迁移。</li>
+</ul>
+<p>转换规则应保持稳定，脚本也更适合处理大文件。</p>
+<h3 id="4-3-校验"><a href="#4-3-校验" class="headerlink" title="4.3 校验"></a>4.3 校验</h3><p>例如：</p>
+<ul>
+<li>JSON Schema 校验；</li>
+<li>XML&#x2F;HTML 结构检查；</li>
+<li>报告必需字段检查；</li>
+<li>链接或引用一致性检查；</li>
+<li>数值范围和关系检查；</li>
+<li>生成文件能否被重新打开。</li>
+</ul>
+<p>验证脚本尤其重要，因为它能把“看起来没问题”变成机器可判定的 Postcondition。</p>
+<h3 id="4-4-数据解析"><a href="#4-4-数据解析" class="headerlink" title="4.4 数据解析"></a>4.4 数据解析</h3><p>例如：</p>
+<ul>
+<li>trace 事件解析；</li>
+<li>编译器日志提取；</li>
+<li>PDF 元数据读取；</li>
+<li>配置文件解析；</li>
+<li>二进制格式解码；</li>
+<li>大规模记录过滤。</li>
+</ul>
+<p>解析器可以集中处理编码、非法行、版本差异和错误位置。</p>
+<h3 id="4-5-稳定重复操作"><a href="#4-5-稳定重复操作" class="headerlink" title="4.5 稳定重复操作"></a>4.5 稳定重复操作</h3><p>例如：</p>
+<ul>
+<li>生成固定目录结构；</li>
+<li>批量重命名；</li>
+<li>按统一规则创建报告索引；</li>
+<li>规范化日期和标识符；</li>
+<li>执行固定的构建与打包流程。</li>
+</ul>
+<p>如果同一段逻辑会频繁重复，预置脚本通常比每次重新生成代码更可靠。</p>
+<hr>
+<h2 id="5-判断是否需要脚本：确定性五问"><a href="#5-判断是否需要脚本：确定性五问" class="headerlink" title="5. 判断是否需要脚本：确定性五问"></a>5. 判断是否需要脚本：确定性五问</h2><p>遇到一个工作流步骤时，可以问：</p>
+<h3 id="5-1-是否存在唯一或明确算法？"><a href="#5-1-是否存在唯一或明确算法？" class="headerlink" title="5.1 是否存在唯一或明确算法？"></a>5.1 是否存在唯一或明确算法？</h3><p>如果是，脚本能减少实现漂移。</p>
+<h3 id="5-2-是否需要每次产生同一结构？"><a href="#5-2-是否需要每次产生同一结构？" class="headerlink" title="5.2 是否需要每次产生同一结构？"></a>5.2 是否需要每次产生同一结构？</h3><p>稳定的 JSON、CSV、目录或文档结构适合脚本处理。</p>
+<h3 id="5-3-是否需要机器验证？"><a href="#5-3-是否需要机器验证？" class="headerlink" title="5.3 是否需要机器验证？"></a>5.3 是否需要机器验证？</h3><p>如果成功条件可以写成断言，验证脚本通常很有价值。</p>
+<h3 id="5-4-输入规模是否不适合进入模型上下文？"><a href="#5-4-输入规模是否不适合进入模型上下文？" class="headerlink" title="5.4 输入规模是否不适合进入模型上下文？"></a>5.4 输入规模是否不适合进入模型上下文？</h3><p>大日志、大数据表和二进制文件应先通过脚本过滤、聚合或转换，再把小而相关的结果交给模型。</p>
+<h3 id="5-5-出错代价是否较高？"><a href="#5-5-出错代价是否较高？" class="headerlink" title="5.5 出错代价是否较高？"></a>5.5 出错代价是否较高？</h3><p>批量修改、文档重建、迁移和发布前校验需要更低自由度，适合固定脚本和严格参数。</p>
+<p>一个简单决策表：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th align="right">推荐 LLM</th>
+<th align="right">推荐 Script</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>判断用户真正想解决什么</td>
+<td align="right">是</td>
+<td align="right">否</td>
+</tr>
+<tr>
+<td>根据多源证据提出假设</td>
+<td align="right">是</td>
+<td align="right">辅助</td>
+</tr>
+<tr>
+<td>计算 P99</td>
+<td align="right">否</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>解析 2 GB 日志</td>
+<td align="right">否</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>解释指标意味着什么</td>
+<td align="right">是</td>
+<td align="right">否</td>
+</tr>
+<tr>
+<td>验证 JSON Schema</td>
+<td align="right">否</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>选择报告重点</td>
+<td align="right">是</td>
+<td align="right">否</td>
+</tr>
+<tr>
+<td>批量执行格式迁移</td>
+<td align="right">规划</td>
+<td align="right">是</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-三种自由度：何时用文字，何时用脚本"><a href="#6-三种自由度：何时用文字，何时用脚本" class="headerlink" title="6. 三种自由度：何时用文字，何时用脚本"></a>6. 三种自由度：何时用文字，何时用脚本</h2><p>Anthropic 官方 Skill 最佳实践提出了一个很有用的视角：根据任务的脆弱性与可变性选择自由度。</p>
+<h3 id="6-1-高自由度：自然语言-Workflow"><a href="#6-1-高自由度：自然语言-Workflow" class="headerlink" title="6.1 高自由度：自然语言 Workflow"></a>6.1 高自由度：自然语言 Workflow</h3><p>适合：</p>
+<ul>
+<li>多种方案都合理；</li>
+<li>决策强依赖上下文；</li>
+<li>主要依赖启发式判断。</li>
+</ul>
+<p>例如代码审查、证据解释和写作结构设计。</p>
+<h3 id="6-2-中自由度：参数化模式"><a href="#6-2-中自由度：参数化模式" class="headerlink" title="6.2 中自由度：参数化模式"></a>6.2 中自由度：参数化模式</h3><p>适合：</p>
+<ul>
+<li>有推荐方法；</li>
+<li>允许少量配置；</li>
+<li>输入差异需要参数调整。</li>
+</ul>
+<p>例如统一的报告生成器，由 Agent 选择格式和是否包含图表。</p>
+<h3 id="6-3-低自由度：固定脚本"><a href="#6-3-低自由度：固定脚本" class="headerlink" title="6.3 低自由度：固定脚本"></a>6.3 低自由度：固定脚本</h3><p>适合：</p>
+<ul>
+<li>操作脆弱；</li>
+<li>一致性非常重要；</li>
+<li>必须遵守精确顺序；</li>
+<li>参数不应随意变化。</li>
+</ul>
+<p>例如数据库迁移、文档结构重建和发布前验证。</p>
+<p>设计原则是：</p>
+<blockquote>
+<p>自由度应与任务允许的变化程度匹配，而不是所有步骤统一交给 LLM 或统一写成代码。</p>
+</blockquote>
+<hr>
+<h2 id="7-不要为了“工程化”而滥用脚本"><a href="#7-不要为了“工程化”而滥用脚本" class="headerlink" title="7. 不要为了“工程化”而滥用脚本"></a>7. 不要为了“工程化”而滥用脚本</h2><p>OpenAI 官方文档明确建议：当指令和已有工具已经能够可靠完成任务时，不要额外添加脚本。</p>
+<p>以下情况可能不需要脚本：</p>
+<ul>
+<li>一次性的简单文本改写；</li>
+<li>主要依赖语义判断的审查；</li>
+<li>已有 Tool 能直接可靠完成；</li>
+<li>代码逻辑比自然语言步骤更复杂，却没有带来稳定性收益；</li>
+<li>脚本只是把同一句 Prompt 包在程序里；</li>
+<li>不同环境几乎不可能具备其依赖。</li>
+</ul>
+<p>反例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">ask_model_to_summarize</span>(<span class="hljs-params">text</span>):<br>    <span class="hljs-comment"># 再调用另一个模型总结</span><br>    ...<br></code></pre></td></tr></table></figure>
+
+<p>如果当前 Agent 已经能完成总结，这种脚本只是增加了一层不透明调用，并没有提供确定性。</p>
+<p>脚本应该真正解决问题，而不是把问题推回给模型。</p>
+<hr>
+<h2 id="8-脚本不是-Tool，也不是-Skill"><a href="#8-脚本不是-Tool，也不是-Skill" class="headerlink" title="8. 脚本不是 Tool，也不是 Skill"></a>8. 脚本不是 Tool，也不是 Skill</h2><p>三者的边界需要明确。</p>
+<h3 id="8-1-Script"><a href="#8-1-Script" class="headerlink" title="8.1 Script"></a>8.1 Script</h3><ul>
+<li>随 Skill 一起分发；</li>
+<li>通常由 Agent 通过 Shell 或执行环境调用；</li>
+<li>实现局部、确定性的处理；</li>
+<li>自身没有全局触发条件；</li>
+<li>通常不负责完整用户交互。</li>
+</ul>
+<h3 id="8-2-Tool"><a href="#8-2-Tool" class="headerlink" title="8.2 Tool"></a>8.2 Tool</h3><ul>
+<li>是 Agent 可调用的能力接口；</li>
+<li>通常具有结构化参数；</li>
+<li>可能访问实时数据或执行受控外部动作；</li>
+<li>可由多个 Skill 共用。</li>
+</ul>
+<h3 id="8-3-Skill"><a href="#8-3-Skill" class="headerlink" title="8.3 Skill"></a>8.3 Skill</h3><ul>
+<li>封装某类用户目标的完整工作流；</li>
+<li>决定何时调用 Script 或 Tool；</li>
+<li>负责输入、输出、分支和成功标准。</li>
+</ul>
+<p>可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill 决定做什么和何时做<br>Tool 暴露系统能力<br>Script 稳定实现局部操作<br></code></pre></td></tr></table></figure>
+
+<p>如果一个脚本逐渐变成共享服务、需要权限治理、实时连接和稳定 API，它可能更适合升级为 Tool。</p>
+<hr>
+<h2 id="9-推荐目录结构"><a href="#9-推荐目录结构" class="headerlink" title="9. 推荐目录结构"></a>9. 推荐目录结构</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis/<br>├── SKILL.md<br>├── references/<br>│   ├── trace-format.md<br>│   └── diagnosis-rules.md<br>└── scripts/<br>    ├── parse_trace.py<br>    ├── calc_latency.py<br>    └── validate_report.py<br></code></pre></td></tr></table></figure>
+
+<p>文件名应描述行为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">parse_trace.py<br>calc_latency.py<br>validate_report.py<br></code></pre></td></tr></table></figure>
+
+<p>避免：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">helper.py<br>utils2.py<br>run.py<br>final_script.py<br></code></pre></td></tr></table></figure>
+
+<p>好的命名能让 Agent 在不读取源码的情况下理解用途。</p>
+<p>在 <code>SKILL.md</code> 中引用路径时，建议使用相对路径和正斜杠：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">scripts/parse_trace.py<br></code></pre></td></tr></table></figure>
+
+<p>而不是绑定某台机器的绝对路径。</p>
+<hr>
+<h2 id="10-Script-Contract：把脚本当成稳定接口"><a href="#10-Script-Contract：把脚本当成稳定接口" class="headerlink" title="10. Script Contract：把脚本当成稳定接口"></a>10. Script Contract：把脚本当成稳定接口</h2><p>Agent 调用脚本时也需要 Contract。</p>
+<h3 id="10-1-输入-Contract"><a href="#10-1-输入-Contract" class="headerlink" title="10.1 输入 Contract"></a>10.1 输入 Contract</h3><p>明确：</p>
+<ul>
+<li>必填参数；</li>
+<li>可选参数；</li>
+<li>文件格式；</li>
+<li>编码；</li>
+<li>单位；</li>
+<li>允许范围；</li>
+<li>默认值；</li>
+<li>是否读取标准输入。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">python scripts/calc_latency.py \<br>  --input artifacts/events.jsonl \<br>  --unit microseconds \<br>  --output artifacts/metrics.json<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-2-输出-Contract"><a href="#10-2-输出-Contract" class="headerlink" title="10.2 输出 Contract"></a>10.2 输出 Contract</h3><p>面向 Agent 的脚本最好输出结构化数据：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;sample_count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2048</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;unit&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;microseconds&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;percentiles&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;p50&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">42.0</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;p95&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">130.0</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;p99&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">240.0</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>不要只输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Looks good!<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-3-退出码-Contract"><a href="#10-3-退出码-Contract" class="headerlink" title="10.3 退出码 Contract"></a>10.3 退出码 Contract</h3><p>一个简单约定：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">0 → 成功，输出可使用<br>2 → 输入或参数错误<br>3 → 解析失败<br>4 → 验证失败<br>5 → 环境或依赖错误<br></code></pre></td></tr></table></figure>
+
+<p>具体数值可以自定义，但必须记录并保持一致。</p>
+<h3 id="10-4-标准输出与标准错误"><a href="#10-4-标准输出与标准错误" class="headerlink" title="10.4 标准输出与标准错误"></a>10.4 标准输出与标准错误</h3><p>推荐：</p>
+<ul>
+<li><code>stdout</code> 输出机器可读结果；</li>
+<li><code>stderr</code> 输出诊断信息；</li>
+<li>日志不要污染 JSON 输出；</li>
+<li>错误信息指出具体文件、字段和修复方向。</li>
+</ul>
+<h3 id="10-5-副作用-Contract"><a href="#10-5-副作用-Contract" class="headerlink" title="10.5 副作用 Contract"></a>10.5 副作用 Contract</h3><p>明确脚本会：</p>
+<ul>
+<li>读取哪些文件；</li>
+<li>写入哪些文件；</li>
+<li>是否覆盖；</li>
+<li>是否创建临时文件；</li>
+<li>是否访问网络；</li>
+<li>是否修改外部状态。</li>
+</ul>
+<hr>
+<h2 id="11-SKILL-md-应怎样描述脚本调用"><a href="#11-SKILL-md-应怎样描述脚本调用" class="headerlink" title="11. SKILL.md 应怎样描述脚本调用"></a>11. SKILL.md 应怎样描述脚本调用</h2><p>仅写“使用目录中的脚本”远远不够。</p>
+<h3 id="11-1-一个完整调用说明"><a href="#11-1-一个完整调用说明" class="headerlink" title="11.1 一个完整调用说明"></a>11.1 一个完整调用说明</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">### Parse the trace</span><br><br>Preconditions:<br><span class="hljs-bullet">-</span> The trace file exists and is readable.<br><span class="hljs-bullet">-</span> The trace format has been identified.<br><br>Run:<br><br><span class="hljs-code">```bash</span><br><span class="hljs-code">python scripts/parse_trace.py \</span><br><span class="hljs-code">  --input &quot;&lt;trace-path&gt;&quot; \</span><br><span class="hljs-code">  --output artifacts/events.jsonl</span><br></code></pre></td></tr></table></figure>
+
+<p>Do not modify the source trace.</p>
+<p>Postconditions:</p>
+<ul>
+<li>Exit code is 0.</li>
+<li><code>artifacts/events.jsonl</code> exists.</li>
+<li>Every output line is valid JSON.</li>
+<li>At least one event is present.</li>
+</ul>
+<p>On failure:</p>
+<ul>
+<li>Do not continue to metric calculation.</li>
+<li>Report the script’s error code and diagnostic message.</li>
+</ul>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><br>这段说明定义了：<br><br><span class="hljs-bullet">-</span> 调用时机；<br><span class="hljs-bullet">-</span> 前置条件；<br><span class="hljs-bullet">-</span> 确切命令；<br><span class="hljs-bullet">-</span> 参数映射；<br><span class="hljs-bullet">-</span> 禁止事项；<br><span class="hljs-bullet">-</span> 后置条件；<br><span class="hljs-bullet">-</span> 失败行为。<br><br><span class="hljs-section">### 11.2 明确“执行”还是“阅读”</span><br><br>Anthropic 官方实践特别提醒要区分：<br><br><span class="hljs-code">```markdown</span><br><span class="hljs-code">Run `scripts/analyze_form.py` to extract fields.</span><br></code></pre></td></tr></table></figure>
+
+<p>和：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read <span class="hljs-code">`scripts/analyze_form.py`</span> to understand the extraction algorithm.<br></code></pre></td></tr></table></figure>
+
+<p>前者是执行代码，后者是把源码作为参考。含糊写法可能导致 Agent 只读不运行，或者不必要地把完整源码加载进上下文。</p>
+<hr>
+<h2 id="12-Plan–Validate–Execute：脚本最重要的工作流模式"><a href="#12-Plan–Validate–Execute：脚本最重要的工作流模式" class="headerlink" title="12. Plan–Validate–Execute：脚本最重要的工作流模式"></a>12. Plan–Validate–Execute：脚本最重要的工作流模式</h2><p>对于批量修改、破坏性操作和复杂生成任务，推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">Plan<br>  ↓<br>生成结构化中间文件<br>  ↓<br>Validate<br>  ↓<br>验证失败？──是──→ 修复计划并重新验证<br>  │<br>  否<br>  ↓<br>Execute<br>  ↓<br>Verify<br></code></pre></td></tr></table></figure>
+
+<p>例如修改 50 个表单字段：</p>
+<ol>
+<li>LLM 根据用户意图生成 <code>changes.json</code>；</li>
+<li><code>scripts/validate_changes.py</code> 检查字段是否存在、类型是否正确、是否冲突；</li>
+<li>只有验证通过后才运行 <code>scripts/apply_changes.py</code>；</li>
+<li>最后运行 <code>scripts/verify_output.py</code>。</li>
+</ol>
+<p>这种模式的优势：</p>
+<ul>
+<li>修改前发现错误；</li>
+<li>中间计划可审查；</li>
+<li>验证是机器可重复的；</li>
+<li>调试可以定位到具体字段；</li>
+<li>在执行副作用之前仍然容易撤销。</li>
+</ul>
+<hr>
+<h2 id="13-验证脚本应该怎样设计"><a href="#13-验证脚本应该怎样设计" class="headerlink" title="13. 验证脚本应该怎样设计"></a>13. 验证脚本应该怎样设计</h2><p>验证器不是只返回 true&#x2F;false。</p>
+<h3 id="13-1-输出具体错误"><a href="#13-1-输出具体错误" class="headerlink" title="13.1 输出具体错误"></a>13.1 输出具体错误</h3><p>差的输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Validation failed.<br></code></pre></td></tr></table></figure>
+
+<p>好的输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">E102: field &#x27;signature_date&#x27; does not exist.<br>Available fields: customer_name, order_total, signature_date_signed.<br></code></pre></td></tr></table></figure>
+
+<p>Agent 需要知道：</p>
+<ul>
+<li>哪里错了；</li>
+<li>为什么错；</li>
+<li>允许的值是什么；</li>
+<li>是否可以自动修复。</li>
+</ul>
+<h3 id="13-2-验证器本身也要确定"><a href="#13-2-验证器本身也要确定" class="headerlink" title="13.2 验证器本身也要确定"></a>13.2 验证器本身也要确定</h3><ul>
+<li>同一输入产生同一结果；</li>
+<li>不在验证过程中偷偷修复；</li>
+<li>不产生未声明的副作用；</li>
+<li>错误顺序稳定；</li>
+<li>结果适合机器解析。</li>
+</ul>
+<h3 id="13-3-修复后必须重新运行"><a href="#13-3-修复后必须重新运行" class="headerlink" title="13.3 修复后必须重新运行"></a>13.3 修复后必须重新运行</h3><p>不要让模型根据错误信息修改后就直接进入下一步。正确循环是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">run validator<br>→ fix errors<br>→ run validator again<br>→ proceed only when it passes<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="14-错误处理：Script-要解决问题，不要把问题推回给-Agent"><a href="#14-错误处理：Script-要解决问题，不要把问题推回给-Agent" class="headerlink" title="14. 错误处理：Script 要解决问题，不要把问题推回给 Agent"></a>14. 错误处理：Script 要解决问题，不要把问题推回给 Agent</h2><p>Anthropic 官方实践用“solve, don’t defer”概括脚本责任。</p>
+<p>这不代表脚本必须吞掉所有错误，而是说它应：</p>
+<ul>
+<li>捕获预期异常；</li>
+<li>给出具体错误类别；</li>
+<li>提供可执行诊断；</li>
+<li>清理临时状态；</li>
+<li>对部分写入保持谨慎；</li>
+<li>不以模糊堆栈信息作为唯一输出。</li>
+</ul>
+<p>脚本不应：</p>
+<ul>
+<li>遇到任何异常都静默返回空结果；</li>
+<li>把失败伪装成成功；</li>
+<li>自动猜测关键参数；</li>
+<li>在错误后留下半成品却不报告；</li>
+<li>要求 Agent 阅读源码才能知道发生了什么。</li>
+</ul>
+<p>一个好的错误对象可以是：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;error&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;INVALID_DURATION_UNIT&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Expected ns, us, or ms; received &#x27;ticks&#x27;.&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;field&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;duration_unit&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;retryable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="15-依赖与运行环境"><a href="#15-依赖与运行环境" class="headerlink" title="15. 依赖与运行环境"></a>15. 依赖与运行环境</h2><p>脚本在作者机器上能运行，不代表在 Skill 的目标环境中能运行。</p>
+<h3 id="15-1-声明运行时"><a href="#15-1-声明运行时" class="headerlink" title="15.1 声明运行时"></a>15.1 声明运行时</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Python &gt;= 3.11<br>Node.js &gt;= 20<br></code></pre></td></tr></table></figure>
+
+<h3 id="15-2-声明依赖"><a href="#15-2-声明依赖" class="headerlink" title="15.2 声明依赖"></a>15.2 声明依赖</h3><p>列出必要依赖及用途，并尽量减少依赖数量。</p>
+<h3 id="15-3-不要假设可以运行时安装"><a href="#15-3-不要假设可以运行时安装" class="headerlink" title="15.3 不要假设可以运行时安装"></a>15.3 不要假设可以运行时安装</h3><p>不同平台限制不同。Anthropic 官方文档指出，其 API Skill 执行环境没有网络访问，也不能运行时安装新包。因此，Skill 必须确认目标环境是否已经具备依赖。</p>
+<h3 id="15-4-优先标准库还是第三方库"><a href="#15-4-优先标准库还是第三方库" class="headerlink" title="15.4 优先标准库还是第三方库"></a>15.4 优先标准库还是第三方库</h3><ul>
+<li>简单任务优先使用标准库，降低部署风险；</li>
+<li>复杂格式优先使用成熟库，避免自己实现脆弱解析器；</li>
+<li>决策依据是可靠性、可维护性和环境可用性，而不是一律零依赖。</li>
+</ul>
+<h3 id="15-5-路径必须可移植"><a href="#15-5-路径必须可移植" class="headerlink" title="15.5 路径必须可移植"></a>15.5 路径必须可移植</h3><p>脚本不应硬编码开发者机器路径：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 不推荐</span><br>INPUT = <span class="hljs-string">&quot;D:/my-machine/data/input.csv&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>应通过参数、工作目录或 Skill 相对路径确定位置。</p>
+<hr>
+<h2 id="16-安全：脚本意味着真正的代码执行"><a href="#16-安全：脚本意味着真正的代码执行" class="headerlink" title="16. 安全：脚本意味着真正的代码执行"></a>16. 安全：脚本意味着真正的代码执行</h2><p>脚本比纯 Markdown reference 风险更高。Anthropic 企业安全指南将 Skill 中的可执行脚本列为高风险审查项。</p>
+<h3 id="16-1-审查文件访问范围"><a href="#16-1-审查文件访问范围" class="headerlink" title="16.1 审查文件访问范围"></a>16.1 审查文件访问范围</h3><p>检查：</p>
+<ul>
+<li>是否访问 Skill 目录之外的文件；</li>
+<li>是否使用宽泛 glob；</li>
+<li>是否允许路径穿越；</li>
+<li>是否覆盖用户文件；</li>
+<li>是否跟随不安全的符号链接。</li>
+</ul>
+<h3 id="16-2-审查网络行为"><a href="#16-2-审查网络行为" class="headerlink" title="16.2 审查网络行为"></a>16.2 审查网络行为</h3><p>检查 <code>curl</code>、<code>fetch</code>、<code>requests</code>、<code>urllib</code> 等调用。脚本不应把数据发送到与 Skill 目的无关的目标。</p>
+<h3 id="16-3-不硬编码凭据"><a href="#16-3-不硬编码凭据" class="headerlink" title="16.3 不硬编码凭据"></a>16.3 不硬编码凭据</h3><p>API Key、密码和 Token 不应进入：</p>
+<ul>
+<li>脚本源码；</li>
+<li>Skill 文件；</li>
+<li>Git 历史；</li>
+<li>错误输出；</li>
+<li>生成报告。</li>
+</ul>
+<h3 id="16-4-避免-Shell-注入"><a href="#16-4-避免-Shell-注入" class="headerlink" title="16.4 避免 Shell 注入"></a>16.4 避免 Shell 注入</h3><p>不要把模型生成的原始字符串拼进 Shell 命令。优先使用参数数组、严格校验和受控枚举。</p>
+<h3 id="16-5-破坏性操作前增加确认与预览"><a href="#16-5-破坏性操作前增加确认与预览" class="headerlink" title="16.5 破坏性操作前增加确认与预览"></a>16.5 破坏性操作前增加确认与预览</h3><p>可以提供：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">--dry-run<br>--output &lt;new-path&gt;<br>--no-overwrite<br></code></pre></td></tr></table></figure>
+
+<p>默认行为应尽可能安全和可恢复。</p>
+<h3 id="16-6-第三方-Skill-要审查所有脚本"><a href="#16-6-第三方-Skill-要审查所有脚本" class="headerlink" title="16.6 第三方 Skill 要审查所有脚本"></a>16.6 第三方 Skill 要审查所有脚本</h3><p>安装 Skill 应像安装软件一样谨慎，不能只检查 <code>SKILL.md</code>。</p>
+<hr>
+<h2 id="17-脚本输出与上下文效率"><a href="#17-脚本输出与上下文效率" class="headerlink" title="17. 脚本输出与上下文效率"></a>17. 脚本输出与上下文效率</h2><p>Agent 不一定需要读取脚本源码。执行环境可以直接运行脚本，只把输出返回给模型。</p>
+<p>这带来两层收益：</p>
+<ol>
+<li>不需要每次在上下文中生成或加载完整代码；</li>
+<li>可以把大输入处理成小而稳定的结构化摘要。</li>
+</ol>
+<p>但输出也不能无限大。推荐：</p>
+<ul>
+<li>详细结果写入文件；</li>
+<li>标准输出返回摘要、状态和产物路径；</li>
+<li>只把下一步决策所需信息放入上下文；</li>
+<li>必要时支持过滤、分页或采样；</li>
+<li>避免输出整个二进制或海量日志。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;artifact&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;artifacts/parsed-events.jsonl&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;event_count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1938421</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;warnings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;summary&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;scheduler&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1200000</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;io&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">738421</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>Agent 根据摘要决定接下来读取哪类结果，而不是把 190 万条事件塞入上下文。</p>
+<hr>
+<h2 id="18-完整示例：Performance-Analysis-Skill"><a href="#18-完整示例：Performance-Analysis-Skill" class="headerlink" title="18. 完整示例：Performance Analysis Skill"></a>18. 完整示例：Performance Analysis Skill</h2><h3 id="18-1-目录"><a href="#18-1-目录" class="headerlink" title="18.1 目录"></a>18.1 目录</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis/<br>├── SKILL.md<br>├── references/<br>│   ├── trace-format.md<br>│   └── diagnosis-rules.md<br>└── scripts/<br>    ├── parse_trace.py<br>    ├── calc_latency.py<br>    └── validate_report.py<br></code></pre></td></tr></table></figure>
+
+<h3 id="18-2-工作流"><a href="#18-2-工作流" class="headerlink" title="18.2 工作流"></a>18.2 工作流</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Validate the input path and determine the trace format.<br><span class="hljs-bullet">2.</span> Run <span class="hljs-code">`scripts/parse_trace.py`</span> to create normalized events.<br><span class="hljs-bullet">3.</span> Verify the parser result before continuing.<br><span class="hljs-bullet">4.</span> Run <span class="hljs-code">`scripts/calc_latency.py`</span> on normalized events.<br><span class="hljs-bullet">5.</span> Use the computed metrics and relevant references to form findings.<br><span class="hljs-bullet">6.</span> Write the report to <span class="hljs-code">`artifacts/report.json`</span>.<br><span class="hljs-bullet">7.</span> Run <span class="hljs-code">`scripts/validate_report.py`</span>.<br><span class="hljs-bullet">8.</span> If validation fails, correct the report and rerun the validator.<br><span class="hljs-bullet">9.</span> Deliver only after validation passes.<br></code></pre></td></tr></table></figure>
+
+<h3 id="18-3-职责划分"><a href="#18-3-职责划分" class="headerlink" title="18.3 职责划分"></a>18.3 职责划分</h3><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>LLM</th>
+<th>Script</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>判断任务范围</td>
+<td>主责</td>
+<td></td>
+</tr>
+<tr>
+<td>解析海量 trace</td>
+<td></td>
+<td>主责</td>
+</tr>
+<tr>
+<td>计算延迟分位数</td>
+<td></td>
+<td>主责</td>
+</tr>
+<tr>
+<td>识别候选根因</td>
+<td>主责</td>
+<td>提供指标</td>
+</tr>
+<tr>
+<td>解释证据</td>
+<td>主责</td>
+<td></td>
+</tr>
+<tr>
+<td>校验报告 Schema</td>
+<td></td>
+<td>主责</td>
+</tr>
+<tr>
+<td>形成用户可读结论</td>
+<td>主责</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="18-4-Postcondition"><a href="#18-4-Postcondition" class="headerlink" title="18.4 Postcondition"></a>18.4 Postcondition</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">parse_trace.py<br>→ 结构化事件合法、数量大于 0、单位统一<br><br>calc_latency.py<br>→ P50 ≤ P95 ≤ P99，样本数和单位齐全<br><br>validate_report.py<br>→ 所有必需字段存在，每个 root cause 都引用 evidence<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="19-如何测试-scripts"><a href="#19-如何测试-scripts" class="headerlink" title="19. 如何测试 scripts&#x2F;"></a>19. 如何测试 scripts&#x2F;</h2><h3 id="19-1-单元测试"><a href="#19-1-单元测试" class="headerlink" title="19.1 单元测试"></a>19.1 单元测试</h3><p>覆盖：</p>
+<ul>
+<li>正常输入；</li>
+<li>空输入；</li>
+<li>非法格式；</li>
+<li>边界数值；</li>
+<li>编码问题；</li>
+<li>超大输入；</li>
+<li>路径和权限错误。</li>
+</ul>
+<h3 id="19-2-Contract-测试"><a href="#19-2-Contract-测试" class="headerlink" title="19.2 Contract 测试"></a>19.2 Contract 测试</h3><p>检查：</p>
+<ul>
+<li>CLI 参数是否稳定；</li>
+<li>输出 Schema 是否稳定；</li>
+<li>退出码是否符合约定；</li>
+<li><code>stdout</code> 是否保持机器可读；</li>
+<li><code>stderr</code> 是否提供诊断。</li>
+</ul>
+<h3 id="19-3-Golden-Test"><a href="#19-3-Golden-Test" class="headerlink" title="19.3 Golden Test"></a>19.3 Golden Test</h3><p>为稳定转换保留输入与期望输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">tests/fixtures/input.trace<br>tests/golden/events.jsonl<br></code></pre></td></tr></table></figure>
+
+<h3 id="19-4-属性测试"><a href="#19-4-属性测试" class="headerlink" title="19.4 属性测试"></a>19.4 属性测试</h3><p>例如：</p>
+<ul>
+<li>P50 不应大于 P95；</li>
+<li>转换前后记录数量守恒；</li>
+<li>序列化后再解析应得到等价数据；</li>
+<li>验证器不修改输入。</li>
+</ul>
+<h3 id="19-5-集成测试"><a href="#19-5-集成测试" class="headerlink" title="19.5 集成测试"></a>19.5 集成测试</h3><p>从 <code>SKILL.md</code> 中实际调用命令，确认路径、依赖、产物和验证循环全部工作。不要只在 IDE 中测试脚本函数。</p>
+<h3 id="19-6-跨环境测试"><a href="#19-6-跨环境测试" class="headerlink" title="19.6 跨环境测试"></a>19.6 跨环境测试</h3><p>至少验证目标平台实际具备：</p>
+<ul>
+<li>运行时；</li>
+<li>依赖；</li>
+<li>文件权限；</li>
+<li>命令语法；</li>
+<li>路径行为。</li>
+</ul>
+<hr>
+<h2 id="20-常见错误"><a href="#20-常见错误" class="headerlink" title="20. 常见错误"></a>20. 常见错误</h2><h3 id="20-1-每次让-LLM-临时生成同一脚本"><a href="#20-1-每次让-LLM-临时生成同一脚本" class="headerlink" title="20.1 每次让 LLM 临时生成同一脚本"></a>20.1 每次让 LLM 临时生成同一脚本</h3><p>实现会漂移，且重复消耗上下文和时间。</p>
+<h3 id="20-2-脚本只接受隐式输入"><a href="#20-2-脚本只接受隐式输入" class="headerlink" title="20.2 脚本只接受隐式输入"></a>20.2 脚本只接受隐式输入</h3><p>依赖当前目录、固定文件名或全局环境，难以复现。</p>
+<h3 id="20-3-只输出人类可读文本"><a href="#20-3-只输出人类可读文本" class="headerlink" title="20.3 只输出人类可读文本"></a>20.3 只输出人类可读文本</h3><p>Agent 难以稳定提取状态和字段。</p>
+<h3 id="20-4-脚本成功但没有-Postcondition"><a href="#20-4-脚本成功但没有-Postcondition" class="headerlink" title="20.4 脚本成功但没有 Postcondition"></a>20.4 脚本成功但没有 Postcondition</h3><p>退出码为 0 不代表业务结果正确。</p>
+<h3 id="20-5-把所有逻辑都写进一个脚本"><a href="#20-5-把所有逻辑都写进一个脚本" class="headerlink" title="20.5 把所有逻辑都写进一个脚本"></a>20.5 把所有逻辑都写进一个脚本</h3><p>解析、计算、写报告和发布耦合在一起，难以独立测试和恢复。</p>
+<h3 id="20-6-脚本偷偷猜测关键参数"><a href="#20-6-脚本偷偷猜测关键参数" class="headerlink" title="20.6 脚本偷偷猜测关键参数"></a>20.6 脚本偷偷猜测关键参数</h3><p>单位、目标路径和覆盖策略不明确时应报错，而不是静默猜测。</p>
+<h3 id="20-7-脚本失败后让-Agent-阅读源码猜原因"><a href="#20-7-脚本失败后让-Agent-阅读源码猜原因" class="headerlink" title="20.7 脚本失败后让 Agent 阅读源码猜原因"></a>20.7 脚本失败后让 Agent 阅读源码猜原因</h3><p>应提供结构化、可行动的错误输出。</p>
+<h3 id="20-8-运行时下载未知依赖"><a href="#20-8-运行时下载未知依赖" class="headerlink" title="20.8 运行时下载未知依赖"></a>20.8 运行时下载未知依赖</h3><p>既可能不可用，也扩大供应链和网络风险。</p>
+<h3 id="20-9-使用不受控的-Shell-拼接"><a href="#20-9-使用不受控的-Shell-拼接" class="headerlink" title="20.9 使用不受控的 Shell 拼接"></a>20.9 使用不受控的 Shell 拼接</h3><p>模型输入可能变成命令注入载体。</p>
+<h3 id="20-10-脚本做了-Skill-应负责的决策"><a href="#20-10-脚本做了-Skill-应负责的决策" class="headerlink" title="20.10 脚本做了 Skill 应负责的决策"></a>20.10 脚本做了 Skill 应负责的决策</h3><p>脚本不应悄悄决定用户意图、业务范围或授权边界。</p>
+<hr>
+<h2 id="21-博客总结"><a href="#21-博客总结" class="headerlink" title="21. 博客总结"></a>21. 博客总结</h2><p><code>scripts/</code> 是 Skill 的确定性执行层，但并不是所有任务的默认答案。</p>
+<p>合理分工是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>→ 工作流、决策、调用时机、成功标准<br><br>references/<br>→ 领域知识、规范和解释材料<br><br>scripts/<br>→ 计算、解析、转换、校验和稳定重复操作<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI 官方文档建议仅在需要确定性计算或文件处理时使用 scripts，并强调如果现有指令和工具已经可靠，就不必增加脚本。Anthropic 官方实践进一步强调：脆弱、高一致性、固定顺序的操作应降低自由度；预置脚本比临时生成代码更可靠、更省上下文，也更容易保持一致。</p>
+<p>最重要的判断不是“模型能不能写代码”，而是：</p>
+<blockquote>
+<p>这个操作是否值得被实现一次、测试一次，然后在每次 Skill 执行中稳定复用？</p>
+</blockquote>
+<hr>
+<h2 id="22-学完检查题"><a href="#22-学完检查题" class="headerlink" title="22. 学完检查题"></a>22. 学完检查题</h2><ol>
+<li>哪五类任务最适合放入 <code>scripts/</code>？</li>
+<li>为什么计算分位数比解释分位数更适合脚本？</li>
+<li>高、中、低自由度分别适合什么任务？</li>
+<li>Script Contract 应包含哪些内容？</li>
+<li>为什么应区分 <code>stdout</code> 和 <code>stderr</code>？</li>
+<li>“执行脚本”和“读取脚本”为什么必须明确区分？</li>
+<li>Plan–Validate–Execute 模式解决了什么问题？</li>
+<li>验证器为什么不能只返回 <code>false</code>？</li>
+<li>脚本何时应该升级为 Tool？</li>
+<li>为什么第三方 Skill 中的 scripts 必须像软件依赖一样审查？</li>
+</ol>
+<hr>
+<h2 id="23-Skill-专项复盘"><a href="#23-Skill-专项复盘" class="headerlink" title="23. Skill 专项复盘"></a>23. Skill 专项复盘</h2><h3 id="23-1-这个逻辑应该写在-SKILL-md-还是-reference？"><a href="#23-1-这个逻辑应该写在-SKILL-md-还是-reference？" class="headerlink" title="23.1 这个逻辑应该写在 SKILL.md 还是 reference？"></a>23.1 这个逻辑应该写在 SKILL.md 还是 reference？</h3><p>何时运行脚本、参数如何映射、成功和失败后怎么办写在 <code>SKILL.md</code>；算法背景和字段含义可以写在 reference。</p>
+<h3 id="23-2-这个步骤应该交给-LLM-还是-script？"><a href="#23-2-这个步骤应该交给-LLM-还是-script？" class="headerlink" title="23.2 这个步骤应该交给 LLM 还是 script？"></a>23.2 这个步骤应该交给 LLM 还是 script？</h3><p>语义理解、范围判断、证据解释交给 LLM；确定性计算、解析、转换和验证交给 script。</p>
+<h3 id="23-3-这个能力应该是-Skill-还是-Tool？"><a href="#23-3-这个能力应该是-Skill-还是-Tool？" class="headerlink" title="23.3 这个能力应该是 Skill 还是 Tool？"></a>23.3 这个能力应该是 Skill 还是 Tool？</h3><p>局部且随 Skill 分发的确定性操作可作为 script；跨 Skill 复用、需要权限控制或连接外部系统的能力更适合 Tool。</p>
+<h3 id="23-4-什么条件下应该触发这个-Skill？"><a href="#23-4-什么条件下应该触发这个-Skill？" class="headerlink" title="23.4 什么条件下应该触发这个 Skill？"></a>23.4 什么条件下应该触发这个 Skill？</h3><p>Skill 的触发仍由 <code>name</code> 和 <code>description</code> 决定。脚本没有独立的全局触发，它由 Skill 工作流在满足前置条件时调用。</p>
+<h3 id="23-5-如何证明使用脚本比纯-Prompt-更好？"><a href="#23-5-如何证明使用脚本比纯-Prompt-更好？" class="headerlink" title="23.5 如何证明使用脚本比纯 Prompt 更好？"></a>23.5 如何证明使用脚本比纯 Prompt 更好？</h3><p>对比正确率、结果一致性、Schema 合规率、执行时间、上下文消耗和边界案例表现，并验证脚本不会引入新的环境与安全风险。</p>
+<hr>
+<h2 id="24-本章实践"><a href="#24-本章实践" class="headerlink" title="24. 本章实践"></a>24. 本章实践</h2><p>为 Performance Analysis Skill 设计以下三个脚本：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">scripts/<br>├── parse_trace.py<br>├── calc_latency.py<br>└── validate_report.py<br></code></pre></td></tr></table></figure>
+
+<p>要求：</p>
+<ol>
+<li>为每个脚本写出输入、输出、退出码和副作用 Contract；</li>
+<li>设计结构化成功与错误输出；</li>
+<li>在 <code>SKILL.md</code> 中写明执行命令、前置条件和 Postcondition；</li>
+<li>为 <code>validate_report.py</code> 设计至少五条具体校验；</li>
+<li>给出一个 Plan–Validate–Execute 循环；</li>
+<li>为非法格式、空输入、权限错误和超大输入编写测试；</li>
+<li>审查路径、网络、凭据与命令注入风险；</li>
+<li>记录目标环境所需运行时和依赖。</li>
+</ol>
+<p>下一章将严格按照大纲进入：</p>
+<blockquote>
+<p>第 14 章：<code>assets/</code>——模板、Schema 与可复用资源。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI — Build skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI API — Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI — Skills concepts</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Anthropic — Agent Skills overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Anthropic — Skills for enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/SKILL-md/" class="print-no-link">#SKILL.md</a>
+      
+        <a href="/tags/scripts/" class="print-no-link">#scripts</a>
+      
+        <a href="/tags/Validation/" class="print-no-link">#Validation</a>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+        <a href="/tags/Deterministic-Operations/" class="print-no-link">#Deterministic Operations</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/13-scripts-什么时候Prompt不够需要代码/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/" title="Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/" title="Agent Skill 原理与工程实践（十四）：assets/——模板、Schema 与可复用资源">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十四）：assets/——模板、Schema 与可复用资源</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

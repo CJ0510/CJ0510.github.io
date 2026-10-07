@@ -1,0 +1,1272 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第8章：如何设计一个稳定的Workflow1. 本章目标前七章解决了Skill是什么、如何发现和如何按需加载。从本章开始进入Skill的执行核心：Workflow设计。 本章解决： 1234567为什么“列几个步骤”不等于稳定Workflow？Workflow如何从用户目标推进到可验证结果？怎样定义状态、转换条件和失败路径？什么时候应该提问、停止、降级或拒绝？如何设计检查点、反馈循环和Defini">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何设计一个稳定的Workflow">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/08-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%A8%B3%E5%AE%9A%E7%9A%84Workflow/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第8章：如何设计一个稳定的Workflow1. 本章目标前七章解决了Skill是什么、如何发现和如何按需加载。从本章开始进入Skill的执行核心：Workflow设计。 本章解决： 1234567为什么“列几个步骤”不等于稳定Workflow？Workflow如何从用户目标推进到可验证结果？怎样定义状态、转换条件和失败路径？什么时候应该提问、停止、降级或拒绝？如何设计检查点、反馈循环和Defini">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T03:52:49.918Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Idempotency">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="State Machine">
+<meta property="article:tag" content="Validation">
+<meta property="article:tag" content="Workflow">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>如何设计一个稳定的Workflow · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">如何设计一个稳定的Workflow</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          119 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">如何设计一个稳定的Workflow</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第8章：如何设计一个稳定的Workflow"><a href="#第8章：如何设计一个稳定的Workflow" class="headerlink" title="第8章：如何设计一个稳定的Workflow"></a>第8章：如何设计一个稳定的Workflow</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1. 本章目标</h2><p>前七章解决了Skill是什么、如何发现和如何按需加载。从本章开始进入Skill的执行核心：Workflow设计。</p>
+<p>本章解决：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">为什么“列几个步骤”不等于稳定Workflow？<br>Workflow如何从用户目标推进到可验证结果？<br>怎样定义状态、转换条件和失败路径？<br>什么时候应该提问、停止、降级或拒绝？<br>如何设计检查点、反馈循环和Definition of Done？<br>怎样处理副作用、重试和幂等性？<br>怎样评测Agent是否真的遵循了Workflow？<br></code></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>稳定Workflow不是一串自然语言步骤，而是一组具有输入条件、状态转换、证据要求、失败行为和完成标准的执行协议。</p>
+</blockquote>
+<hr>
+<h2 id="2-“步骤列表”为什么不够"><a href="#2-“步骤列表”为什么不够" class="headerlink" title="2. “步骤列表”为什么不够"></a>2. “步骤列表”为什么不够</h2><p>一个看似合理但不稳定的Workflow：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 收集数据。<br><span class="hljs-bullet">2.</span> 分析问题。<br><span class="hljs-bullet">3.</span> 找到根因。<br><span class="hljs-bullet">4.</span> 给出建议。<br></code></pre></td></tr></table></figure>
+
+<p>它没有回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">什么数据才算足够？<br>数据缺失时怎么办？<br>“分析问题”具体产生什么中间结果？<br>什么证据足以支持根因？<br>多个假设冲突时怎么办？<br>工具失败后是否继续？<br>什么时候可以结束？<br></code></pre></td></tr></table></figure>
+
+<p>因此模型可能：</p>
+<ul>
+<li>跳过数据验证；</li>
+<li>只基于症状猜测根因；</li>
+<li>调用错误工具；</li>
+<li>在证据不足时提前结束；</li>
+<li>无限继续搜索；</li>
+<li>生成格式正确但内容无依据的报告。</li>
+</ul>
+<p>稳定Workflow必须把模糊动作改造成可观察的状态推进。</p>
+<hr>
+<h2 id="3-从线性步骤到状态机"><a href="#3-从线性步骤到状态机" class="headerlink" title="3. 从线性步骤到状态机"></a>3. 从线性步骤到状态机</h2><p>线性视角：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Input<br> ↓<br>Validate<br> ↓<br>Analyze<br> ↓<br>Report<br></code></pre></td></tr></table></figure>
+
+<p>状态机视角：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs text">START<br>  ↓<br>INPUT_READY?<br>  ├── no, recoverable → COLLECT_MISSING_INPUT<br>  ├── no, impossible  → STOP_WITH_LIMITATION<br>  └── yes             → VALIDATE_INPUT<br>                            ↓<br>                       EVIDENCE_VALID?<br>                        ├── no → REPAIR / FALLBACK / STOP<br>                        └── yes<br>                            ↓<br>                         ANALYZE<br>                            ↓<br>                       ENOUGH_EVIDENCE?<br>                        ├── no → COLLECT_MORE / LOWER_CONFIDENCE<br>                        └── yes<br>                            ↓<br>                         VERIFY<br>                        ├── fail → REVISE<br>                        └── pass<br>                            ↓<br>                         REPORT<br>                            ↓<br>                          DONE<br></code></pre></td></tr></table></figure>
+
+<p>状态机思维迫使我们明确：</p>
+<ul>
+<li>当前处于什么状态；</li>
+<li>进入状态需要什么条件；</li>
+<li>状态产生什么输出；</li>
+<li>下一步有哪些分支；</li>
+<li>什么情况下停止。</li>
+</ul>
+<hr>
+<h2 id="4-Workflow的六个基本元素"><a href="#4-Workflow的六个基本元素" class="headerlink" title="4. Workflow的六个基本元素"></a>4. Workflow的六个基本元素</h2><p>一个稳定Workflow至少包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">1. State       当前阶段<br>2. Input       进入阶段所需信息<br>3. Action      在阶段内执行什么<br>4. Evidence    如何判断动作结果<br>5. Transition  何时进入哪个下一状态<br>6. Terminal    何时成功、失败或降级结束<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">State:<br>VALIDATE_TRACE<br><br>Input:<br>trace file path<br><br>Action:<br>run validate_trace.py<br><br>Evidence:<br>exit code + detected event list<br><br>Transition:<br>required events present → ANALYZE<br>events missing          → REQUEST_NEW_TRACE<br>file unreadable         → FAILED<br><br>Terminal:<br>not applicable in this state<br></code></pre></td></tr></table></figure>
+
+<p>这种定义比“验证trace”更可执行、更可测试。</p>
+<hr>
+<h2 id="5-先定义Workflow-Boundary"><a href="#5-先定义Workflow-Boundary" class="headerlink" title="5. 先定义Workflow Boundary"></a>5. 先定义Workflow Boundary</h2><p>写步骤前应先定义边界：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">这个Workflow从哪里开始？<br>它负责到哪里结束？<br>它接收什么输入？<br>它交付什么输出？<br>哪些事情明确不负责？<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI官方Skill指南建议明确：</p>
+<ul>
+<li>Workflow期望什么输入；</li>
+<li>模型应执行哪些步骤；</li>
+<li>用户最终得到什么；</li>
+<li>哪些事实不得推断；</li>
+<li>什么时候提问、停止或拒绝；</li>
+<li>应查阅哪些Supporting Files。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Workflow boundary</span><br><br>This Skill starts after the user reports a Linux runtime performance<br>symptom and provides at least one evidence source.<br><br>It ends with a triage result containing:<br><br><span class="hljs-bullet">-</span> suspected subsystem;<br><span class="hljs-bullet">-</span> supporting evidence;<br><span class="hljs-bullet">-</span> confidence;<br><span class="hljs-bullet">-</span> missing evidence;<br><span class="hljs-bullet">-</span> recommended next diagnostic step.<br><br>It does not perform deep subsystem diagnosis or change production<br>configuration.<br></code></pre></td></tr></table></figure>
+
+<p>边界不清是Skill不断膨胀的主要原因。</p>
+<hr>
+<h2 id="6-从用户目标反向设计"><a href="#6-从用户目标反向设计" class="headerlink" title="6. 从用户目标反向设计"></a>6. 从用户目标反向设计</h2><p>不要先写第一步。先写最终成功状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">用户最终必须拿到什么？<br></code></pre></td></tr></table></figure>
+
+<p>例如性能分诊的Definition of Done：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">已明确症状和时间范围<br>已列出使用的证据<br>已判断最可能子系统或明确无法判断<br>每个结论可以追溯到证据<br>已给出置信度和限制<br>已给出下一步专项分析建议<br></code></pre></td></tr></table></figure>
+
+<p>然后反向推导：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">要给出置信度<br>→ 需要证据强度规则<br><br>要判断子系统<br>→ 需要分类信号<br><br>要获得分类信号<br>→ 需要收集并验证输入<br><br>要验证输入<br>→ 需要前置条件和工具<br></code></pre></td></tr></table></figure>
+
+<p>反向设计可以减少“执行了很多动作，却无法证明任务完成”的情况。</p>
+<hr>
+<h2 id="7-输入归一化"><a href="#7-输入归一化" class="headerlink" title="7. 输入归一化"></a>7. 输入归一化</h2><p>用户请求往往是非结构化的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">昨天晚上服务有点卡，CPU看着也不高，你帮我看看。<br></code></pre></td></tr></table></figure>
+
+<p>Workflow第一阶段通常不是直接分析，而是归一化：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Symptom: latency increase<br>Time range: unknown<br>Target: service, name unknown<br>Evidence: CPU observation only<br>Desired output: diagnosis<br></code></pre></td></tr></table></figure>
+
+<p>归一化后的任务状态：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;symptom&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;latency_increase&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;time_range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">null</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;target&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">null</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;evidence_sources&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;cpu_summary&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;requested_outcome&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;diagnosis&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>这一步能发现关键缺口，避免Agent把模糊表达当作完整输入。</p>
+<hr>
+<h2 id="8-Precondition与Guard-Condition"><a href="#8-Precondition与Guard-Condition" class="headerlink" title="8. Precondition与Guard Condition"></a>8. Precondition与Guard Condition</h2><p>Precondition是进入Workflow前必须满足的条件；Guard Condition是进入某个分支前必须满足的条件。</p>
+<h3 id="8-1-Precondition"><a href="#8-1-Precondition" class="headerlink" title="8.1 Precondition"></a>8.1 Precondition</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Before diagnosis, confirm:<br><br><span class="hljs-bullet">-</span> an observed symptom;<br><span class="hljs-bullet">-</span> an affected target;<br><span class="hljs-bullet">-</span> an approximate time range;<br><span class="hljs-bullet">-</span> at least one evidence source.<br></code></pre></td></tr></table></figure>
+
+<h3 id="8-2-Guard-Condition"><a href="#8-2-Guard-Condition" class="headerlink" title="8.2 Guard Condition"></a>8.2 Guard Condition</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run scheduler latency analysis only if the trace contains both<br><span class="hljs-code">`sched_wakeup`</span> or <span class="hljs-code">`sched_waking`</span> and <span class="hljs-code">`sched_switch`</span> events.<br></code></pre></td></tr></table></figure>
+
+<h3 id="8-3-为什么重要"><a href="#8-3-为什么重要" class="headerlink" title="8.3 为什么重要"></a>8.3 为什么重要</h3><p>没有Guard时，模型可能在缺少必要事件的情况下继续计算，然后补全或猜测缺失值。</p>
+<p>稳定Workflow应该明确：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">condition true  → 执行分支<br>condition false → fallback / request input / stop<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="9-提问、停止、降级和拒绝"><a href="#9-提问、停止、降级和拒绝" class="headerlink" title="9. 提问、停止、降级和拒绝"></a>9. 提问、停止、降级和拒绝</h2><p>输入不足并不只有“继续”和“失败”两种结果。</p>
+<h3 id="9-1-Ask"><a href="#9-1-Ask" class="headerlink" title="9.1 Ask"></a>9.1 Ask</h3><p>关键输入可由用户提供：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">缺少时间范围<br>→ 询问具体时间窗口<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-2-Stop"><a href="#9-2-Stop" class="headerlink" title="9.2 Stop"></a>9.2 Stop</h3><p>无法安全或有意义地继续：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">trace文件损坏且无替代数据<br>→ 停止trace分析并说明原因<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-3-Degrade"><a href="#9-3-Degrade" class="headerlink" title="9.3 Degrade"></a>9.3 Degrade</h3><p>可以降低能力继续：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">没有trace但有metrics和logs<br>→ 只进行初步分诊，不给出高置信度调度根因<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-4-Decline"><a href="#9-4-Decline" class="headerlink" title="9.4 Decline"></a>9.4 Decline</h3><p>任务超出授权、安全边界或Skill职责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">用户要求直接修改生产CPU quota<br>但Skill只负责只读诊断<br>→ 拒绝修改，提供变更建议或交由受控变更流程<br></code></pre></td></tr></table></figure>
+
+<p>应该在Workflow中明确这些行为，而不是统一写“如果失败则告诉用户”。</p>
+<hr>
+<h2 id="10-证据驱动Workflow"><a href="#10-证据驱动Workflow" class="headerlink" title="10. 证据驱动Workflow"></a>10. 证据驱动Workflow</h2><p>分析类Skill不应围绕“答案”推进，而应围绕“证据状态”推进：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">Observation<br>   ↓<br>Candidate Hypothesis<br>   ↓<br>Required Evidence<br>   ↓<br>Collect / Compute<br>   ↓<br>Support / Contradict / Unknown<br>   ↓<br>Update Hypothesis<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs text">Observation:<br>P99延迟升高但主机CPU不高<br><br>Hypothesis A:<br>cgroup CPU throttling<br><br>Required evidence:<br>throttled_time、nr_throttled、runnable latency<br><br>Result:<br>三项在同一时间窗口上升<br><br>Assessment:<br>Hypothesis A strongly supported<br></code></pre></td></tr></table></figure>
+
+<p>如果只有“CPU不高”，不能直接推出“没有CPU问题”。容器Quota、单核热点、调度延迟和锁竞争都可能存在。</p>
+<hr>
+<h2 id="11-将事实、推断和决策分离"><a href="#11-将事实、推断和决策分离" class="headerlink" title="11. 将事实、推断和决策分离"></a>11. 将事实、推断和决策分离</h2><p>Workflow中的中间状态应区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Fact<br>→ 工具或输入直接观察到的内容<br><br>Inference<br>→ 根据事实提出的解释<br><br>Decision<br>→ 根据规则选择的下一步行动<br></code></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Fact:<br>throttled_time在22:03到22:18增长840%<br><br>Inference:<br>容器CPU配额可能限制线程执行<br><br>Decision:<br>读取cgroup配置变更并计算runnable latency<br></code></pre></td></tr></table></figure>
+
+<p>如果三者混在一起，后续无法验证结论是来自数据还是模型猜测。</p>
+<hr>
+<h2 id="12-分支设计"><a href="#12-分支设计" class="headerlink" title="12. 分支设计"></a>12. 分支设计</h2><p>条件分支应使用可观察信号，而不是含糊判断。</p>
+<p>不推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">如果看起来像内存问题，就进行内存分析。<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">If at least one of the following is observed:<br><br>- sustained reclaim activity;<br>- swap-in or swap-out spikes;<br>- allocation stalls;<br>- OOM or near-OOM events;<br>- abnormal slab growth;<br><br>route to memory analysis.<br></code></pre></td></tr></table></figure>
+
+<p>多个分支可以同时成立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">memory pressure<br>→ causes writeback<br>→ increases IO queueing<br></code></pre></td></tr></table></figure>
+
+<p>因此分类结果不一定是单选。可以表示为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;primary&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;memory&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;secondary&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;io&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;confidence&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;medium&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="13-Checkpoint：复杂Workflow的中间检查点"><a href="#13-Checkpoint：复杂Workflow的中间检查点" class="headerlink" title="13. Checkpoint：复杂Workflow的中间检查点"></a>13. Checkpoint：复杂Workflow的中间检查点</h2><p>Checkpoint是在继续执行前必须达到的中间状态。</p>
+<p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Checkpoint 1：INPUT_VALIDATED<br>Checkpoint 2：EVIDENCE_COLLECTED<br>Checkpoint 3：HYPOTHESES_CLASSIFIED<br>Checkpoint 4：ROOT_CAUSE_VERIFIED<br>Checkpoint 5：OUTPUT_VALIDATED<br></code></pre></td></tr></table></figure>
+
+<p>每个Checkpoint应包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Required fields<br>Validation method<br>Failure action<br>Persisted artifact<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">checkpoint:</span> <span class="hljs-string">EVIDENCE_COLLECTED</span><br><span class="hljs-attr">required:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">symptom</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">time_range</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">evidence_index</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">collection_errors</span><br><span class="hljs-attr">validation:</span> <span class="hljs-string">evidence_index</span> <span class="hljs-string">is</span> <span class="hljs-string">non-empty</span><br><span class="hljs-attr">on_failure:</span> <span class="hljs-string">request</span> <span class="hljs-string">evidence</span> <span class="hljs-string">or</span> <span class="hljs-string">stop</span> <span class="hljs-string">with</span> <span class="hljs-string">limitation</span><br><span class="hljs-attr">artifact:</span> <span class="hljs-string">evidence.json</span><br></code></pre></td></tr></table></figure>
+
+<p>Checkpoint让长任务更容易恢复、重试和审计。</p>
+<hr>
+<h2 id="14-可验证中间产物"><a href="#14-可验证中间产物" class="headerlink" title="14. 可验证中间产物"></a>14. 可验证中间产物</h2><p>对于批量修改、复杂转换或高风险操作，不应让Agent直接从自然语言计划跳到执行。</p>
+<p>推荐模式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Analyze<br>  ↓<br>Create structured plan<br>  ↓<br>Validate plan<br>  ↓<br>Execute<br>  ↓<br>Verify result<br></code></pre></td></tr></table></figure>
+
+<p>例如修改50个PDF字段：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">分析表单<br>  ↓<br>生成changes.json<br>  ↓<br>validate_changes.py<br>  ↓ pass<br>fill_form.py<br>  ↓<br>verify_output.py<br></code></pre></td></tr></table></figure>
+
+<p>Anthropic官方Skill最佳实践专门推荐这种Plan–Validate–Execute模式，因为它能在产生副作用之前发现不存在的字段、冲突值和遗漏项。</p>
+<p>中间产物最好：</p>
+<ul>
+<li>结构化；</li>
+<li>可机器验证；</li>
+<li>可比较；</li>
+<li>可重放；</li>
+<li>不直接修改原始输入。</li>
+</ul>
+<hr>
+<h2 id="15-Feedback-Loop：验证—修复—再验证"><a href="#15-Feedback-Loop：验证—修复—再验证" class="headerlink" title="15. Feedback Loop：验证—修复—再验证"></a>15. Feedback Loop：验证—修复—再验证</h2><p>稳定Workflow不是一次执行，而是受限反馈循环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">Generate / Modify<br>      ↓<br>Validate<br>   ├── pass → continue<br>   └── fail<br>         ↓<br>      inspect errors<br>         ↓<br>      repair<br>         ↓<br>      validate again<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Edit <span class="hljs-code">`word/document.xml`</span>.<br><span class="hljs-bullet">2.</span> Run <span class="hljs-code">`python scripts/validate.py unpacked_dir/`</span> immediately.<br><span class="hljs-bullet">3.</span> If validation fails:<br><span class="hljs-bullet">   -</span> inspect the exact error;<br><span class="hljs-bullet">   -</span> fix the XML;<br><span class="hljs-bullet">   -</span> run validation again.<br><span class="hljs-bullet">4.</span> Continue only after validation passes.<br><span class="hljs-bullet">5.</span> Rebuild the document.<br><span class="hljs-bullet">6.</span> Verify the final output.<br></code></pre></td></tr></table></figure>
+
+<p>关键是反馈循环必须有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">明确Validator<br>结构化错误<br>修复目标<br>重试上限<br>最终失败行为<br></code></pre></td></tr></table></figure>
+
+<p>否则容易形成无限循环。</p>
+<hr>
+<h2 id="16-Validation应该靠什么"><a href="#16-Validation应该靠什么" class="headerlink" title="16. Validation应该靠什么"></a>16. Validation应该靠什么</h2><p>验证强度可以分层：</p>
+<h3 id="16-1-人工或模型Checklist"><a href="#16-1-人工或模型Checklist" class="headerlink" title="16.1 人工或模型Checklist"></a>16.1 人工或模型Checklist</h3><p>适合风格、覆盖度和语义一致性：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">术语是否一致？<br>是否包含所有必需章节？<br>每个结论是否引用证据？<br></code></pre></td></tr></table></figure>
+
+<h3 id="16-2-Schema验证"><a href="#16-2-Schema验证" class="headerlink" title="16.2 Schema验证"></a>16.2 Schema验证</h3><p>适合结构化输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">JSON Schema<br>YAML Schema<br>配置文件语法<br>API参数约束<br></code></pre></td></tr></table></figure>
+
+<h3 id="16-3-程序验证"><a href="#16-3-程序验证" class="headerlink" title="16.3 程序验证"></a>16.3 程序验证</h3><p>适合确定性规则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">文件是否可打开？<br>引用字段是否存在？<br>链接是否有效？<br>计算是否满足不变量？<br></code></pre></td></tr></table></figure>
+
+<h3 id="16-4-真实运行验证"><a href="#16-4-真实运行验证" class="headerlink" title="16.4 真实运行验证"></a>16.4 真实运行验证</h3><p>适合代码和系统变更：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">单元测试<br>集成测试<br>构建<br>静态分析<br>试运行<br>渲染检查<br></code></pre></td></tr></table></figure>
+
+<p>验证方法应与风险匹配。高风险操作不能只依赖模型自评“看起来正确”。</p>
+<hr>
+<h2 id="17-Definition-of-Done"><a href="#17-Definition-of-Done" class="headerlink" title="17. Definition of Done"></a>17. Definition of Done</h2><p>Definition of Done是Workflow成功结束所需的可验证条件。</p>
+<p>不推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">结果看起来不错。<br></code></pre></td></tr></table></figure>
+
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Definition of Done</span><br><br><span class="hljs-bullet">-</span> The input trace was validated.<br><span class="hljs-bullet">-</span> Required metrics were calculated by scripts.<br><span class="hljs-bullet">-</span> Every root-cause claim references observed evidence.<br><span class="hljs-bullet">-</span> Alternative hypotheses were considered.<br><span class="hljs-bullet">-</span> Confidence and limitations are present.<br><span class="hljs-bullet">-</span> The final report passes <span class="hljs-code">`validate_report.py`</span>.<br><span class="hljs-bullet">-</span> Original input files were not modified.<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI官方Skill Eval示例强调明确Definition of Done，因为没有具体约束就难以评测Workflow是否成功。</p>
+<p>DoD应该覆盖：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">产物存在<br>结构正确<br>内容质量<br>证据完整<br>安全约束<br>副作用状态<br>验证通过<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="18-Termination-Condition"><a href="#18-Termination-Condition" class="headerlink" title="18. Termination Condition"></a>18. Termination Condition</h2><p>每个循环和Workflow都必须知道什么时候停止。</p>
+<h3 id="成功终止"><a href="#成功终止" class="headerlink" title="成功终止"></a>成功终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">所有DoD条件通过<br></code></pre></td></tr></table></figure>
+
+<h3 id="降级终止"><a href="#降级终止" class="headerlink" title="降级终止"></a>降级终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">只能完成初步分诊，已明确限制和下一步<br></code></pre></td></tr></table></figure>
+
+<h3 id="失败终止"><a href="#失败终止" class="headerlink" title="失败终止"></a>失败终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">关键输入不可用，Fallback也失败<br></code></pre></td></tr></table></figure>
+
+<h3 id="安全终止"><a href="#安全终止" class="headerlink" title="安全终止"></a>安全终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">操作需要未获得的权限或用户确认<br></code></pre></td></tr></table></figure>
+
+<h3 id="预算终止"><a href="#预算终止" class="headerlink" title="预算终止"></a>预算终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">达到搜索次数、重试次数、时间或成本上限<br></code></pre></td></tr></table></figure>
+
+<p>如果没有Termination Condition，Agent可能无限搜索、反复修复或不断请求更多信息。</p>
+<hr>
+<h2 id="19-Retry设计"><a href="#19-Retry设计" class="headerlink" title="19. Retry设计"></a>19. Retry设计</h2><p>不是所有失败都值得重试。</p>
+<h3 id="可重试错误"><a href="#可重试错误" class="headerlink" title="可重试错误"></a>可重试错误</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">临时网络错误<br>限流<br>短暂服务不可用<br>非确定性生成未通过格式验证<br></code></pre></td></tr></table></figure>
+
+<h3 id="不应原样重试"><a href="#不应原样重试" class="headerlink" title="不应原样重试"></a>不应原样重试</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">输入Schema错误<br>权限不足<br>文件不存在<br>必要数据缺失<br>命令或API不存在<br></code></pre></td></tr></table></figure>
+
+<p>对于后一类，重复相同调用只会重复失败。应执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Repair input<br>Change method<br>Ask user<br>Use fallback<br>Stop<br></code></pre></td></tr></table></figure>
+
+<p>重试设计至少包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">retryable condition<br>maximum attempts<br>backoff policy<br>what changes between attempts<br>terminal failure behavior<br></code></pre></td></tr></table></figure>
+
+<p>循环和Fallback会在第17章进一步展开。</p>
+<hr>
+<h2 id="20-幂等性"><a href="#20-幂等性" class="headerlink" title="20. 幂等性"></a>20. 幂等性</h2><p>幂等性表示同一操作重复执行，不会产生额外或不同副作用。</p>
+<h3 id="幂等操作示例"><a href="#幂等操作示例" class="headerlink" title="幂等操作示例"></a>幂等操作示例</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">读取文件<br>查询指标<br>验证JSON<br>把配置设置为指定值<br></code></pre></td></tr></table></figure>
+
+<h3 id="非幂等操作示例"><a href="#非幂等操作示例" class="headerlink" title="非幂等操作示例"></a>非幂等操作示例</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">发送邮件<br>创建工单<br>扣款<br>追加评论<br>重复发布版本<br></code></pre></td></tr></table></figure>
+
+<p>Workflow重试前必须知道当前步骤是否幂等。</p>
+<p>对于非幂等操作，应使用：</p>
+<ul>
+<li>Idempotency Key；</li>
+<li>请求去重；</li>
+<li>先查状态再执行；</li>
+<li>显式确认；</li>
+<li>保存操作结果ID；</li>
+<li>不在结果未知时盲目重试。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">create_ticket请求超时<br>≠<br>工单一定未创建<br></code></pre></td></tr></table></figure>
+
+<p>正确处理：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">根据idempotency key或外部ID查询<br>→ 已创建：复用结果<br>→ 未创建：安全重试<br>→ 状态未知：停止并请求人工确认<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="21-副作用分层"><a href="#21-副作用分层" class="headerlink" title="21. 副作用分层"></a>21. 副作用分层</h2><p>可以把Workflow动作按风险分层：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs text">Level 0：Read<br>读取文件、查询状态<br><br>Level 1：Local reversible write<br>创建草稿、生成临时文件<br><br>Level 2：External reversible action<br>创建可删除工单、更新可回滚配置<br><br>Level 3：External communication<br>发送邮件、发布评论、通知用户<br><br>Level 4：Irreversible / high-impact<br>删除数据、支付、生产发布、权限变更<br></code></pre></td></tr></table></figure>
+
+<p>风险越高，Workflow越需要：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">更严格Precondition<br>更确定的Validator<br>显式用户确认<br>Dry Run<br>可验证中间计划<br>幂等控制<br>审计记录<br>回滚方案<br></code></pre></td></tr></table></figure>
+
+<p>自然语言Skill不能替代Tool和服务端权限控制。</p>
+<hr>
+<h2 id="22-Dry-Run与Commit阶段"><a href="#22-Dry-Run与Commit阶段" class="headerlink" title="22. Dry Run与Commit阶段"></a>22. Dry Run与Commit阶段</h2><p>高风险操作可以采用两阶段设计：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Phase 1：Plan / Dry Run<br>→ 生成将要执行的动作清单<br>→ 不产生外部副作用<br><br>Phase 2：Commit<br>→ 用户或策略确认<br>→ 执行经过验证的计划<br></code></pre></td></tr></table></figure>
+
+<p>例如批量删除云资源：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">列出候选资源<br>  ↓<br>生成delete-plan.json<br>  ↓<br>验证所有资源属于目标项目<br>  ↓<br>展示数量、ID、影响和恢复能力<br>  ↓<br>取得明确确认<br>  ↓<br>执行删除<br>  ↓<br>核对结果并生成审计记录<br></code></pre></td></tr></table></figure>
+
+<p>这一模式把推理错误和副作用隔离开。</p>
+<hr>
+<h2 id="23-工作进度与Checklist"><a href="#23-工作进度与Checklist" class="headerlink" title="23. 工作进度与Checklist"></a>23. 工作进度与Checklist</h2><p>对于复杂多步骤任务，Checklist可以减少漏步：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Task Progress:<br>- [ ] Normalize input<br>- [ ] Validate evidence<br>- [ ] Classify subsystem<br>- [ ] Run focused analysis<br>- [ ] Cross-check hypotheses<br>- [ ] Generate report<br>- [ ] Validate output<br></code></pre></td></tr></table></figure>
+
+<p>Anthropic官方最佳实践建议复杂Workflow使用清晰步骤和可跟踪Checklist。</p>
+<p>但Checklist不是可靠状态存储。真正需要恢复和审计时，应把状态保存为结构化Artifact：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;run_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;run-123&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;state&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;EVIDENCE_COLLECTED&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;completed_steps&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;normalize&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;validate_input&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;artifacts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;normalized-input.json&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;evidence.json&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;pending&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;classify&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;analyze&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;report&quot;</span><span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="24-稳定Workflow的标准骨架"><a href="#24-稳定Workflow的标准骨架" class="headerlink" title="24. 稳定Workflow的标准骨架"></a>24. 稳定Workflow的标准骨架</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Purpose</span><br><br>说明Workflow要完成的用户目标。<br><br><span class="hljs-section">## Scope</span><br><br>说明负责和不负责的内容。<br><br><span class="hljs-section">## Inputs</span><br><br>列出必需输入和可选输入。<br><br><span class="hljs-section">## Preconditions</span><br><br>进入Workflow前必须满足的条件。<br><br><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Normalize input.<br><span class="hljs-bullet">2.</span> Validate prerequisites.<br><span class="hljs-bullet">3.</span> Collect evidence.<br><span class="hljs-bullet">4.</span> Classify or plan.<br><span class="hljs-bullet">5.</span> Execute the selected branch.<br><span class="hljs-bullet">6.</span> Cross-check results.<br><span class="hljs-bullet">7.</span> Produce output.<br><span class="hljs-bullet">8.</span> Validate output.<br><br><span class="hljs-section">## Decision points</span><br><br>定义主要分支及Guard Conditions。<br><br><span class="hljs-section">## Failure handling</span><br><br>定义Ask、Retry、Fallback、Degrade、Stop和Decline。<br><br><span class="hljs-section">## Side effects</span><br><br>列出有副作用步骤、确认要求和幂等策略。<br><br><span class="hljs-section">## Output contract</span><br><br>定义最终产物结构。<br><br><span class="hljs-section">## Definition of Done</span><br><br>定义所有成功条件。<br><br><span class="hljs-section">## Final Check</span><br><br>交付前执行最终验证。<br></code></pre></td></tr></table></figure>
+
+<p>这不是强制模板，但覆盖了稳定Workflow的大部分关键维度。</p>
+<hr>
+<h2 id="25-Performance-Triage-Workflow示例"><a href="#25-Performance-Triage-Workflow示例" class="headerlink" title="25. Performance Triage Workflow示例"></a>25. Performance Triage Workflow示例</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Purpose</span><br><br>Classify a Linux runtime performance incident and route it to the<br>appropriate focused analysis.<br><br><span class="hljs-section">## Required inputs</span><br><br><span class="hljs-bullet">-</span> observed symptom;<br><span class="hljs-bullet">-</span> affected target;<br><span class="hljs-bullet">-</span> approximate time range;<br><span class="hljs-bullet">-</span> at least one telemetry source.<br><br><span class="hljs-section">## Workflow</span><br><br><span class="hljs-section">### 1. Normalize</span><br><br>Create <span class="hljs-code">`incident-input.json`</span> containing symptom, target, time range,<br>evidence sources, and requested outcome.<br><br><span class="hljs-section">### 2. Validate</span><br><br>Verify every evidence source is readable and overlaps the incident<br>time range. Record failures; do not treat missing data as normal data.<br><br><span class="hljs-section">### 3. Extract signals</span><br><br>Collect CPU, scheduler, memory, and IO signals supported by the<br>available evidence.<br><br><span class="hljs-section">### 4. Classify</span><br><br>Assign a primary subsystem, optional secondary subsystems, and<br>confidence. If evidence is insufficient, return <span class="hljs-code">`unknown`</span>.<br><br><span class="hljs-section">### 5. Cross-check</span><br><br>For the primary hypothesis, identify at least one supporting and one<br>potentially contradicting signal.<br><br><span class="hljs-section">### 6. Route</span><br><br><span class="hljs-bullet">-</span> scheduler evidence → <span class="hljs-code">`scheduler-analysis`</span><br><span class="hljs-bullet">-</span> memory evidence → <span class="hljs-code">`memory-analysis`</span><br><span class="hljs-bullet">-</span> IO evidence → <span class="hljs-code">`io-analysis`</span><br><span class="hljs-bullet">-</span> insufficient evidence → recommend collection steps<br><br><span class="hljs-section">### 7. Report</span><br><br>Return symptom, evidence index, classification, confidence,<br>limitations, and next action.<br><br><span class="hljs-section">## Definition of Done</span><br><br><span class="hljs-bullet">-</span> Input is normalized.<br><span class="hljs-bullet">-</span> Evidence availability is recorded.<br><span class="hljs-bullet">-</span> Classification is evidence-backed or explicitly <span class="hljs-code">`unknown`</span>.<br><span class="hljs-bullet">-</span> Missing data and failed tools are disclosed.<br><span class="hljs-bullet">-</span> No production configuration was modified.<br></code></pre></td></tr></table></figure>
+
+<p>注意：稳定的分诊Workflow允许<code>unknown</code>作为合法结果。强迫每次给出根因会鼓励模型编造确定性。</p>
+<hr>
+<h2 id="26-Workflow-Eval应该检查什么"><a href="#26-Workflow-Eval应该检查什么" class="headerlink" title="26. Workflow Eval应该检查什么"></a>26. Workflow Eval应该检查什么</h2><p>Trigger Eval只检查是否选择Skill；Workflow Eval还要检查执行轨迹。</p>
+<h3 id="26-1-Step-Coverage"><a href="#26-1-Step-Coverage" class="headerlink" title="26.1 Step Coverage"></a>26.1 Step Coverage</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">要求的步骤是否执行？<br>是否跳过Validation？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-2-Step-Order"><a href="#26-2-Step-Order" class="headerlink" title="26.2 Step Order"></a>26.2 Step Order</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">是否在分析前验证输入？<br>是否在用户确认前产生副作用？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-3-Branch-Accuracy"><a href="#26-3-Branch-Accuracy" class="headerlink" title="26.3 Branch Accuracy"></a>26.3 Branch Accuracy</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">是否根据正确Guard进入正确分支？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-4-Tool-Correctness"><a href="#26-4-Tool-Correctness" class="headerlink" title="26.4 Tool Correctness"></a>26.4 Tool Correctness</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">是否调用正确Tool？<br>参数和时间范围是否正确？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-5-Failure-Handling"><a href="#26-5-Failure-Handling" class="headerlink" title="26.5 Failure Handling"></a>26.5 Failure Handling</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool失败后是否披露？<br>是否错误地把失败当成空结果？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-6-Evidence-Compliance"><a href="#26-6-Evidence-Compliance" class="headerlink" title="26.6 Evidence Compliance"></a>26.6 Evidence Compliance</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">每个结论是否有证据？<br>是否区分Fact与Inference？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-7-Termination"><a href="#26-7-Termination" class="headerlink" title="26.7 Termination"></a>26.7 Termination</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">是否达到DoD才结束？<br>是否在无法继续时正确停止？<br>是否出现无界循环？<br></code></pre></td></tr></table></figure>
+
+<h3 id="26-8-Side-effect-Safety"><a href="#26-8-Side-effect-Safety" class="headerlink" title="26.8 Side-effect Safety"></a>26.8 Side-effect Safety</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">是否获得确认？<br>是否重复执行非幂等操作？<br>是否保留审计信息？<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="27-Eval-Case示例"><a href="#27-Eval-Case示例" class="headerlink" title="27. Eval Case示例"></a>27. Eval Case示例</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;服务延迟升高，只有CPU摘要，没有时间范围&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;performance-triage&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;must_ask_for&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;time_range&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;target&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_not_do&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-string">&quot;claim_root_cause&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-string">&quot;run_scheduler_deep_analysis&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;allowed_result&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;request_missing_input&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;trace缺少sched_switch，但请计算runnable latency&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler-analysis&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;must_detect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;missing_sched_switch&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_not_do&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;estimate_latency&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_report&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;unsupported_analysis&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;collection_guidance&quot;</span><span class="hljs-punctuation">]</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;根据计划向20个客户发送通知邮件&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;customer-notification&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;must_create&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;notification-plan&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_validate&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;recipient_list&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;content&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_request_confirmation&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;must_not_send_before_confirmation&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="28-常见反模式"><a href="#28-常见反模式" class="headerlink" title="28. 常见反模式"></a>28. 常见反模式</h2><h3 id="28-1-Happy-Path-Only"><a href="#28-1-Happy-Path-Only" class="headerlink" title="28.1 Happy Path Only"></a>28.1 Happy Path Only</h3><p>只写成功路径，不写缺失输入、Tool失败和权限不足。</p>
+<h3 id="28-2-Vague-Verbs"><a href="#28-2-Vague-Verbs" class="headerlink" title="28.2 Vague Verbs"></a>28.2 Vague Verbs</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">分析数据<br>确保正确<br>适当处理<br></code></pre></td></tr></table></figure>
+
+<p>没有可验证含义。</p>
+<h3 id="28-3-Validation-at-the-End-Only"><a href="#28-3-Validation-at-the-End-Only" class="headerlink" title="28.3 Validation at the End Only"></a>28.3 Validation at the End Only</h3><p>所有修改完成后才验证，错误累积，修复成本高。关键步骤应尽早验证。</p>
+<h3 id="28-4-Retry-Everything"><a href="#28-4-Retry-Everything" class="headerlink" title="28.4 Retry Everything"></a>28.4 Retry Everything</h3><p>不区分临时错误和永久错误，重复调用无效操作或产生重复副作用。</p>
+<h3 id="28-5-Hidden-State"><a href="#28-5-Hidden-State" class="headerlink" title="28.5 Hidden State"></a>28.5 Hidden State</h3><p>只在模型上下文中记住进度，没有结构化Checkpoint，长任务压缩后丢失状态。</p>
+<h3 id="28-6-Forced-Certainty"><a href="#28-6-Forced-Certainty" class="headerlink" title="28.6 Forced Certainty"></a>28.6 Forced Certainty</h3><p>要求每次都给出根因，不允许<code>unknown</code>或低置信度，导致编造。</p>
+<h3 id="28-7-Skill-Enforces-Security-Alone"><a href="#28-7-Skill-Enforces-Security-Alone" class="headerlink" title="28.7 Skill Enforces Security Alone"></a>28.7 Skill Enforces Security Alone</h3><p>把“不得删除”“必须确认”只写在自然语言里，没有Tool权限和服务端强制。</p>
+<h3 id="28-8-Giant-Workflow"><a href="#28-8-Giant-Workflow" class="headerlink" title="28.8 Giant Workflow"></a>28.8 Giant Workflow</h3><p>一个Skill同时分诊、分析所有子系统、修改生产、发送通知、生成报告，触发和成功标准完全不同。应拆成多个可组合Skill。</p>
+<hr>
+<h2 id="29-Workflow-Review-Checklist"><a href="#29-Workflow-Review-Checklist" class="headerlink" title="29. Workflow Review Checklist"></a>29. Workflow Review Checklist</h2><h3 id="Boundary"><a href="#Boundary" class="headerlink" title="Boundary"></a>Boundary</h3><ul>
+<li>起点和终点是否明确？</li>
+<li>是否围绕单一可识别用户目标？</li>
+<li>不负责的范围是否清晰？</li>
+</ul>
+<h3 id="Inputs"><a href="#Inputs" class="headerlink" title="Inputs"></a>Inputs</h3><ul>
+<li>必需和可选输入是否区分？</li>
+<li>是否先归一化非结构化请求？</li>
+<li>缺失输入时是否定义Ask&#x2F;Degrade&#x2F;Stop？</li>
+</ul>
+<h3 id="States"><a href="#States" class="headerlink" title="States"></a>States</h3><ul>
+<li>每个阶段是否有可观察输出？</li>
+<li>状态转换是否有Guard？</li>
+<li>是否保存重要Checkpoint？</li>
+</ul>
+<h3 id="Evidence"><a href="#Evidence" class="headerlink" title="Evidence"></a>Evidence</h3><ul>
+<li>事实、推断和决策是否分离？</li>
+<li>根因是否要求证据？</li>
+<li>是否允许<code>unknown</code>？</li>
+</ul>
+<h3 id="Validation"><a href="#Validation" class="headerlink" title="Validation"></a>Validation</h3><ul>
+<li>关键步骤是否尽早验证？</li>
+<li>是否使用确定性Validator？</li>
+<li>反馈循环是否有上限？</li>
+</ul>
+<h3 id="Side-Effects"><a href="#Side-Effects" class="headerlink" title="Side Effects"></a>Side Effects</h3><ul>
+<li>是否识别非幂等操作？</li>
+<li>是否提供Dry Run和确认？</li>
+<li>结果未知时是否避免盲目重试？</li>
+</ul>
+<h3 id="Completion"><a href="#Completion" class="headerlink" title="Completion"></a>Completion</h3><ul>
+<li>Definition of Done是否机器或人工可验证？</li>
+<li>是否有成功、降级、失败和安全终止？</li>
+<li>是否避免无限循环？</li>
+</ul>
+<h3 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h3><ul>
+<li>是否测试Happy Path？</li>
+<li>是否测试输入缺失和边界条件？</li>
+<li>是否测试Tool失败和权限失败？</li>
+<li>是否测试错误分支和副作用安全？</li>
+</ul>
+<hr>
+<h2 id="30-本章实践"><a href="#30-本章实践" class="headerlink" title="30. 本章实践"></a>30. 本章实践</h2><p>为“批量修改50个配置文件”设计稳定Workflow。要求：</p>
+<ol>
+<li>定义输入和范围边界；</li>
+<li>扫描文件但不立即修改；</li>
+<li>生成<code>changes.json</code>；</li>
+<li>验证路径都位于允许目录；</li>
+<li>验证新值满足Schema；</li>
+<li>生成Dry Run摘要；</li>
+<li>高风险变更取得用户确认；</li>
+<li>修改前创建可恢复备份；</li>
+<li>执行修改；</li>
+<li>运行验证；</li>
+<li>失败时回滚；</li>
+<li>输出修改清单和验证结果。</li>
+</ol>
+<p>进一步回答：</p>
+<ul>
+<li>哪些步骤是幂等的？</li>
+<li>哪些步骤有副作用？</li>
+<li>哪些错误可以重试？</li>
+<li>哪些错误必须停止？</li>
+<li>Checkpoint保存什么？</li>
+<li>Definition of Done是什么？</li>
+</ul>
+<hr>
+<h2 id="31-学完检查题"><a href="#31-学完检查题" class="headerlink" title="31. 学完检查题"></a>31. 学完检查题</h2><ol>
+<li>为什么步骤列表不等于稳定Workflow？</li>
+<li>状态机比线性步骤多解决了哪些问题？</li>
+<li>Workflow Boundary应该包含什么？</li>
+<li>为什么建议从Definition of Done反向设计？</li>
+<li>Precondition和Guard Condition有什么区别？</li>
+<li>输入不足时，Ask、Stop、Degrade和Decline分别适合什么情况？</li>
+<li>为什么要区分Fact、Inference和Decision？</li>
+<li>Checkpoint有什么工程价值？</li>
+<li>Plan–Validate–Execute为什么适合高风险操作？</li>
+<li>Feedback Loop为什么必须有重试上限？</li>
+<li>哪些验证不应只依赖模型自评？</li>
+<li>什么是幂等性？</li>
+<li>Tool超时后为什么不能总是直接重试？</li>
+<li>Dry Run和Commit两阶段解决什么问题？</li>
+<li>为什么<code>unknown</code>可能是正确结果？</li>
+<li>Workflow Eval和Trigger Eval有什么区别？</li>
+<li>什么是Happy Path Only反模式？</li>
+<li>关键安全约束为什么不能只写在Skill中？</li>
+</ol>
+<hr>
+<h2 id="32-本章总结"><a href="#32-本章总结" class="headerlink" title="32. 本章总结"></a>32. 本章总结</h2><blockquote>
+<p>稳定Workflow应被设计为可观察的状态机，而不是模糊步骤列表。它从明确边界和Definition of Done开始，通过输入归一化、Precondition、Guard、证据状态、Checkpoint和Validator推进任务；同时为缺失输入、工具失败、重试、降级、安全停止和副作用定义清晰行为。真正的稳定性来自“每一步为什么能继续、失败后去哪里、怎样证明已经完成”，而不只是把动作按顺序写出来。</p>
+</blockquote>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI：Build Skills与Workflow Boundary</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI：Skills概念</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/blog/eval-skills">OpenAI：系统化测试Agent Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Claude：Skill编写最佳实践——Workflows与Feedback Loops</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Claude：Agent Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Claude：Skills for Enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+        <a href="/tags/Workflow/" class="print-no-link">#Workflow</a>
+      
+        <a href="/tags/State-Machine/" class="print-no-link">#State Machine</a>
+      
+        <a href="/tags/Validation/" class="print-no-link">#Validation</a>
+      
+        <a href="/tags/Idempotency/" class="print-no-link">#Idempotency</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>如何设计一个稳定的Workflow</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/08-如何设计一个稳定的Workflow/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/06-Skill-Discovery-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Skill/" title="Skill Discovery：模型如何知道该用哪个Skill">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Skill Discovery：模型如何知道该用哪个Skill</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/" title="Inputs、Outputs与Contract设计">
+                        <span class="hidden-mobile">Inputs、Outputs与Contract设计</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

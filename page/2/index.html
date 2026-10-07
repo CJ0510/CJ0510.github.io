@@ -343,23 +343,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI性能优化">
+        <a href="/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Inputs、Outputs与Contract设计">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" target="_self">
-          Linux SPI性能优化
+        <a href="/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/" target="_self">
+          Inputs、Outputs与Contract设计
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/09-Inputs-Outputs%E4%B8%8EContract%E8%AE%BE%E8%AE%A1/" target="_self">
         <div>
-          1 SPI性能指标无论优化什么，明确衡量指标永远是第一步。 我们先来看几个关键的性能指标：  吞吐量：单位时间内传输的数据量 延迟：单次传输所需的时间 CPU 占用率 功耗  回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。 2 三种传输方式分析SPI 控制器发送数据主要有三种方式：轮询（Polling）、中断（Interrupt）和 DMA。 我
+          第9章：Inputs、Outputs与Contract设计1. 本章目标上一章把Workflow设计成状态机。本章进一步形式化Workflow的入口和出口：Contract。 需要解决： 12345678Skill的输入究竟是什么？必需输入和可选输入如何定义？用户自然语言怎样变成结构化任务状态？输入缺失、无效、冲突或不可信时怎么办？输出应该是Markdown、JSON、文件还是外部动作？Schem
         </div>
       </a>
 
@@ -367,8 +367,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-08 22:11" pubdate>
-              2026-08-08
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -383,12 +383,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -405,7 +405,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/Skill/">#Skill</a>
+            
+              <a href="/tags/Contract/">#Contract</a>
+            
+              <a href="/tags/Input/">#Input</a>
+            
+              <a href="/tags/Output/">#Output</a>
+            
+              <a href="/tags/JSON-Schema/">#JSON Schema</a>
             
           </div>
         
@@ -417,23 +425,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI调试方法">
+        <a href="/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" target="_self">
-          Linux SPI调试方法
+        <a href="/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/" target="_self">
+          Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/06/Linux%20Kernel/SPI/Linux%20SPI%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/11-Precondition-Postcondition%E4%B8%8EFinal-Check/" target="_self">
         <div>
-          1 SPI调试整体思路前面说了这么多，真正的问题是怎么用起来，出了问题怎么定位解决？ 前面对整个框架都有了概念，简化模型如下：  出了问题从上面四个框架一一排查。 问题分为以下四大类：  设备节点没出现，/sys/bus/spi/devices/ 下面没设备；这时就要排查 DTS、SPI Controller 和 spi_device 等 设备出现，但是 probe 失败，检查 compatibl
+          Agent Skill 原理与工程实践（十一）：Precondition、Postcondition 与 Final Check一个 Skill 能把步骤写得很完整，却仍然不可靠。 原因通常不是模型不知道“下一步做什么”，而是工作流没有回答三个更重要的问题：  开始之前，条件真的满足了吗？ 每一步结束后，承诺的状态真的建立了吗？ 最终交付之前，整个结果真的可以放行吗？  这三个问题分别对应：  P
         </div>
       </a>
 
@@ -441,8 +449,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-06 22:11" pubdate>
-              2026-08-06
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -457,12 +465,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -479,7 +487,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/Validation/">#Validation</a>
+            
+              <a href="/tags/Agent-Skill/">#Agent Skill</a>
+            
+              <a href="/tags/Precondition/">#Precondition</a>
+            
+              <a href="/tags/Postcondition/">#Postcondition</a>
+            
+              <a href="/tags/Final-Check/">#Final Check</a>
             
           </div>
         
@@ -491,23 +507,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI同步/异步接口分析">
+        <a href="/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Step-by-Step Instruction怎么写">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
-          Linux SPI同步/异步接口分析
+        <a href="/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/" target="_self">
+          Step-by-Step Instruction怎么写
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/03/Linux%20Kernel/SPI/Linux%20SPI%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/" target="_self">
         <div>
-          1 为什么需要同步和异步接口先说下什么是同步和异步。就是字面意思啦。  同步：调用者发起一个操作，原地等待，直到操作完成，期间不能做别的事情。 异步：调用着发起一个操作，立即返回，不等待结果，可以处理其他事情，任务完成后通知调用者处理  我们看一个场景 假设上面一次SPI通信流程为：发送寄存器地址；等待SPI clock；读取数据。 一个线程A调用同步接口spi_sync()，此时线程A会被阻塞，
+          第10章：Step-by-Step Instruction怎么写1. 本章目标上一章定义了输入、输出和Contract。本章聚焦Workflow内部最小的可执行单元：Instruction。 需要解决： 12345678什么样的步骤才算可执行？为什么“分析一下”“确保正确”是坏指令？每一步应该包含哪些信息？指令应该写多细？何时给模型自由，何时使用脚本和精确命令？如何表达顺序、条件、禁止项和完成信号
         </div>
       </a>
 
@@ -515,8 +531,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-03 20:32" pubdate>
-              2026-08-03
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -531,12 +547,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -553,7 +569,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/Skill/">#Skill</a>
+            
+              <a href="/tags/Workflow/">#Workflow</a>
+            
+              <a href="/tags/Evaluation/">#Evaluation</a>
+            
+              <a href="/tags/Instruction/">#Instruction</a>
+            
+              <a href="/tags/Prompt-Engineering/">#Prompt Engineering</a>
             
           </div>
         
@@ -565,23 +589,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI Framework整体架构分析">
+        <a href="/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
-          Linux SPI Framework整体架构分析
+        <a href="/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/" target="_self">
+          Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/" target="_self">
         <div>
-          1. SPI Framework上一章我们讲解了SPI的物理模型和传输时序图，从这一章开始我们深入分析Linux SPI框架。整个框架如图：  看到这张图是不是蒙了？先别急，后面我们会慢慢讲解。你只需要记住，核心就分为三个层次：  第一层：设备驱动层（Device Driver），主要负责设备的功能，简单的理解就是跟 SoC 通信的设备 第二层：SPI Core 层，这是 Linux 提供的公共框
+          Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去前面几章已经完成了 Skill 的核心工作流设计：输入、输出、步骤、前置条件、后置条件和最终检查。 接下来会遇到一个非常实际的问题：  领域知识、规范、Schema、示例和 API 说明越来越多，是否应该全部写进 SKILL.md？  答案通常是否定的。 SKILL.md 的主要职责是保存工作
         </div>
       </a>
 
@@ -589,8 +613,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -605,12 +629,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -627,7 +651,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/SKILL-md/">#SKILL.md</a>
+            
+              <a href="/tags/references/">#references</a>
+            
+              <a href="/tags/Progressive-Disclosure/">#Progressive Disclosure</a>
+            
+              <a href="/tags/Context-Engineering/">#Context Engineering</a>
+            
+              <a href="/tags/Agent-Skill/">#Agent Skill</a>
             
           </div>
         
@@ -639,23 +671,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI核心数据结构分析">
+        <a href="/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
-          Linux SPI核心数据结构分析
+        <a href="/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/" target="_self">
+          Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/" target="_self">
         <div>
-          1. spi_controller 之前我们讲解了整个SPI框架的构成和数据传输流程。现在我们深入源码分析每一部分。 首先来看一下 spi_controller，它表示一个 SoC 内部的 SPI 控制器硬件，对应物理模型的 Master。比如一片 SoC 里面有 SPI0-3 控制器，那么对应的就是 spi_controller0-3。 源码位置：include/linux/spi/spi.h
+          Agent Skill 原理与工程实践（十三）：scripts&#x2F;——什么时候 Prompt 不够，需要代码上一章把 references/ 定位为 Skill 的按需知识层。本章继续按照专题大纲，进入 scripts/：当自然语言指令不足以稳定完成任务时，如何把关键操作固化成可执行代码。 一个 Skill 并不是脚本越多越好，也不是所有步骤都应该交给 LLM。真正的设计问题是：  哪些步
         </div>
       </a>
 
@@ -663,8 +695,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -679,12 +711,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -701,7 +733,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/SKILL-md/">#SKILL.md</a>
+            
+              <a href="/tags/scripts/">#scripts</a>
+            
+              <a href="/tags/Validation/">#Validation</a>
+            
+              <a href="/tags/Agent-Skill/">#Agent Skill</a>
+            
+              <a href="/tags/Deterministic-Operations/">#Deterministic Operations</a>
             
           </div>
         
@@ -713,23 +753,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux SPI设备如何从Device Tree走到driver probe">
+        <a href="/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十四）：assets/——模板、Schema 与可复用资源">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
-          Linux SPI设备如何从Device Tree走到driver probe
+        <a href="/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/" target="_self">
+          Agent Skill 原理与工程实践（十四）：assets/——模板、Schema 与可复用资源
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/Linux%20SPI%E8%AE%BE%E5%A4%87%E5%A6%82%E4%BD%95%E4%BB%8EDevice%20Tree%E8%B5%B0%E5%88%B0driver%20probe/" target="_self">
+      <a class="index-excerpt " href="/2026/10/06/AI/Skill/14-assets-%E6%A8%A1%E6%9D%BFSchema%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%B5%84%E6%BA%90/" target="_self">
         <div>
-          1 为什么SPI设备需要DTS描述对于 USB 设备、PCIe 设备，你插上去，内核就能自动识别。因为总线本身有设备枚举机制。USB 设备插上后，主机控制器会发起枚举请求，设备返回自己的 Vendor ID、Product ID、Class 等信息，内核据此动态创建 struct device 并匹配驱动。但 SPI 总线天生不具备这个能力。 SPI 协议只定义了 MOSI、MISO、SCLK、C
+          Agent Skill 原理与工程实践（十四）：assets&#x2F;——模板、Schema 与可复用资源前两章分别讨论了 references/ 和 scripts/： 12345references/→ 供 Agent 按需阅读的知识scripts/→ 供 Agent 调用的确定性操作  本章继续按照专题大纲讨论第三类支持文件：assets/。 assets/ 保存的不是“怎样完成任务”的指
         </div>
       </a>
 
@@ -737,8 +777,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
+            <time datetime="2026-10-06 00:00" pubdate>
+              2026-10-06
             </time>
           </div>
         
@@ -753,12 +793,12 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
   
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
   
   
 
@@ -775,7 +815,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
+              <a href="/tags/assets/">#assets</a>
+            
+              <a href="/tags/Agent-Skill/">#Agent Skill</a>
+            
+              <a href="/tags/Template/">#Template</a>
+            
+              <a href="/tags/Schema/">#Schema</a>
+            
+              <a href="/tags/Reusable-Resources/">#Reusable Resources</a>
             
           </div>
         
@@ -787,23 +835,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="SPI协议基础：从四根线理解Linux SPI框架">
+        <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
-          SPI协议基础：从四根线理解Linux SPI框架
+        <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
+          
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/01/Linux%20Kernel/SPI/SPI%E5%8D%8F%E8%AE%AE%E5%9F%BA%E7%A1%80/" target="_self">
+      <a class="index-excerpt " href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" target="_self">
         <div>
-          1. What is SPI?在开始本章之前，先抛出一个问题，Linux SPI 框架最终要控制什么？ 在嵌入式系统中，核心就是CPU，只有CPU是不能工作的，往往还需要接入各种外设并且与外设通信。例如传感器、Flash、显示屏、ADC等。不同设备之间需要一种统一的数据交换方式，因此产生了各种通信协议，例如 UART、I2C、SPI。本系列就是介绍其中的SPI。 先给出定义：SPI（Serial
+          perf-ninja项目配置拉取仓库 1git clone https://github.com/dendibakh/perf-ninja.git 安装环境 12345678910111213141516171819202122232425sudo apt updatesudo apt install -y \    build-essential \    cmake \    git \
         </div>
       </a>
 
@@ -811,47 +859,12 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-01 13:32" pubdate>
-              2026-08-01
+            <time datetime="2026-10-05 18:56" pubdate>
+              2026-10-05
             </time>
           </div>
         
         
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Linux-Kernel/SPI/" class="category-chain-item">SPI</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux-SPI/">#Linux SPI</a>
-            
-          </div>
         
       </div>
     </article>
@@ -861,23 +874,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="问题及思考">
+        <a href="/2026/09/29/Linux%20Kernel/GPU/Linux_GPU_NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E6%A1%86%E6%9E%B6/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux GPU/NPU 加速器总体架构">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
-          问题及思考
+        <a href="/2026/09/29/Linux%20Kernel/GPU/Linux_GPU_NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E6%A1%86%E6%9E%B6/" target="_self">
+          Linux GPU/NPU 加速器总体架构
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/07/13/Linux%20Kernel/problem/" target="_self">
+      <a class="index-excerpt " href="/2026/09/29/Linux%20Kernel/GPU/Linux_GPU_NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E6%A1%86%E6%9E%B6/" target="_self">
         <div>
-          0 问题1 内存1.1 内存空洞是什么？外部碎片和内部碎片又是什么？ 内存空洞首先要理解的是机器的物理地址中不一定全部对应真实 RAM 及不对应真实的物理结构，示意图  12345678物理地址0 GB  ┌──────────────┐      │ RAM          │1 GB  ├──────────────┤      │ 地址空洞      │  ← 没有真实内存，可能保留给设备
+          CPU、GPU、NPUCPU面对的是指令，是控制流中心；GPU面对的是大量数据，是数据并行中心；NPU面对网络，计算图和数据流中心。 整个CPU的执行模型如下 12345678910111213Process   ↓Thread   ↓task_struct   ↓Scheduler   ↓Runqueue   ↓CPU Core   ↓Instruction 整个执行流程围绕thread设计，操
         </div>
       </a>
 
@@ -885,8 +898,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-13 13:32" pubdate>
-              2026-07-13
+            <time datetime="2026-09-29 13:32" pubdate>
+              2026-09-29
             </time>
           </div>
         
@@ -906,7 +919,7 @@
   
     <span>></span>
     
-  <a href="/categories/Linux-Kernel/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-chain-item">内存管理</a>
+  <a href="/categories/Linux-Kernel/GPU-NPU/" class="category-chain-item">GPU NPU</a>
   
   
 
@@ -923,7 +936,7 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux/">#Linux</a>
+              <a href="/tags/Linux-GPU-NPU/">#Linux GPU NPU</a>
             
           </div>
         
@@ -935,7 +948,7 @@
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#board">3</a><a class="extend next" rel="next" href="/page/3/#board"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#board">3</a><a class="page-number" href="/page/4/#board">4</a><a class="page-number" href="/page/5/#board">5</a><a class="extend next" rel="next" href="/page/3/#board"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
 

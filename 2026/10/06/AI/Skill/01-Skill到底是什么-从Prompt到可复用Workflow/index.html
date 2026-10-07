@@ -1,0 +1,1038 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第1章：Skill到底是什么——从Prompt到可复用Workflow1. 本章目标本章解决以下问题： 12345为什么已经有Prompt，还需要Skill？Skill是不是一个保存下来的Prompt？Skill为什么通常是一个目录？Skill解决的是知识问题还是流程问题？什么任务值得做成Skill？  2. Skill的准确含义可以把Skill定义为：  Skill是一个按需加载的、可复用的Ag">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Skill到底是什么：从Prompt到可复用Workflow">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/01-Skill%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88-%E4%BB%8EPrompt%E5%88%B0%E5%8F%AF%E5%A4%8D%E7%94%A8Workflow/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第1章：Skill到底是什么——从Prompt到可复用Workflow1. 本章目标本章解决以下问题： 12345为什么已经有Prompt，还需要Skill？Skill是不是一个保存下来的Prompt？Skill为什么通常是一个目录？Skill解决的是知识问题还是流程问题？什么任务值得做成Skill？  2. Skill的准确含义可以把Skill定义为：  Skill是一个按需加载的、可复用的Ag">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T03:33:01.024Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="SKILL.md">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="Workflow">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Skill到底是什么：从Prompt到可复用Workflow · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Skill到底是什么：从Prompt到可复用Workflow</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Skill到底是什么：从Prompt到可复用Workflow</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第1章：Skill到底是什么——从Prompt到可复用Workflow"><a href="#第1章：Skill到底是什么——从Prompt到可复用Workflow" class="headerlink" title="第1章：Skill到底是什么——从Prompt到可复用Workflow"></a>第1章：Skill到底是什么——从Prompt到可复用Workflow</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1. 本章目标</h2><p>本章解决以下问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">为什么已经有Prompt，还需要Skill？<br>Skill是不是一个保存下来的Prompt？<br>Skill为什么通常是一个目录？<br>Skill解决的是知识问题还是流程问题？<br>什么任务值得做成Skill？<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-Skill的准确含义"><a href="#2-Skill的准确含义" class="headerlink" title="2. Skill的准确含义"></a>2. Skill的准确含义</h2><p>可以把Skill定义为：</p>
+<blockquote>
+<p>Skill是一个按需加载的、可复用的Agent工作方法包。它用指令描述工作流程，并可携带参考资料、脚本、模板和其他资源。</p>
+</blockquote>
+<p>OpenAI把Skill描述为包含<code>SKILL.md</code>的文件目录，用于编码流程和约定；除主指令外，还可以包含参考资料、脚本和资产。Anthropic的定义与此相近：Skill由元数据、指令以及可选脚本和模板构成，在任务相关时按需使用。</p>
+<p>因此可以建立下面的整体模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill<br>=<br>Workflow<br>+ Instructions<br>+ References<br>+ Scripts<br>+ Assets<br></code></pre></td></tr></table></figure>
+
+<p>但Skill不必拥有全部组成部分。最小Skill只需要一个<code>SKILL.md</code>，其他资源只有在确有需要时才应加入。</p>
+<h2 id="3-为什么普通Prompt不够"><a href="#3-为什么普通Prompt不够" class="headerlink" title="3. 为什么普通Prompt不够"></a>3. 为什么普通Prompt不够</h2><p>假设我们经常要求Agent分析Linux性能问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">分析这个性能问题，检查CPU、内存和IO，<br>必须提供证据、根因、置信度和建议，不要无依据地下结论。<br></code></pre></td></tr></table></figure>
+
+<p>这种一次性Prompt可以工作，但有几个工程问题。</p>
+<h3 id="3-1-难以稳定复用"><a href="#3-1-难以稳定复用" class="headerlink" title="3.1 难以稳定复用"></a>3.1 难以稳定复用</h3><p>每次都要重新说明检查顺序、证据标准、输出格式和失败行为，容易漏步骤，也容易产生不同版本。</p>
+<h3 id="3-2-只能低效携带大量文字"><a href="#3-2-只能低效携带大量文字" class="headerlink" title="3.2 只能低效携带大量文字"></a>3.2 只能低效携带大量文字</h3><p>真实任务还可能依赖：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">trace解析程序<br>延迟计算脚本<br>报告模板<br>内核调度参考资料<br>结果JSON Schema<br></code></pre></td></tr></table></figure>
+
+<p>把它们全部复制进Prompt会快速占满上下文。</p>
+<h3 id="3-3-难以成为工程资产"><a href="#3-3-难以成为工程资产" class="headerlink" title="3.3 难以成为工程资产"></a>3.3 难以成为工程资产</h3><p>散落在聊天记录中的Prompt不利于：</p>
+<ul>
+<li>代码审查</li>
+<li>版本管理</li>
+<li>团队共享</li>
+<li>自动测试</li>
+<li>回归评测</li>
+<li>权限和安全审计</li>
+</ul>
+<p>Skill将工作方法文件化，使它更接近可维护的软件模块。</p>
+<h2 id="4-从Prompt到Skill的演化"><a href="#4-从Prompt到Skill的演化" class="headerlink" title="4. 从Prompt到Skill的演化"></a>4. 从Prompt到Skill的演化</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">一次性要求<br>    ↓<br>可复用Prompt<br>    ↓<br>结构化操作规程<br>    ↓<br>SKILL.md<br>    ↓<br>SKILL.md + references + scripts + assets<br>    ↓<br>可测试、可版本化的Agent Workflow<br></code></pre></td></tr></table></figure>
+
+<p>它们不是互相替代，而是作用范围不同：</p>
+<table>
+<thead>
+<tr>
+<th>形式</th>
+<th>适合解决的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User Prompt</td>
+<td>当前这一次具体要做什么</td>
+</tr>
+<tr>
+<td>Prompt模板</td>
+<td>重复生成相似内容</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>某类任务长期应该怎样完成</td>
+</tr>
+<tr>
+<td>Script</td>
+<td>确定性计算、解析和校验</td>
+</tr>
+<tr>
+<td>Tool</td>
+<td>对外执行一个动作</td>
+</tr>
+<tr>
+<td>RAG&#x2F;Reference</td>
+<td>提供任务所需知识或事实</td>
+</tr>
+</tbody></table>
+<h2 id="5-Skill的核心是程序性知识"><a href="#5-Skill的核心是程序性知识" class="headerlink" title="5. Skill的核心是程序性知识"></a>5. Skill的核心是程序性知识</h2><p>知识可以粗略分为两类。</p>
+<h3 id="5-1-陈述性知识：知道“是什么”"><a href="#5-1-陈述性知识：知道“是什么”" class="headerlink" title="5.1 陈述性知识：知道“是什么”"></a>5.1 陈述性知识：知道“是什么”</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Linux CFS是什么<br>sched_switch字段代表什么<br>P99延迟如何定义<br></code></pre></td></tr></table></figure>
+
+<p>这类内容适合放在文档、<code>references/</code>、知识库或RAG系统中。</p>
+<h3 id="5-2-程序性知识：知道“怎么做”"><a href="#5-2-程序性知识：知道“怎么做”" class="headerlink" title="5.2 程序性知识：知道“怎么做”"></a>5.2 程序性知识：知道“怎么做”</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">先验证trace是否完整<br>再提取调度事件<br>然后计算runnable latency<br>发现异常后与CPU利用率交叉验证<br>最后按照固定Schema生成报告<br></code></pre></td></tr></table></figure>
+
+<p>这才是Skill的核心。</p>
+<p>Skill不是知识库，并不意味着Skill不能携带知识，而是：</p>
+<blockquote>
+<p>知识是工作流使用的材料，工作流才是Skill的主干。</p>
+</blockquote>
+<h2 id="6-Skill为什么通常是目录"><a href="#6-Skill为什么通常是目录" class="headerlink" title="6. Skill为什么通常是目录"></a>6. Skill为什么通常是目录</h2><p>真实工作方法往往不止一段文字：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs text">scheduler-analysis/<br>├── SKILL.md<br>├── references/<br>│   ├── sched-events.md<br>│   └── diagnosis-rules.md<br>├── scripts/<br>│   ├── parse_trace.py<br>│   └── calculate_latency.py<br>└── assets/<br>    └── report-template.md<br></code></pre></td></tr></table></figure>
+
+<p>各部分职责如下：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SKILL.md</code></td>
+<td>工作流主干：何时使用、按什么步骤做</td>
+</tr>
+<tr>
+<td><code>references/</code></td>
+<td>背景知识、规范和领域规则</td>
+</tr>
+<tr>
+<td><code>scripts/</code></td>
+<td>确定性、重复性操作</td>
+</tr>
+<tr>
+<td><code>assets/</code></td>
+<td>输出模板、Schema、配置或素材</td>
+</tr>
+</tbody></table>
+<h2 id="7-Skill不是Tool"><a href="#7-Skill不是Tool" class="headerlink" title="7. Skill不是Tool"></a>7. Skill不是Tool</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool：提供一个具体动作<br>Skill：组织完成任务的方法<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool:<br>    read_trace(path)<br>    calculate_latency(events)<br>    generate_chart(data)<br><br>Skill:<br>    什么时候读取trace<br>    应读取哪些事件<br>    先计算哪个指标<br>    结果不足时如何补充证据<br>    最终报告必须包含哪些字段<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI官方给出的边界是：MCP Server或Tool提供实时数据、认证、授权和动作；Skill规定什么时候调用、调用顺序、不完整结果如何处理，以及最终输出应包含什么。</p>
+<p>一句话记忆：</p>
+<blockquote>
+<p>Tool是“手”，Skill是“操作手册和工作方法”。</p>
+</blockquote>
+<h2 id="8-Progressive-Disclosure初步模型"><a href="#8-Progressive-Disclosure初步模型" class="headerlink" title="8. Progressive Disclosure初步模型"></a>8. Progressive Disclosure初步模型</h2><p>如果系统安装了100个Skill，不可能在每次请求中加载全部内容。通常采用分阶段加载：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Level 1：name + description<br>        ↓ 判断相关<br>Level 2：SKILL.md正文<br>        ↓ 执行时发现需要<br>Level 3：references / scripts / assets<br></code></pre></td></tr></table></figure>
+
+<p>这种机制称为Progressive Disclosure，即渐进式披露。它降低上下文占用，也使系统可以安装较多Skill而不必一次加载全部正文。</p>
+<h2 id="9-最小Skill示例"><a href="#9-最小Skill示例" class="headerlink" title="9. 最小Skill示例"></a>9. 最小Skill示例</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs markdown">---<br>name: performance-triage<br><span class="hljs-section">description: Triages Linux performance incidents using CPU, memory, IO, and scheduler evidence. Use when the user provides performance symptoms, metrics, logs, profiles, or trace files and wants an evidence-based diagnosis.</span><br><span class="hljs-section">---</span><br><br><span class="hljs-section"># Performance Triage</span><br><br><span class="hljs-bullet">1.</span> Identify the reported symptom and affected time range.<br><span class="hljs-bullet">2.</span> Check whether the supplied evidence is sufficient.<br><span class="hljs-bullet">3.</span> Classify the problem into CPU, scheduler, memory, IO, or unknown.<br><span class="hljs-bullet">4.</span> Collect at least two supporting signals before proposing a root cause.<br><span class="hljs-bullet">5.</span> Separate observed facts from inferred conclusions.<br><span class="hljs-bullet">6.</span> Report the symptom, evidence, likely root cause, confidence, and next action.<br><br>Do not claim a root cause when the evidence is insufficient.<br></code></pre></td></tr></table></figure>
+
+<p>这个最小Skill已经定义了触发条件、工作步骤、证据要求、输出契约和失败行为。只有在需要稳定解析trace、计算延迟或校验报告时，才需要加入<code>scripts/</code>。</p>
+<h2 id="10-什么任务值得做成Skill"><a href="#10-什么任务值得做成Skill" class="headerlink" title="10. 什么任务值得做成Skill"></a>10. 什么任务值得做成Skill</h2><p>适合做成Skill的任务通常具有以下特征：</p>
+<ul>
+<li>经常重复出现；</li>
+<li>存在明确但容易遗漏的步骤；</li>
+<li>输出需要保持一致；</li>
+<li>需要协调多个Tool；</li>
+<li>有领域规则或组织规范；</li>
+<li>可以定义完成标准；</li>
+<li>有必要进行测试和版本管理。</li>
+</ul>
+<p>不一定需要Skill：</p>
+<ul>
+<li>一次性简单问答；</li>
+<li>一句话就能稳定描述的任务；</li>
+<li>没有固定流程的开放闲聊；</li>
+<li>单一确定性计算，这更适合函数或脚本；</li>
+<li>只有资料检索需求，这更接近RAG。</li>
+</ul>
+<p>可以使用下面的判断式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">重复性 × 流程复杂度 × 一致性要求 × 错误成本<br></code></pre></td></tr></table></figure>
+
+<p>这些维度越高，越值得创建Skill。</p>
+<h2 id="11-OpenAI与Claude的共同点和差异"><a href="#11-OpenAI与Claude的共同点和差异" class="headerlink" title="11. OpenAI与Claude的共同点和差异"></a>11. OpenAI与Claude的共同点和差异</h2><p>共同点：</p>
+<ul>
+<li>都以目录作为基本单位；</li>
+<li>都要求<code>SKILL.md</code>；</li>
+<li>都依赖<code>name</code>和<code>description</code>进行发现；</li>
+<li>都支持指令、参考资料、脚本和模板；</li>
+<li>都强调按需加载；</li>
+<li>都把Skill定位为可复用工作流。</li>
+</ul>
+<p>主要差异在运行环境：安装位置、上传方式、网络权限、沙箱、版本管理和Prompt优先级可能不同。因此应始终区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">可迁移的通用原理<br>≠<br>具体平台的安装与运行机制<br></code></pre></td></tr></table></figure>
+
+<h2 id="12-本章实践"><a href="#12-本章实践" class="headerlink" title="12. 本章实践"></a>12. 本章实践</h2><p>把下面的普通Prompt改造成一个最小Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">帮我审查Pull Request，看看有没有Bug，<br>关注安全和性能，并给出修改意见。<br></code></pre></td></tr></table></figure>
+
+<p>至少写出：</p>
+<ul>
+<li><code>name</code></li>
+<li><code>description</code></li>
+<li>五个执行步骤</li>
+<li>输出格式</li>
+<li>证据要求</li>
+<li>信息不足时的行为</li>
+</ul>
+<p>进一步判断：</p>
+<ol>
+<li>哪些内容属于<code>SKILL.md</code>？</li>
+<li>哪些规则适合放进<code>references/</code>？</li>
+<li>是否存在应由脚本完成的确定性检查？</li>
+<li>它与普通代码扫描Tool有什么区别？</li>
+</ol>
+<h2 id="13-学完检查题"><a href="#13-学完检查题" class="headerlink" title="13. 学完检查题"></a>13. 学完检查题</h2><ol>
+<li>为什么Skill不能简单等同于保存下来的Prompt？</li>
+<li>Skill的核心为什么是程序性知识？</li>
+<li><code>references/</code>中可以存知识，为什么仍然说Skill不是知识库？</li>
+<li>“调用静态分析器”属于Tool还是Skill？</li>
+<li>“先运行静态分析，再查看高风险文件，最后按严重程度生成报告”属于什么？</li>
+<li>为什么不应把所有资料直接放进<code>SKILL.md</code>？</li>
+<li>哪些任务不值得创建Skill？</li>
+</ol>
+<h2 id="14-本章总结"><a href="#14-本章总结" class="headerlink" title="14. 本章总结"></a>14. 本章总结</h2><blockquote>
+<p>Prompt描述当前任务，Tool提供可调用动作，而Skill把一类任务的完成方法封装成可发现、按需加载、可复用的工作流。<code>SKILL.md</code>是流程主干，references提供知识，scripts承担确定性操作，assets提供模板和资源。Skill的真正价值不是让模型“知道更多”，而是让Agent在相似任务中以更稳定、可验证、可维护的方式做事。</p>
+</blockquote>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI：Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI：Skills与MCP</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Claude：Agent Skills</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Agent/" class="print-no-link">#Agent</a>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+        <a href="/tags/Workflow/" class="print-no-link">#Workflow</a>
+      
+        <a href="/tags/SKILL-md/" class="print-no-link">#SKILL.md</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Skill到底是什么：从Prompt到可复用Workflow</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/01-Skill到底是什么-从Prompt到可复用Workflow/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/05-YAML-Frontmatter-name%E5%92%8Cdescription/" title="YAML Frontmatter：name和description为什么最重要">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">YAML Frontmatter：name和description为什么最重要</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/07-Progressive-Disclosure-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AC%A1%E5%8A%A0%E8%BD%BD%E5%85%A8%E9%83%A8%E5%86%85%E5%AE%B9/" title="Progressive Disclosure：为什么不能一次加载全部内容">
+                        <span class="hidden-mobile">Progressive Disclosure：为什么不能一次加载全部内容</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

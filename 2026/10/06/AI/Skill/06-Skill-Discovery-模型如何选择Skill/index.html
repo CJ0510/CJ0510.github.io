@@ -1,0 +1,1264 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第6章：Skill Discovery——模型如何知道该用哪个Skill1. 本章目标第5章讨论了单个Skill的name和description。本章把视角提升到整个Skill集合，解决以下问题： 1234567Skill如何被宿主发现？模型看到哪些Discovery信息？模型如何从多个Skill中选择？为什么会漏触发、误触发或选错Skill？多个Skill同时相关时怎么办？新增Skill为什么">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Skill Discovery：模型如何知道该用哪个Skill">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/06-Skill-Discovery-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Skill/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第6章：Skill Discovery——模型如何知道该用哪个Skill1. 本章目标第5章讨论了单个Skill的name和description。本章把视角提升到整个Skill集合，解决以下问题： 1234567Skill如何被宿主发现？模型看到哪些Discovery信息？模型如何从多个Skill中选择？为什么会漏触发、误触发或选错Skill？多个Skill同时相关时怎么办？新增Skill为什么">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T03:43:47.704Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Discovery">
+<meta property="article:tag" content="Evaluation">
+<meta property="article:tag" content="Routing">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="Trigger">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Skill Discovery：模型如何知道该用哪个Skill · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Skill Discovery：模型如何知道该用哪个Skill</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          96 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Skill Discovery：模型如何知道该用哪个Skill</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第6章：Skill-Discovery——模型如何知道该用哪个Skill"><a href="#第6章：Skill-Discovery——模型如何知道该用哪个Skill" class="headerlink" title="第6章：Skill Discovery——模型如何知道该用哪个Skill"></a>第6章：Skill Discovery——模型如何知道该用哪个Skill</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1. 本章目标</h2><p>第5章讨论了单个Skill的<code>name</code>和<code>description</code>。本章把视角提升到整个Skill集合，解决以下问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill如何被宿主发现？<br>模型看到哪些Discovery信息？<br>模型如何从多个Skill中选择？<br>为什么会漏触发、误触发或选错Skill？<br>多个Skill同时相关时怎么办？<br>新增Skill为什么可能破坏已有Skill？<br>如何系统测试Discovery？<br></code></pre></td></tr></table></figure>
+
+<p>核心认识：</p>
+<blockquote>
+<p>Skill Discovery不是简单的文件扫描，也不是关键词匹配，而是“宿主发现 + 元数据暴露 + 模型语义路由 + 执行验证”的完整过程。</p>
+</blockquote>
+<hr>
+<h2 id="2-Discovery的完整链路"><a href="#2-Discovery的完整链路" class="headerlink" title="2. Discovery的完整链路"></a>2. Discovery的完整链路</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill directories / uploaded bundles<br>               ↓<br>Host scans and validates skills<br>               ↓<br>Build available-skill catalog<br>               ↓<br>Expose name + description + identifier/path<br>               ↓<br>User request enters context<br>               ↓<br>Model compares intent with skill metadata<br>               ↓<br>Select zero, one, or multiple skills<br>               ↓<br>Load selected SKILL.md<br>               ↓<br>Execute and validate<br></code></pre></td></tr></table></figure>
+
+<p>这条链中包含两个不同的“发现”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Host Discovery<br>→ 运行环境能否找到并注册Skill<br><br>Model Discovery / Selection<br>→ 模型能否判断当前任务应该使用哪个Skill<br></code></pre></td></tr></table></figure>
+
+<p>如果宿主根本没有发现Skill，再好的Description也没有作用；如果宿主已发现Skill，但元数据设计不清晰，模型仍可能选错。</p>
+<hr>
+<h2 id="3-Host-Discovery：宿主怎样找到Skill"><a href="#3-Host-Discovery：宿主怎样找到Skill" class="headerlink" title="3. Host Discovery：宿主怎样找到Skill"></a>3. Host Discovery：宿主怎样找到Skill</h2><p>宿主通常从以下来源获得Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">用户级Skill目录<br>项目级Skill目录<br>插件中的skills目录<br>上传到平台的Skill Bundle<br>挂载仓库中的Skill目录<br>Agent或Session显式附加的Skill列表<br></code></pre></td></tr></table></figure>
+
+<p>宿主可能执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">1. 扫描配置目录<br>2. 找到SKILL.md<br>3. 解析YAML Frontmatter<br>4. 验证name和description<br>5. 检查路径、编码和资源限制<br>6. 建立Skill Catalog<br>7. 把元数据提供给模型<br></code></pre></td></tr></table></figure>
+
+<p>不同平台的扫描位置和目录深度可能不同，不能把某个平台的路径规则当成通用标准。</p>
+<p>例如Claude Managed Agents从挂载仓库发现Skill时，当前官方文档要求使用类似以下结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">.claude/<br>└── skills/<br>    ├── code-review/<br>    │   └── SKILL.md<br>    └── release-process/<br>        ├── SKILL.md<br>        └── scripts/<br>            └── run_checks.sh<br></code></pre></td></tr></table></figure>
+
+<p>嵌套层级不符合宿主扫描规则时，文件存在也可能不会在Session启动时被宣布为可用Skill。</p>
+<p>因此排查“Skill为什么不触发”时，第一步不是立刻修改Description，而是先确认：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill真的被宿主发现了吗？<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-Skill-Catalog：模型实际看到什么"><a href="#4-Skill-Catalog：模型实际看到什么" class="headerlink" title="4. Skill Catalog：模型实际看到什么"></a>4. Skill Catalog：模型实际看到什么</h2><p>Discovery阶段通常不会把所有<code>SKILL.md</code>正文加载进上下文，而是构造轻量目录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">- performance-triage<br>  Classifies Linux runtime performance incidents across CPU,<br>  scheduler, memory, and IO. Use when the subsystem is unknown.<br><br>- scheduler-analysis<br>  Diagnoses scheduler and CPU execution delays using scheduling<br>  traces and CPU telemetry.<br><br>- memory-analysis<br>  Diagnoses memory pressure, reclaim, swapping, allocation stalls,<br>  slab growth, and OOM events.<br></code></pre></td></tr></table></figure>
+
+<p>目录项通常包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">name<br>description<br>path / skill ID / identifier<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI官方文档说明，Skill Discovery阶段模型会看到<code>name</code>和<code>description</code>，选中后再根据路径读取完整<code>SKILL.md</code>。Claude官方也采用元数据先加载、正文触发后加载的渐进式架构。</p>
+<p>因此，Skill Catalog可以理解为Agent的“能力菜单”。菜单需要做到：</p>
+<ul>
+<li>每项足够短；</li>
+<li>任务边界清晰；</li>
+<li>不依赖读取正文才能判断；</li>
+<li>多个条目之间可以区分；</li>
+<li>不使用相互冲突的术语。</li>
+</ul>
+<hr>
+<h2 id="5-Discovery不是纯关键词匹配"><a href="#5-Discovery不是纯关键词匹配" class="headerlink" title="5. Discovery不是纯关键词匹配"></a>5. Discovery不是纯关键词匹配</h2><p>假设Skill描述包含：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">execution</span> <span class="hljs-string">delays</span> <span class="hljs-string">from</span> <span class="hljs-string">scheduling</span> <span class="hljs-string">traces</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">telemetry.</span><br></code></pre></td></tr></table></figure>
+
+<p>下面请求没有出现<code>scheduler</code>一词：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">线程明明已经被唤醒了，为什么过了很久才真正获得CPU？<br></code></pre></td></tr></table></figure>
+
+<p>它仍与调度分析高度相关，因为模型可以识别：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">线程已被唤醒<br>     ↓<br>处于runnable状态<br>     ↓<br>长时间未执行<br>     ↓<br>可能是runnable latency / CPU contention / throttling<br></code></pre></td></tr></table></figure>
+
+<p>反过来，请求包含<code>scheduler</code>也不一定应该触发诊断Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">给我解释Linux scheduler的发展历史。<br></code></pre></td></tr></table></figure>
+
+<p>这是知识讲解，不是基于运行证据的故障诊断。</p>
+<p>因此Discovery的匹配对象不是单个词，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">User Intent<br>+ Task Object<br>+ Available Inputs<br>+ Desired Outcome<br>+ Current Workflow Stage<br>+ Constraints<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-一个实用的语义匹配模型"><a href="#6-一个实用的语义匹配模型" class="headerlink" title="6. 一个实用的语义匹配模型"></a>6. 一个实用的语义匹配模型</h2><p>可以把Skill选择抽象成一个非确定性的相关性评分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Relevance(skill, request)<br>=<br>Goal Match<br>+ Object Match<br>+ Input Match<br>+ Output Match<br>+ Stage Match<br>- Boundary Conflict<br>- Competing Skill Advantage<br></code></pre></td></tr></table></figure>
+
+<p>这不是官方公布的内部算法，也不代表平台真实实现，而是用于设计和调试的工程模型。</p>
+<h3 id="6-1-Goal-Match"><a href="#6-1-Goal-Match" class="headerlink" title="6.1 Goal Match"></a>6.1 Goal Match</h3><p>用户是想诊断、生成、审查、解释，还是修改？</p>
+<h3 id="6-2-Object-Match"><a href="#6-2-Object-Match" class="headerlink" title="6.2 Object Match"></a>6.2 Object Match</h3><p>对象是PDF、PR、调度Trace、数据库还是事故报告？</p>
+<h3 id="6-3-Input-Match"><a href="#6-3-Input-Match" class="headerlink" title="6.3 Input Match"></a>6.3 Input Match</h3><p>用户提供了日志、Trace、指标、文档还是源代码？</p>
+<h3 id="6-4-Output-Match"><a href="#6-4-Output-Match" class="headerlink" title="6.4 Output Match"></a>6.4 Output Match</h3><p>用户想得到诊断报告、修改后的文件、摘要还是操作结果？</p>
+<h3 id="6-5-Stage-Match"><a href="#6-5-Stage-Match" class="headerlink" title="6.5 Stage Match"></a>6.5 Stage Match</h3><p>当前处于分诊、专项分析、汇总还是最终校验阶段？</p>
+<h3 id="6-6-Boundary-Conflict"><a href="#6-6-Boundary-Conflict" class="headerlink" title="6.6 Boundary Conflict"></a>6.6 Boundary Conflict</h3><p>是否命中了明确的排除条件，例如“不要用于现有项目修改”？</p>
+<h3 id="6-7-Competing-Skill-Advantage"><a href="#6-7-Competing-Skill-Advantage" class="headerlink" title="6.7 Competing Skill Advantage"></a>6.7 Competing Skill Advantage</h3><p>是否有另一个Skill对当前目标描述得更精确？</p>
+<hr>
+<h2 id="7-Discovery可能选择零个、一个或多个Skill"><a href="#7-Discovery可能选择零个、一个或多个Skill" class="headerlink" title="7. Discovery可能选择零个、一个或多个Skill"></a>7. Discovery可能选择零个、一个或多个Skill</h2><h3 id="7-1-零个Skill"><a href="#7-1-零个Skill" class="headerlink" title="7.1 零个Skill"></a>7.1 零个Skill</h3><p>以下情况不应勉强使用Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">任务不属于任何已安装Skill<br>普通知识问答无需专门Workflow<br>一次性简单任务直接完成更合适<br>相关Skill缺少必要工具或运行环境<br></code></pre></td></tr></table></figure>
+
+<p>“已安装很多Skill”不意味着每个请求必须选一个。</p>
+<h3 id="7-2-一个Skill"><a href="#7-2-一个Skill" class="headerlink" title="7.2 一个Skill"></a>7.2 一个Skill</h3><p>任务目标清晰，单个Skill能够覆盖完整流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">用户：根据staged diff写commit message<br>选择：commit-message<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-3-多个Skill"><a href="#7-3-多个Skill" class="headerlink" title="7.3 多个Skill"></a>7.3 多个Skill</h3><p>复杂任务可能按阶段组合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-triage<br>       ↓<br>scheduler-analysis<br>       ↓<br>performance-report<br></code></pre></td></tr></table></figure>
+
+<p>或者并行使用不同领域Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">incident-analysis<br>├── memory-analysis<br>└── io-analysis<br></code></pre></td></tr></table></figure>
+
+<p>选择多个Skill时必须考虑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">执行顺序<br>输入输出传递<br>职责重叠<br>冲突规则<br>终止条件<br>最终由谁汇总<br></code></pre></td></tr></table></figure>
+
+<p>Discovery只负责找到可能相关的Skill，并不自动解决组合协议；这将在第18章进一步展开。</p>
+<hr>
+<h2 id="8-Skill选择中的四类错误"><a href="#8-Skill选择中的四类错误" class="headerlink" title="8. Skill选择中的四类错误"></a>8. Skill选择中的四类错误</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>True Positive</td>
+<td>应触发且触发</td>
+<td>用trace诊断调度延迟</td>
+</tr>
+<tr>
+<td>False Positive</td>
+<td>不应触发却触发</td>
+<td>一般概念问答触发诊断Skill</td>
+</tr>
+<tr>
+<td>False Negative</td>
+<td>应触发却未触发</td>
+<td>提供trace求诊断但Skill未加载</td>
+</tr>
+<tr>
+<td>True Negative</td>
+<td>不应触发且未触发</td>
+<td>写诗没有触发性能分析</td>
+</tr>
+</tbody></table>
+<h3 id="8-1-False-Positive的代价"><a href="#8-1-False-Positive的代价" class="headerlink" title="8.1 False Positive的代价"></a>8.1 False Positive的代价</h3><ul>
+<li>加载无关上下文；</li>
+<li>浪费Token和时间；</li>
+<li>调用不必要工具；</li>
+<li>修改不该修改的文件；</li>
+<li>抢占其他Skill的触发；</li>
+<li>对有副作用任务造成安全风险。</li>
+</ul>
+<h3 id="8-2-False-Negative的代价"><a href="#8-2-False-Negative的代价" class="headerlink" title="8.2 False Negative的代价"></a>8.2 False Negative的代价</h3><ul>
+<li>丢失关键Workflow；</li>
+<li>漏掉必需检查；</li>
+<li>输出格式漂移；</li>
+<li>重复要求用户说明规范；</li>
+<li>无法调用Skill内的脚本和资源。</li>
+</ul>
+<p>错误成本决定优化方向：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">只读、低风险Skill<br>→ 可以适当提高Recall<br><br>会删除、发布、付款或发送消息的Skill<br>→ 必须优先控制False Positive<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="9-为什么会漏触发"><a href="#9-为什么会漏触发" class="headerlink" title="9. 为什么会漏触发"></a>9. 为什么会漏触发</h2><h3 id="9-1-Skill根本没有被宿主发现"><a href="#9-1-Skill根本没有被宿主发现" class="headerlink" title="9.1 Skill根本没有被宿主发现"></a>9.1 Skill根本没有被宿主发现</h3><p>可能原因：</p>
+<ul>
+<li>放错目录；</li>
+<li>目录层级不符合扫描规则；</li>
+<li><code>SKILL.md</code>命名错误；</li>
+<li>YAML无效；</li>
+<li>Skill没有附加到Agent或Session；</li>
+<li>运行环境没有读取权限。</li>
+</ul>
+<h3 id="9-2-Description太窄"><a href="#9-2-Description太窄" class="headerlink" title="9.2 Description太窄"></a>9.2 Description太窄</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">Processes</span> <span class="hljs-string">sched_switch</span> <span class="hljs-string">events.</span><br></code></pre></td></tr></table></figure>
+
+<p>用户说“线程唤醒后很久没运行”，虽然语义相关，却没有明显命中技术字段。</p>
+<h3 id="9-3-Description只写输入，不写目标"><a href="#9-3-Description只写输入，不写目标" class="headerlink" title="9.3 Description只写输入，不写目标"></a>9.3 Description只写输入，不写目标</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">Works</span> <span class="hljs-string">with</span> <span class="hljs-string">trace</span> <span class="hljs-string">files.</span><br></code></pre></td></tr></table></figure>
+
+<p>Trace可以用于解析、可视化、诊断、转换和归档，目标不明确。</p>
+<h3 id="9-4-用户请求信息不足"><a href="#9-4-用户请求信息不足" class="headerlink" title="9.4 用户请求信息不足"></a>9.4 用户请求信息不足</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">帮我看看这个。<br></code></pre></td></tr></table></figure>
+
+<p>如果附件、上下文和任务目标都不明确，模型无法稳定路由。</p>
+<h3 id="9-5-相邻Skill描述更强"><a href="#9-5-相邻Skill描述更强" class="headerlink" title="9.5 相邻Skill描述更强"></a>9.5 相邻Skill描述更强</h3><p>本来应该使用<code>performance-triage</code>，但<code>general-debugging</code>写了极宽的描述，可能抢走触发。</p>
+<hr>
+<h2 id="10-为什么会误触发"><a href="#10-为什么会误触发" class="headerlink" title="10. 为什么会误触发"></a>10. 为什么会误触发</h2><h3 id="10-1-Description过于宽泛"><a href="#10-1-Description过于宽泛" class="headerlink" title="10.1 Description过于宽泛"></a>10.1 Description过于宽泛</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">Helps</span> <span class="hljs-string">with</span> <span class="hljs-string">performance.</span><br></code></pre></td></tr></table></figure>
+
+<p>它可能匹配性能理论、Benchmark、代码优化和事故诊断等完全不同任务。</p>
+<h3 id="10-2-关键词堆砌"><a href="#10-2-关键词堆砌" class="headerlink" title="10.2 关键词堆砌"></a>10.2 关键词堆砌</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">CPU</span> <span class="hljs-string">memory</span> <span class="hljs-string">IO</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">Linux</span> <span class="hljs-string">performance</span> <span class="hljs-string">trace</span> <span class="hljs-string">latency</span> <span class="hljs-string">optimization.</span><br></code></pre></td></tr></table></figure>
+
+<p>缺少任务关系和边界，会对大量请求产生弱匹配。</p>
+<h3 id="10-3-Name过于通用"><a href="#10-3-Name过于通用" class="headerlink" title="10.3 Name过于通用"></a>10.3 Name过于通用</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">analysis</span><br></code></pre></td></tr></table></figure>
+
+<p>显式引用和语义选择都缺乏辨识度。</p>
+<h3 id="10-4-没有表达Workflow阶段"><a href="#10-4-没有表达Workflow阶段" class="headerlink" title="10.4 没有表达Workflow阶段"></a>10.4 没有表达Workflow阶段</h3><p><code>performance-report</code>如果只写“处理性能问题并生成报告”，可能在证据收集前就被选中。更好的描述是“在诊断完成并已有证据后生成报告”。</p>
+<h3 id="10-5-没有负向边界"><a href="#10-5-没有负向边界" class="headerlink" title="10.5 没有负向边界"></a>10.5 没有负向边界</h3><p>创建新项目和修改现有项目的任务共享大量关键词。如果Scaffold Skill不写“仅用于新项目”，就容易误触发。</p>
+<hr>
+<h2 id="11-Skill竞争与Trigger-Stealing"><a href="#11-Skill竞争与Trigger-Stealing" class="headerlink" title="11. Skill竞争与Trigger Stealing"></a>11. Skill竞争与Trigger Stealing</h2><p>假设已有Skill：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">performance-triage</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">performance</span> <span class="hljs-string">problems.</span><br></code></pre></td></tr></table></figure>
+
+<p>后来新增：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">linux-debugging</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">performance,</span> <span class="hljs-string">reliability,</span> <span class="hljs-string">logs,</span> <span class="hljs-string">traces,</span> <span class="hljs-string">CPU,</span> <span class="hljs-string">memory,</span> <span class="hljs-string">IO,</span> <span class="hljs-string">and</span> <span class="hljs-string">application</span> <span class="hljs-string">problems.</span><br></code></pre></td></tr></table></figure>
+
+<p>新的<code>linux-debugging</code>覆盖范围更宽，可能把原本属于<code>performance-triage</code>的请求抢走。这种现象可以称为Trigger Stealing。</p>
+<p>Anthropic企业Skill指南把这种问题归入Coexistence Conflict：新增Skill的Description过宽，导致已有Skill触发退化。</p>
+<p>解决方法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">缩小新Skill边界<br>明确父子层次<br>合并高度重叠Skill<br>设置阶段条件<br>增加负向测试<br>对整个Skill集合做回归<br></code></pre></td></tr></table></figure>
+
+<p>重要结论：</p>
+<blockquote>
+<p>Skill Discovery的质量是集合属性，不是单个Description的局部属性。</p>
+</blockquote>
+<hr>
+<h2 id="12-父Skill、子Skill与路由Skill"><a href="#12-父Skill、子Skill与路由Skill" class="headerlink" title="12. 父Skill、子Skill与路由Skill"></a>12. 父Skill、子Skill与路由Skill</h2><p>Performance Skill System中可以有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-triage      # 入口路由<br>scheduler-analysis      # 专项分析<br>memory-analysis         # 专项分析<br>io-analysis             # 专项分析<br>performance-report      # 汇总输出<br></code></pre></td></tr></table></figure>
+
+<p>它们的Discovery边界应对应不同状态：</p>
+<table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>适用阶段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>performance-triage</code></td>
+<td>子系统未知</td>
+</tr>
+<tr>
+<td><code>scheduler-analysis</code></td>
+<td>已怀疑调度或CPU执行延迟</td>
+</tr>
+<tr>
+<td><code>memory-analysis</code></td>
+<td>已有内存压力线索</td>
+</tr>
+<tr>
+<td><code>io-analysis</code></td>
+<td>已有存储或IO线索</td>
+</tr>
+<tr>
+<td><code>performance-report</code></td>
+<td>已有完整分析结果</td>
+</tr>
+</tbody></table>
+<p>路由Skill应负责分类和交接，不应复制所有子Skill的完整分析逻辑。否则它会成为一个巨型Skill，并与所有子Skill争夺职责。</p>
+<hr>
+<h2 id="13-显式调用和自动选择"><a href="#13-显式调用和自动选择" class="headerlink" title="13. 显式调用和自动选择"></a>13. 显式调用和自动选择</h2><h3 id="13-1-显式调用"><a href="#13-1-显式调用" class="headerlink" title="13.1 显式调用"></a>13.1 显式调用</h3><p>用户直接指定：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">使用scheduler-analysis分析这个trace。<br></code></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<ul>
+<li>降低路由不确定性；</li>
+<li>便于调试和复现；</li>
+<li>适合Eval；</li>
+<li>适合专家用户。</li>
+</ul>
+<p>但显式调用仍不能绕过：</p>
+<ul>
+<li>更高优先级的安全规则；</li>
+<li>工具权限；</li>
+<li>输入前置条件；</li>
+<li>用户确认要求；</li>
+<li>运行环境限制。</li>
+</ul>
+<h3 id="13-2-自动选择"><a href="#13-2-自动选择" class="headerlink" title="13.2 自动选择"></a>13.2 自动选择</h3><p>用户只描述自然目标，模型根据Catalog选择Skill。它更符合普通用户体验，但需要更好的元数据和更完整的Trigger Eval。</p>
+<p>测试时两种方式都要覆盖：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">显式调用测试 → Skill能否被直接使用<br>隐式调用测试 → 元数据能否正确路由<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="14-Discovery与上下文的关系"><a href="#14-Discovery与上下文的关系" class="headerlink" title="14. Discovery与上下文的关系"></a>14. Discovery与上下文的关系</h2><p>即使每个Skill只暴露短元数据，安装大量Skill仍会带来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">元数据Token开销<br>相似描述竞争<br>模型注意力分散<br>选择延迟增加<br>误触发概率上升<br>治理难度增加<br></code></pre></td></tr></table></figure>
+
+<p>因此不是Skill越多越好。可以采用：</p>
+<ul>
+<li>按项目安装必要Skill；</li>
+<li>按Agent角色挂载Skill子集；</li>
+<li>合并高度相似的Skill；</li>
+<li>移除长期未使用Skill；</li>
+<li>避免把每条小规则都独立做成Skill；</li>
+<li>对Catalog进行定期审查。</li>
+</ul>
+<p>这和Tool集合管理类似：能力目录过大本身会成为上下文工程问题。</p>
+<hr>
+<h2 id="15-Discovery与安全边界"><a href="#15-Discovery与安全边界" class="headerlink" title="15. Discovery与安全边界"></a>15. Discovery与安全边界</h2><p>被宿主发现的Skill并不只是“可搜索文档”，而是可能进入Agent执行路径的指令和代码。</p>
+<p>风险包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">恶意仓库添加Skill<br>Skill伪装成常规工作流<br>Description过宽导致高频触发<br>脚本执行危险命令<br>读取或外传敏感信息<br>诱导调用高权限Tool<br></code></pre></td></tr></table></figure>
+
+<p>因此Skill来源和扫描目录属于信任边界。需要：</p>
+<ul>
+<li>只扫描受信目录；</li>
+<li>审查仓库中的Skill变更；</li>
+<li>限制脚本和Tool权限；</li>
+<li>对外部贡献执行安全审查；</li>
+<li>记录使用的Skill及版本；</li>
+<li>对有副作用能力要求确认；</li>
+<li>不把Description当成安全控制。</li>
+</ul>
+<p>Claude官方特别提醒，挂载仓库中的Skill可能被仓库贡献者修改，并在Session启动时进入Agent可用指令集合，因此挂载仓库本身属于Agent信任边界。</p>
+<hr>
+<h2 id="16-Discovery调试顺序"><a href="#16-Discovery调试顺序" class="headerlink" title="16. Discovery调试顺序"></a>16. Discovery调试顺序</h2><p>当Skill没有按预期触发时，按下面顺序排查：</p>
+<h3 id="第一步：确认宿主发现"><a href="#第一步：确认宿主发现" class="headerlink" title="第一步：确认宿主发现"></a>第一步：确认宿主发现</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">路径是否正确？<br>SKILL.md是否存在且可读？<br>Frontmatter是否合法？<br>Skill是否挂载或附加？<br>目录深度是否符合平台规则？<br></code></pre></td></tr></table></figure>
+
+<h3 id="第二步：确认元数据可见"><a href="#第二步：确认元数据可见" class="headerlink" title="第二步：确认元数据可见"></a>第二步：确认元数据可见</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill Catalog中是否包含该name？<br>description是否是最新版本？<br>是否仍在使用旧Session或缓存版本？<br></code></pre></td></tr></table></figure>
+
+<h3 id="第三步：测试显式调用"><a href="#第三步：测试显式调用" class="headerlink" title="第三步：测试显式调用"></a>第三步：测试显式调用</h3><p>如果显式调用也失败，问题可能在安装、路径、权限或正文加载，而不是语义路由。</p>
+<h3 id="第四步：测试最小隐式请求"><a href="#第四步：测试最小隐式请求" class="headerlink" title="第四步：测试最小隐式请求"></a>第四步：测试最小隐式请求</h3><p>使用最典型、不带噪声的请求。如果仍不触发，说明Description覆盖不足或存在竞争。</p>
+<h3 id="第五步：加入相邻Skill"><a href="#第五步：加入相邻Skill" class="headerlink" title="第五步：加入相邻Skill"></a>第五步：加入相邻Skill</h3><p>单独测试通过后，与完整Skill集合一起测试，检查Coexistence和Trigger Stealing。</p>
+<h3 id="第六步：查看执行Trace"><a href="#第六步：查看执行Trace" class="headerlink" title="第六步：查看执行Trace"></a>第六步：查看执行Trace</h3><p>确认模型是否看到Catalog、是否读取<code>SKILL.md</code>、是否选择另一个Skill、是否因前置条件放弃执行。</p>
+<hr>
+<h2 id="17-Discovery-Eval数据集"><a href="#17-Discovery-Eval数据集" class="headerlink" title="17. Discovery Eval数据集"></a>17. Discovery Eval数据集</h2><p>为每个Skill至少准备四类测试：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Explicit Positive<br>Implicit Positive<br>Contextual Positive<br>Negative / Ambiguous<br></code></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs csv">id,expected_skill,prompt<br>01,scheduler-analysis,&quot;使用scheduler-analysis分析trace.dat&quot;<br>02,scheduler-analysis,&quot;线程被唤醒后很久才获得CPU，帮我分析&quot;<br>03,scheduler-analysis,&quot;API延迟升高，trace显示大量sched_wakeup，但CPU整体不高&quot;<br>04,none,&quot;解释Linux调度器的发展历史&quot;<br>05,performance-triage,&quot;服务变慢，不确定是CPU、内存还是IO&quot;<br>06,trace-validation,&quot;检查这个trace是否包含分析调度延迟所需的事件&quot;<br></code></pre></td></tr></table></figure>
+
+<p>对于多个Skill，不要只使用<code>should_trigger</code>布尔值，可以记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">expected_primary_skill<br>allowed_secondary_skills<br>forbidden_skills<br>expected_order<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;prompt&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;系统变慢，不确定原因；先分诊，若是调度问题再深入分析并生成报告&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected_primary_skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;performance-triage&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;allowed_secondary_skills&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;scheduler-analysis&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;performance-report&quot;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected_order&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;performance-triage&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;scheduler-analysis&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;performance-report&quot;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="18-Discovery评测指标"><a href="#18-Discovery评测指标" class="headerlink" title="18. Discovery评测指标"></a>18. Discovery评测指标</h2><h3 id="18-1-单Skill二分类"><a href="#18-1-单Skill二分类" class="headerlink" title="18.1 单Skill二分类"></a>18.1 单Skill二分类</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Precision = TP / (TP + FP)<br>Recall    = TP / (TP + FN)<br>F1        = 2 × Precision × Recall / (Precision + Recall)<br></code></pre></td></tr></table></figure>
+
+<h3 id="18-2-多Skill分类"><a href="#18-2-多Skill分类" class="headerlink" title="18.2 多Skill分类"></a>18.2 多Skill分类</h3><p>还可以使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs text">Top-1 Accuracy<br>→ 首选Skill是否正确<br><br>Top-k Recall<br>→ 正确Skill是否出现在候选集合<br><br>Confusion Matrix<br>→ 哪些Skill最容易互相混淆<br><br>Exact Match<br>→ 选择的Skill集合是否完全正确<br><br>Order Accuracy<br>→ 多Skill执行顺序是否正确<br></code></pre></td></tr></table></figure>
+
+<h3 id="18-3-Coexistence-Regression"><a href="#18-3-Coexistence-Regression" class="headerlink" title="18.3 Coexistence Regression"></a>18.3 Coexistence Regression</h3><p>新增Skill前后比较：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">原有Skill的触发率是否下降？<br>原有负向请求是否开始误触发？<br>首选Skill是否被新Skill抢走？<br>上下文Token和执行延迟是否增加？<br></code></pre></td></tr></table></figure>
+
+<p>Anthropic官方企业指南明确建议同时进行Skill隔离测试和共存测试，因为新增Skill可能降低其他Skill表现。</p>
+<hr>
+<h2 id="19-改进Discovery的工程策略"><a href="#19-改进Discovery的工程策略" class="headerlink" title="19. 改进Discovery的工程策略"></a>19. 改进Discovery的工程策略</h2><h3 id="19-1-先定义Use-Case，再写Description"><a href="#19-1-先定义Use-Case，再写Description" class="headerlink" title="19.1 先定义Use Case，再写Description"></a>19.1 先定义Use Case，再写Description</h3><p>不要先写一个宽泛名字再寻找用途。应先列出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">正向场景<br>负向场景<br>相邻场景<br>输入类型<br>期望产物<br>工作流阶段<br></code></pre></td></tr></table></figure>
+
+<h3 id="19-2-使用真实用户语言"><a href="#19-2-使用真实用户语言" class="headerlink" title="19.2 使用真实用户语言"></a>19.2 使用真实用户语言</h3><p>Description既要包含领域术语，也要覆盖用户对现象的自然表达。</p>
+<h3 id="19-3-让父子Skill按阶段区分"><a href="#19-3-让父子Skill按阶段区分" class="headerlink" title="19.3 让父子Skill按阶段区分"></a>19.3 让父子Skill按阶段区分</h3><p>不要让父Skill和子Skill使用相同的触发描述。</p>
+<h3 id="19-4-控制Skill粒度"><a href="#19-4-控制Skill粒度" class="headerlink" title="19.4 控制Skill粒度"></a>19.4 控制Skill粒度</h3><p>过大Skill边界模糊，过小Skill导致Catalog拥挤。合理粒度通常对应一个稳定用户目标和一套共同成功标准。</p>
+<h3 id="19-5-每次新增Skill都运行全量Trigger-Eval"><a href="#19-5-每次新增Skill都运行全量Trigger-Eval" class="headerlink" title="19.5 每次新增Skill都运行全量Trigger Eval"></a>19.5 每次新增Skill都运行全量Trigger Eval</h3><p>只测试新Skill自己是不够的。必须检查它是否改变旧Skill的路由行为。</p>
+<h3 id="19-6-记录实际选择行为"><a href="#19-6-记录实际选择行为" class="headerlink" title="19.6 记录实际选择行为"></a>19.6 记录实际选择行为</h3><p>生产环境可记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">request category<br>available skills<br>selected skills<br>skill version<br>explicit or implicit activation<br>execution result<br>user correction<br></code></pre></td></tr></table></figure>
+
+<p>用户说“不要用这个Skill”或“应该用另一个Skill”都是重要的Eval样本。</p>
+<hr>
+<h2 id="20-Performance-Skill-System-Discovery设计"><a href="#20-Performance-Skill-System-Discovery设计" class="headerlink" title="20. Performance Skill System Discovery设计"></a>20. Performance Skill System Discovery设计</h2><p>建议Catalog：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">performance-triage</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Classifies</span> <span class="hljs-string">Linux</span> <span class="hljs-string">runtime</span> <span class="hljs-string">performance</span> <span class="hljs-string">incidents</span> <span class="hljs-string">across</span> <span class="hljs-string">CPU,</span> <span class="hljs-string">scheduler,</span> <span class="hljs-string">memory,</span> <span class="hljs-string">and</span> <span class="hljs-string">IO</span> <span class="hljs-string">using</span> <span class="hljs-string">symptoms</span> <span class="hljs-string">and</span> <span class="hljs-string">available</span> <span class="hljs-string">telemetry.</span> <span class="hljs-string">Use</span> <span class="hljs-string">when</span> <span class="hljs-string">the</span> <span class="hljs-string">bottleneck</span> <span class="hljs-string">subsystem</span> <span class="hljs-string">is</span> <span class="hljs-string">not</span> <span class="hljs-string">yet</span> <span class="hljs-string">known.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">scheduler-analysis</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">execution</span> <span class="hljs-string">delays</span> <span class="hljs-string">using</span> <span class="hljs-string">scheduling</span> <span class="hljs-string">traces</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">telemetry.</span> <span class="hljs-string">Use</span> <span class="hljs-string">after</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">involvement</span> <span class="hljs-string">is</span> <span class="hljs-string">suspected,</span> <span class="hljs-string">including</span> <span class="hljs-string">runnable</span> <span class="hljs-string">latency,</span> <span class="hljs-string">wakeup</span> <span class="hljs-string">delay,</span> <span class="hljs-string">migration,</span> <span class="hljs-string">contention,</span> <span class="hljs-string">affinity,</span> <span class="hljs-string">or</span> <span class="hljs-string">throttling.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">memory-analysis</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">memory</span> <span class="hljs-string">pressure</span> <span class="hljs-string">using</span> <span class="hljs-string">metrics,</span> <span class="hljs-string">kernel</span> <span class="hljs-string">logs,</span> <span class="hljs-string">profiles,</span> <span class="hljs-string">and</span> <span class="hljs-string">traces.</span> <span class="hljs-string">Use</span> <span class="hljs-string">after</span> <span class="hljs-string">memory</span> <span class="hljs-string">involvement</span> <span class="hljs-string">is</span> <span class="hljs-string">suspected,</span> <span class="hljs-string">including</span> <span class="hljs-string">reclaim</span> <span class="hljs-string">stalls,</span> <span class="hljs-string">swapping,</span> <span class="hljs-string">allocation</span> <span class="hljs-string">latency,</span> <span class="hljs-string">slab</span> <span class="hljs-string">growth,</span> <span class="hljs-string">fragmentation,</span> <span class="hljs-string">or</span> <span class="hljs-string">OOM</span> <span class="hljs-string">events.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">io-analysis</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">block</span> <span class="hljs-string">IO</span> <span class="hljs-string">latency</span> <span class="hljs-string">and</span> <span class="hljs-string">throughput</span> <span class="hljs-string">using</span> <span class="hljs-string">device</span> <span class="hljs-string">metrics,</span> <span class="hljs-string">block</span> <span class="hljs-string">traces,</span> <span class="hljs-string">and</span> <span class="hljs-string">IO</span> <span class="hljs-string">profiles.</span> <span class="hljs-string">Use</span> <span class="hljs-string">after</span> <span class="hljs-string">IO</span> <span class="hljs-string">involvement</span> <span class="hljs-string">is</span> <span class="hljs-string">suspected,</span> <span class="hljs-string">including</span> <span class="hljs-string">queueing,</span> <span class="hljs-string">saturation,</span> <span class="hljs-string">high</span> <span class="hljs-string">IO</span> <span class="hljs-string">wait,</span> <span class="hljs-string">slow</span> <span class="hljs-string">requests,</span> <span class="hljs-string">or</span> <span class="hljs-string">throughput</span> <span class="hljs-string">regressions.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">performance-report</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Produces</span> <span class="hljs-string">a</span> <span class="hljs-string">structured</span> <span class="hljs-string">performance</span> <span class="hljs-string">diagnosis</span> <span class="hljs-string">report</span> <span class="hljs-string">from</span> <span class="hljs-string">completed</span> <span class="hljs-string">analysis</span> <span class="hljs-string">evidence.</span> <span class="hljs-string">Use</span> <span class="hljs-string">after</span> <span class="hljs-string">triage</span> <span class="hljs-string">or</span> <span class="hljs-string">subsystem</span> <span class="hljs-string">analysis</span> <span class="hljs-string">has</span> <span class="hljs-string">produced</span> <span class="hljs-string">findings,</span> <span class="hljs-string">confidence,</span> <span class="hljs-string">limitations,</span> <span class="hljs-string">and</span> <span class="hljs-string">recommendations;</span> <span class="hljs-string">do</span> <span class="hljs-string">not</span> <span class="hljs-string">use</span> <span class="hljs-string">as</span> <span class="hljs-string">the</span> <span class="hljs-string">primary</span> <span class="hljs-string">diagnosis</span> <span class="hljs-string">workflow.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<p>这组描述通过“子系统未知”“已怀疑某子系统”“分析已经完成”表达Workflow阶段，使Skill更容易组合而不是互相争抢。</p>
+<hr>
+<h2 id="21-Discovery-Review-Checklist"><a href="#21-Discovery-Review-Checklist" class="headerlink" title="21. Discovery Review Checklist"></a>21. Discovery Review Checklist</h2><h3 id="Host-Discovery"><a href="#Host-Discovery" class="headerlink" title="Host Discovery"></a>Host Discovery</h3><ul>
+<li>Skill是否位于宿主扫描位置？</li>
+<li>目录深度和文件名是否正确？</li>
+<li>Frontmatter是否可解析？</li>
+<li>Skill是否已附加或启用？</li>
+<li>运行环境是否有读取权限？</li>
+</ul>
+<h3 id="Metadata"><a href="#Metadata" class="headerlink" title="Metadata"></a>Metadata</h3><ul>
+<li><code>name</code>是否稳定且具体？</li>
+<li><code>description</code>是否同时包含What和When？</li>
+<li>是否说明输入、目标和必要边界？</li>
+<li>是否覆盖自然语言表达？</li>
+<li>是否避免关键词堆砌？</li>
+</ul>
+<h3 id="Coexistence"><a href="#Coexistence" class="headerlink" title="Coexistence"></a>Coexistence</h3><ul>
+<li>是否与现有Skill高度重叠？</li>
+<li>父子Skill是否按Workflow阶段区分？</li>
+<li>是否可能发生Trigger Stealing？</li>
+<li>新增后是否重新测试全部Skill？</li>
+</ul>
+<h3 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h3><ul>
+<li>是否有显式、隐式和上下文正向样例？</li>
+<li>是否有负向和模糊边界样例？</li>
+<li>是否记录Primary、Secondary和Forbidden Skills？</li>
+<li>是否测试所有计划使用的模型？</li>
+<li>是否保存失败样例用于Regression？</li>
+</ul>
+<h3 id="Security"><a href="#Security" class="headerlink" title="Security"></a>Security</h3><ul>
+<li>Skill来源是否可信？</li>
+<li>扫描目录是否属于受控仓库？</li>
+<li>是否审查脚本和引用文件？</li>
+<li>是否使用最小Tool权限？</li>
+<li>高风险动作是否需要确认和服务端授权？</li>
+</ul>
+<hr>
+<h2 id="22-本章实践"><a href="#22-本章实践" class="headerlink" title="22. 本章实践"></a>22. 本章实践</h2><p>设计一个包含以下Skill的Catalog：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">code-review-triage<br>security-review<br>performance-review<br>review-report<br></code></pre></td></tr></table></figure>
+
+<p>要求：</p>
+<ol>
+<li>为每个Skill编写<code>name</code>和<code>description</code>；</li>
+<li>明确入口Skill、专项Skill和汇总Skill；</li>
+<li>为每个Skill写3条正向请求；</li>
+<li>为每个Skill写3条负向请求；</li>
+<li>写5条容易在安全与性能之间混淆的请求；</li>
+<li>定义首选Skill和允许的后续Skill；</li>
+<li>新增一个<code>general-code-helper</code>后，检查它是否抢占已有触发。</li>
+</ol>
+<p>示例边界请求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">这个循环会不会造成拒绝服务风险？<br></code></pre></td></tr></table></figure>
+
+<p>它既可能涉及性能，也可能涉及安全。需要根据用户目标、证据和预期输出判断首选Skill，而不能只根据“循环”或“拒绝服务”关键词机械路由。</p>
+<hr>
+<h2 id="23-学完检查题"><a href="#23-学完检查题" class="headerlink" title="23. 学完检查题"></a>23. 学完检查题</h2><ol>
+<li>Host Discovery和Model Selection有什么区别？</li>
+<li>文件存在为什么不代表Skill已经可用？</li>
+<li>模型在Discovery阶段通常看到哪些信息？</li>
+<li>为什么Discovery不是关键词匹配？</li>
+<li>什么情况下应选择零个Skill？</li>
+<li>多个Skill同时相关时还需要定义哪些组合规则？</li>
+<li>False Positive和False Negative分别有什么代价？</li>
+<li>什么是Trigger Stealing？</li>
+<li>为什么新增Skill可能让旧Skill退化？</li>
+<li>父级分诊Skill与专项Skill应如何区分？</li>
+<li>显式调用能否绕过安全和权限限制？</li>
+<li>为什么大量Skill会成为上下文工程问题？</li>
+<li>调试不触发问题时，为什么要先确认宿主发现？</li>
+<li>Coexistence Test和Isolation Test有什么区别？</li>
+<li>高风险Skill为什么应优先降低False Positive？</li>
+</ol>
+<hr>
+<h2 id="24-本章总结"><a href="#24-本章总结" class="headerlink" title="24. 本章总结"></a>24. 本章总结</h2><blockquote>
+<p>Skill Discovery包含宿主扫描与模型语义选择两个层次。宿主负责找到、验证并暴露Skill元数据，模型再根据用户目标、任务对象、输入、输出和工作流阶段选择零个、一个或多个Skill。Discovery质量是整个Skill集合的属性：新增一个描述过宽的Skill，可能抢走已有Skill的触发。因此，Skill不仅要单独测试，还必须进行共存测试、负向测试和全量回归。</p>
+</blockquote>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI：Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI：Skills如何激活</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/blog/eval-skills">OpenAI：系统化测试Agent Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Claude：Agent Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Claude：Skill编写最佳实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/managed-agents/skills">Claude：Managed Agents Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Claude：Skills for Enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+        <a href="/tags/Discovery/" class="print-no-link">#Discovery</a>
+      
+        <a href="/tags/Evaluation/" class="print-no-link">#Evaluation</a>
+      
+        <a href="/tags/Routing/" class="print-no-link">#Routing</a>
+      
+        <a href="/tags/Trigger/" class="print-no-link">#Trigger</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Skill Discovery：模型如何知道该用哪个Skill</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/06-Skill-Discovery-模型如何选择Skill/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/07-Progressive-Disclosure-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AC%A1%E5%8A%A0%E8%BD%BD%E5%85%A8%E9%83%A8%E5%86%85%E5%AE%B9/" title="Progressive Disclosure：为什么不能一次加载全部内容">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Progressive Disclosure：为什么不能一次加载全部内容</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/08-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%A8%B3%E5%AE%9A%E7%9A%84Workflow/" title="如何设计一个稳定的Workflow">
+                        <span class="hidden-mobile">如何设计一个稳定的Workflow</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

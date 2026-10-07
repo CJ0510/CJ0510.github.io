@@ -1,0 +1,1241 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第7章：Progressive Disclosure——为什么不能一次加载全部内容1. 本章目标本章解决以下问题： 1234567Progressive Disclosure到底是什么？为什么不能在启动时加载全部Skill内容？三级加载模型分别放什么？SKILL.md为什么应该是导航和工作流主干？什么时候读取Reference，什么时候执行Script？懒加载如何失败？怎样评测上下文加载是否合理？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Progressive Disclosure：为什么不能一次加载全部内容">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/07-Progressive-Disclosure-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E4%B8%80%E6%AC%A1%E5%8A%A0%E8%BD%BD%E5%85%A8%E9%83%A8%E5%86%85%E5%AE%B9/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第7章：Progressive Disclosure——为什么不能一次加载全部内容1. 本章目标本章解决以下问题： 1234567Progressive Disclosure到底是什么？为什么不能在启动时加载全部Skill内容？三级加载模型分别放什么？SKILL.md为什么应该是导航和工作流主干？什么时候读取Reference，什么时候执行Script？懒加载如何失败？怎样评测上下文加载是否合理？">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T03:49:12.280Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Context Engineering">
+<meta property="article:tag" content="Progressive Disclosure">
+<meta property="article:tag" content="SKILL.md">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="Token">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Progressive Disclosure：为什么不能一次加载全部内容 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Progressive Disclosure：为什么不能一次加载全部内容</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          98 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Progressive Disclosure：为什么不能一次加载全部内容</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第7章：Progressive-Disclosure——为什么不能一次加载全部内容"><a href="#第7章：Progressive-Disclosure——为什么不能一次加载全部内容" class="headerlink" title="第7章：Progressive Disclosure——为什么不能一次加载全部内容"></a>第7章：Progressive Disclosure——为什么不能一次加载全部内容</h1><h2 id="1-本章目标"><a href="#1-本章目标" class="headerlink" title="1. 本章目标"></a>1. 本章目标</h2><p>本章解决以下问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Progressive Disclosure到底是什么？<br>为什么不能在启动时加载全部Skill内容？<br>三级加载模型分别放什么？<br>SKILL.md为什么应该是导航和工作流主干？<br>什么时候读取Reference，什么时候执行Script？<br>懒加载如何失败？<br>怎样评测上下文加载是否合理？<br></code></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>Progressive Disclosure不是单纯的Token优化技巧，而是一种信息架构：在决策所需的最早时刻，只提供完成当前决策所必需的信息。</p>
+</blockquote>
+<hr>
+<h2 id="2-为什么一次加载全部内容不可行"><a href="#2-为什么一次加载全部内容不可行" class="headerlink" title="2. 为什么一次加载全部内容不可行"></a>2. 为什么一次加载全部内容不可行</h2><p>假设一个Agent安装了50个Skill，每个Skill包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md              3,000 tokens<br>references/          20,000 tokens<br>examples/            10,000 tokens<br>scripts和说明         5,000 tokens<br></code></pre></td></tr></table></figure>
+
+<p>如果每次请求都全部加载：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">50 × 38,000 = 1,900,000 tokens<br></code></pre></td></tr></table></figure>
+
+<p>即使上下文窗口能够容纳，也会产生严重问题：</p>
+<ul>
+<li>成本显著增加；</li>
+<li>首Token延迟增大；</li>
+<li>无关信息稀释任务重点；</li>
+<li>相互冲突的规则更容易进入上下文；</li>
+<li>模型更难定位真正相关内容；</li>
+<li>旧资料和示例更容易影响结果；</li>
+<li>更多敏感内容暴露给当前任务；</li>
+<li>调试时难以解释某条信息为何出现。</li>
+</ul>
+<p>因此真正的问题不是“能否塞进去”，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">当前决策真的需要这些信息吗？<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-Progressive-Disclosure的定义"><a href="#3-Progressive-Disclosure的定义" class="headerlink" title="3. Progressive Disclosure的定义"></a>3. Progressive Disclosure的定义</h2><p>Progressive Disclosure可以翻译为渐进式披露、渐进加载或按需展开。其基本思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">先提供最少的路由信息<br>        ↓<br>确认相关后加载核心工作流<br>        ↓<br>执行到具体分支时再加载专业资料<br>        ↓<br>需要确定性操作时执行脚本<br>        ↓<br>只把必要结果保留在活动上下文<br></code></pre></td></tr></table></figure>
+
+<p>Claude官方将Agent Skills的加载分成三个层次：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Level 1：Metadata，启动时可见<br>Level 2：Instructions，Skill触发后加载<br>Level 3+：Resources and code，执行中按需访问<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI Skill机制也采用类似思想：Discovery阶段先暴露<code>name</code>、<code>description</code>和路径，模型选择Skill后再读取完整指令和Supporting Files。</p>
+<hr>
+<h2 id="4-三级加载模型"><a href="#4-三级加载模型" class="headerlink" title="4. 三级加载模型"></a>4. 三级加载模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">┌───────────────────────────────────────┐<br>│ Level 1：Metadata                     │<br>│ name + description + identifier/path  │<br>│ 目的：发现与路由                       │<br>└───────────────────┬───────────────────┘<br>                    ↓ Skill相关<br>┌───────────────────────────────────────┐<br>│ Level 2：SKILL.md Body                │<br>│ workflow + routing + constraints       │<br>│ 目的：理解如何完成任务                  │<br>└───────────────────┬───────────────────┘<br>                    ↓ 当前分支需要<br>┌───────────────────────────────────────┐<br>│ Level 3+：Supporting Resources        │<br>│ references + scripts + assets          │<br>│ 目的：补充知识、执行计算、生成产物        │<br>└───────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<p>这三个层级不是按文件大小机械划分，而是按“什么时候需要”划分。</p>
+<hr>
+<h2 id="5-Level-1：Metadata用于路由"><a href="#5-Level-1：Metadata用于路由" class="headerlink" title="5. Level 1：Metadata用于路由"></a>5. Level 1：Metadata用于路由</h2><p>Level 1通常包含：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">scheduler-analysis</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Diagnoses</span> <span class="hljs-string">Linux</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">execution</span> <span class="hljs-string">delays</span> <span class="hljs-string">using</span> <span class="hljs-string">scheduling</span> <span class="hljs-string">traces</span> <span class="hljs-string">and</span> <span class="hljs-string">CPU</span> <span class="hljs-string">telemetry.</span> <span class="hljs-string">Use</span> <span class="hljs-string">for</span> <span class="hljs-string">runnable</span> <span class="hljs-string">latency,</span> <span class="hljs-string">wakeup</span> <span class="hljs-string">delay,</span> <span class="hljs-string">task</span> <span class="hljs-string">migration,</span> <span class="hljs-string">contention,</span> <span class="hljs-string">affinity,</span> <span class="hljs-string">or</span> <span class="hljs-string">throttling.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<p>这一层只需要帮助模型回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">这个Skill与当前请求有关吗？<br></code></pre></td></tr></table></figure>
+
+<p>不应该在Metadata中包含：</p>
+<ul>
+<li>完整执行步骤；</li>
+<li>大段背景知识；</li>
+<li>脚本源码；</li>
+<li>全部输出模板；</li>
+<li>详细API文档；</li>
+<li>大量示例。</li>
+</ul>
+<p>Level 1的设计目标是高信息密度：用较少Token表达能力、对象、触发条件和必要边界。</p>
+<h3 id="Level-1过短"><a href="#Level-1过短" class="headerlink" title="Level 1过短"></a>Level 1过短</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">Helps</span> <span class="hljs-string">with</span> <span class="hljs-string">performance.</span><br></code></pre></td></tr></table></figure>
+
+<p>无法可靠路由。</p>
+<h3 id="Level-1过长"><a href="#Level-1过长" class="headerlink" title="Level 1过长"></a>Level 1过长</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">description:</span> <span class="hljs-string">First</span> <span class="hljs-string">validate</span> <span class="hljs-string">the</span> <span class="hljs-string">trace,</span> <span class="hljs-string">then</span> <span class="hljs-string">inspect</span> <span class="hljs-string">sched_switch...</span><br></code></pre></td></tr></table></figure>
+
+<p>把Workflow塞进所有请求都会看到的元数据，违背渐进加载原则。</p>
+<hr>
+<h2 id="6-Level-2：SKILL-md用于理解Workflow"><a href="#6-Level-2：SKILL-md用于理解Workflow" class="headerlink" title="6. Level 2：SKILL.md用于理解Workflow"></a>6. Level 2：<code>SKILL.md</code>用于理解Workflow</h2><p>Skill触发后，Agent读取主文件。Level 2需要回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">任务目标是什么？<br>输入前置条件是什么？<br>核心步骤是什么？<br>有哪些分支？<br>何时读取哪个Reference？<br>何时执行哪个Script？<br>失败时如何处理？<br>最终如何验证？<br></code></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Scheduler Analysis</span><br><br><span class="hljs-section">## Preconditions</span><br><br>Confirm the trace contains scheduler events and identify the<br>affected time range.<br><br><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Validate trace readability and required events.<br><span class="hljs-bullet">2.</span> Identify affected tasks and CPUs.<br><span class="hljs-bullet">3.</span> Calculate runnable latency.<br><span class="hljs-bullet">4.</span> Classify delay patterns.<br><span class="hljs-bullet">5.</span> Correlate with CPU utilization and throttling.<br><span class="hljs-bullet">6.</span> Produce an evidence-based diagnosis.<br><br><span class="hljs-section">## Resource routing</span><br><br><span class="hljs-bullet">-</span> For event semantics, read <span class="hljs-code">`references/events.md`</span>.<br><span class="hljs-bullet">-</span> For runnable latency rules, read <span class="hljs-code">`references/runnable-latency.md`</span>.<br><span class="hljs-bullet">-</span> For cgroup throttling, read <span class="hljs-code">`references/throttling.md`</span>.<br><br><span class="hljs-section">## Script routing</span><br><br><span class="hljs-bullet">-</span> Validate input: <span class="hljs-code">`python scripts/validate_trace.py &lt;trace&gt;`</span><br><span class="hljs-bullet">-</span> Calculate latency: <span class="hljs-code">`python scripts/calc_latency.py &lt;trace&gt;`</span><br><br><span class="hljs-section">## Final check</span><br><br><span class="hljs-bullet">-</span> Do not infer values missing from the trace.<br><span class="hljs-bullet">-</span> Every root-cause claim must cite evidence.<br></code></pre></td></tr></table></figure>
+
+<p>主文件没有包含全部事件字段、计算程序或案例，但读取一次后可以理解完整执行骨架。</p>
+<hr>
+<h2 id="7-Level-3：Reference按分支加载"><a href="#7-Level-3：Reference按分支加载" class="headerlink" title="7. Level 3：Reference按分支加载"></a>7. Level 3：Reference按分支加载</h2><p>假设性能Skill包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">references/<br>├── scheduler.md<br>├── memory.md<br>├── io.md<br>├── network.md<br>└── confidence-policy.md<br></code></pre></td></tr></table></figure>
+
+<p>用户问题是内存回收抖动时，理想加载路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  ↓<br>references/memory.md<br>  ↓<br>references/confidence-policy.md<br></code></pre></td></tr></table></figure>
+
+<p>而不是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  ↓<br>一次读取scheduler + memory + io + network + 全部案例<br></code></pre></td></tr></table></figure>
+
+<p>按需加载的关键不只是“把文件拆开”，还必须在<code>SKILL.md</code>中提供清晰路由：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> If reclaim, swap, allocation, slab, or OOM evidence is present,<br>  read <span class="hljs-code">`references/memory.md`</span>.<br><span class="hljs-bullet">-</span> If block latency, IO wait, queueing, or device saturation is present,<br>  read <span class="hljs-code">`references/io.md`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>只有文件，没有路由条件，并不能自动形成Progressive Disclosure。</p>
+<hr>
+<h2 id="8-Script为什么能节省上下文"><a href="#8-Script为什么能节省上下文" class="headerlink" title="8. Script为什么能节省上下文"></a>8. Script为什么能节省上下文</h2><p>脚本与Reference的加载行为不同：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Reference<br>→ 内容需要进入上下文，供模型理解和推理<br><br>Script<br>→ 在执行环境中运行，通常只把输出返回上下文<br></code></pre></td></tr></table></figure>
+
+<p>例如计算10万个延迟值的百分位：</p>
+<h3 id="错误方法"><a href="#错误方法" class="headerlink" title="错误方法"></a>错误方法</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">把10万个数加载到上下文<br>让模型生成或模拟计算<br></code></pre></td></tr></table></figure>
+
+<h3 id="正确方法"><a href="#正确方法" class="headerlink" title="正确方法"></a>正确方法</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">scripts/calc_percentiles.py读取文件<br>        ↓<br>确定性计算P50/P95/P99/Max<br>        ↓<br>返回几行JSON结果<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">100000</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;p50_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3.2</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;p95_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">18.7</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;p99_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">84.1</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;max_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">513.4</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>Claude官方说明，在其Skill执行架构中，脚本可通过执行环境运行，通常只有输出进入上下文，而不必把脚本源码和全部原始数据放入活动上下文。</p>
+<p>但这不意味着脚本不需要安全审查。脚本仍会在运行环境中执行，并可能访问文件、网络、凭证或工具。</p>
+<hr>
+<h2 id="9-Asset是否需要进入上下文"><a href="#9-Asset是否需要进入上下文" class="headerlink" title="9. Asset是否需要进入上下文"></a>9. Asset是否需要进入上下文</h2><p>Asset的处理方式取决于用途。</p>
+<h3 id="9-1-需要模型理解的模板"><a href="#9-1-需要模型理解的模板" class="headerlink" title="9.1 需要模型理解的模板"></a>9.1 需要模型理解的模板</h3><p>例如Markdown报告模板：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">assets/report-template.md<br></code></pre></td></tr></table></figure>
+
+<p>模型通常需要读取其结构，然后生成报告。</p>
+<h3 id="9-2-由程序直接使用的资源"><a href="#9-2-由程序直接使用的资源" class="headerlink" title="9.2 由程序直接使用的资源"></a>9.2 由程序直接使用的资源</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">assets/report.schema.json<br>assets/theme.json<br>assets/logo.png<br></code></pre></td></tr></table></figure>
+
+<p>如果脚本可以直接消费这些资源，模型未必需要读取全部内容。</p>
+<h3 id="9-3-判断原则"><a href="#9-3-判断原则" class="headerlink" title="9.3 判断原则"></a>9.3 判断原则</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">模型需要理解内容才能决策？<br>→ 读取到上下文<br><br>程序可以直接使用？<br>→ 让脚本处理，只返回必要结果<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="10-上下文不是无限的公共内存"><a href="#10-上下文不是无限的公共内存" class="headerlink" title="10. 上下文不是无限的公共内存"></a>10. 上下文不是无限的公共内存</h2><p>活动上下文通常还包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">System Prompt<br>Developer / Project Instructions<br>Conversation History<br>User Request<br>Skill Metadata Catalog<br>Loaded SKILL.md<br>Loaded References<br>Tool Definitions<br>Tool Results<br>Intermediate Reasoning State<br>Final Output Budget<br></code></pre></td></tr></table></figure>
+
+<p>因此某个Skill多占用的Token，会挤压其他信息空间。Anthropic官方把上下文称为一种共享公共资源：Skill正文一旦加载，就会与对话历史、用户请求和其他信息竞争注意力。</p>
+<p>Progressive Disclosure的目标不仅是减少总Token，还包括：</p>
+<ul>
+<li>提高相关信息比例；</li>
+<li>降低相互干扰；</li>
+<li>保留长任务中的历史状态；</li>
+<li>为Tool结果和最终输出留出空间；</li>
+<li>让关键规则更显眼。</li>
+</ul>
+<hr>
+<h2 id="11-信息应该放在哪一层"><a href="#11-信息应该放在哪一层" class="headerlink" title="11. 信息应该放在哪一层"></a>11. 信息应该放在哪一层</h2><h3 id="Level-1：Metadata"><a href="#Level-1：Metadata" class="headerlink" title="Level 1：Metadata"></a>Level 1：Metadata</h3><p>适合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill身份<br>能力摘要<br>触发条件<br>必要的排除边界<br></code></pre></td></tr></table></figure>
+
+<h3 id="Level-2：SKILL-md"><a href="#Level-2：SKILL-md" class="headerlink" title="Level 2：SKILL.md"></a>Level 2：<code>SKILL.md</code></h3><p>适合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">核心Workflow<br>Preconditions<br>输入输出契约<br>分支入口<br>资源路由<br>关键安全规则<br>失败行为<br>Final Check<br></code></pre></td></tr></table></figure>
+
+<h3 id="Level-3：References"><a href="#Level-3：References" class="headerlink" title="Level 3：References"></a>Level 3：References</h3><p>适合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">领域知识<br>API说明<br>Schema<br>规范<br>详细示例<br>平台差异<br>特定分支规则<br></code></pre></td></tr></table></figure>
+
+<h3 id="Level-3：Scripts"><a href="#Level-3：Scripts" class="headerlink" title="Level 3：Scripts"></a>Level 3：Scripts</h3><p>适合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">精确计算<br>稳定解析<br>批量转换<br>结构校验<br>重复机械操作<br></code></pre></td></tr></table></figure>
+
+<h3 id="Level-3：Assets"><a href="#Level-3：Assets" class="headerlink" title="Level 3：Assets"></a>Level 3：Assets</h3><p>适合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">模板<br>JSON Schema<br>主题<br>配置样例<br>固定素材<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="12-一个内容分层决策树"><a href="#12-一个内容分层决策树" class="headerlink" title="12. 一个内容分层决策树"></a>12. 一个内容分层决策树</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">发现Skill时必须看到吗？<br>├── 是 → Metadata<br>└── 否<br>     ↓<br>Skill一旦触发，每次执行都必须知道吗？<br>├── 是 → SKILL.md<br>└── 否<br>     ↓<br>只对某个领域或分支有用吗？<br>├── 是 → Reference<br>└── 否<br>     ↓<br>属于确定性计算或机械处理吗？<br>├── 是 → Script<br>└── 否<br>     ↓<br>属于模板、Schema或生成资源吗？<br>├── 是 → Asset<br>└── 否 → 重新评估是否需要包含<br></code></pre></td></tr></table></figure>
+
+<p>判断的核心不是内容长度，而是最早需要它的决策阶段。</p>
+<hr>
+<h2 id="13-Progressive-Disclosure不是“所有内容都拆出去”"><a href="#13-Progressive-Disclosure不是“所有内容都拆出去”" class="headerlink" title="13. Progressive Disclosure不是“所有内容都拆出去”"></a>13. Progressive Disclosure不是“所有内容都拆出去”</h2><p>一个常见误区是把主文件拆得只剩目录：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Performance Analysis</span><br><br>See <span class="hljs-code">`references/start.md`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>然后：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">start.md<br>  → workflow.md<br>       → routing.md<br>            → scheduler/index.md<br></code></pre></td></tr></table></figure>
+
+<p>这会造成：</p>
+<ul>
+<li>Agent不知道主流程；</li>
+<li>每一步都需要额外读取；</li>
+<li>深层文件可能只被预览而非完整读取；</li>
+<li>关键规则容易漏掉；</li>
+<li>执行路径难以审查。</li>
+</ul>
+<p>正确做法是：</p>
+<blockquote>
+<p><code>SKILL.md</code>保留完整Workflow Spine，只把条件性细节拆出去。</p>
+</blockquote>
+<p>Anthropic官方建议尽量让关键Reference直接由<code>SKILL.md</code>引用，避免深层引用链。</p>
+<hr>
+<h2 id="14-Reference路由的三种模式"><a href="#14-Reference路由的三种模式" class="headerlink" title="14. Reference路由的三种模式"></a>14. Reference路由的三种模式</h2><h3 id="14-1-按领域路由"><a href="#14-1-按领域路由" class="headerlink" title="14.1 按领域路由"></a>14.1 按领域路由</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Finance metrics: <span class="hljs-code">`references/finance.md`</span><br><span class="hljs-bullet">-</span> Sales pipeline: <span class="hljs-code">`references/sales.md`</span><br><span class="hljs-bullet">-</span> Product usage: <span class="hljs-code">`references/product.md`</span><br></code></pre></td></tr></table></figure>
+
+<p>适合数据库、业务分析和多领域知识。</p>
+<h3 id="14-2-按任务阶段路由"><a href="#14-2-按任务阶段路由" class="headerlink" title="14.2 按任务阶段路由"></a>14.2 按任务阶段路由</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Before planning: <span class="hljs-code">`references/requirements.md`</span><br><span class="hljs-bullet">-</span> During implementation: <span class="hljs-code">`references/coding-rules.md`</span><br><span class="hljs-bullet">-</span> Before delivery: <span class="hljs-code">`references/release-checklist.md`</span><br></code></pre></td></tr></table></figure>
+
+<p>适合开发、发布和迁移工作流。</p>
+<h3 id="14-3-按复杂度路由"><a href="#14-3-按复杂度路由" class="headerlink" title="14.3 按复杂度路由"></a>14.3 按复杂度路由</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Basic extraction: follow SKILL.md directly.<br><span class="hljs-bullet">-</span> Form filling: read <span class="hljs-code">`references/forms.md`</span>.<br><span class="hljs-bullet">-</span> OCR fallback: read <span class="hljs-code">`references/ocr.md`</span>.<br><span class="hljs-bullet">-</span> Signed PDF handling: read <span class="hljs-code">`references/signatures.md`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>适合从简单路径逐步升级的任务。</p>
+<hr>
+<h2 id="15-好的资源路由语句"><a href="#15-好的资源路由语句" class="headerlink" title="15. 好的资源路由语句"></a>15. 好的资源路由语句</h2><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">More information is available in <span class="hljs-code">`references/`</span>.<br></code></pre></td></tr></table></figure>
+
+<p>模型不知道读哪个文件、何时读、读完做什么。</p>
+<p>也不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read all reference files before starting.<br></code></pre></td></tr></table></figure>
+
+<p>这直接破坏按需加载。</p>
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If the trace includes reclaim or swap activity and the latency window<br>overlaps memory pressure, read <span class="hljs-code">`references/memory.md`</span> before forming a<br>root-cause hypothesis.<br></code></pre></td></tr></table></figure>
+
+<p>一个好的路由语句包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Condition<br>Resource<br>Purpose<br>Timing<br></code></pre></td></tr></table></figure>
+
+<p>即：什么条件、读取什么、为了什么、在什么时候读取。</p>
+<hr>
+<h2 id="16-文件命名会影响按需发现"><a href="#16-文件命名会影响按需发现" class="headerlink" title="16. 文件命名会影响按需发现"></a>16. 文件命名会影响按需发现</h2><p>比较：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">不推荐：<br>docs/file1.md<br>docs/file2.md<br>docs/file3.md<br><br>推荐：<br>references/scheduler-events.md<br>references/memory-reclaim.md<br>references/io-latency.md<br></code></pre></td></tr></table></figure>
+
+<p>文件名本身是导航信号。描述性名称有助于Agent选择正确资源，也有利于人类审查和维护。</p>
+<p>较长Reference应提供目录：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Memory Analysis Reference</span><br><br><span class="hljs-section">## Contents</span><br><br><span class="hljs-bullet">-</span> Reclaim<br><span class="hljs-bullet">-</span> Swap<br><span class="hljs-bullet">-</span> Allocation stalls<br><span class="hljs-bullet">-</span> Slab growth<br><span class="hljs-bullet">-</span> Fragmentation<br><span class="hljs-bullet">-</span> OOM<br><span class="hljs-bullet">-</span> Common false positives<br></code></pre></td></tr></table></figure>
+
+<p>这样即使Agent先读取文件开头，也能知道完整内容范围。</p>
+<hr>
+<h2 id="17-懒加载的常见失败模式"><a href="#17-懒加载的常见失败模式" class="headerlink" title="17. 懒加载的常见失败模式"></a>17. 懒加载的常见失败模式</h2><h3 id="17-1-漏读关键资源"><a href="#17-1-漏读关键资源" class="headerlink" title="17.1 漏读关键资源"></a>17.1 漏读关键资源</h3><p>原因：</p>
+<ul>
+<li><code>SKILL.md</code>没有明确引用；</li>
+<li>路由条件太模糊；</li>
+<li>文件名难以理解；</li>
+<li>引用链过深；</li>
+<li>Agent误判当前分支。</li>
+</ul>
+<p>结果是Skill触发了，但缺少完成任务所需的领域知识。</p>
+<h3 id="17-2-过度加载"><a href="#17-2-过度加载" class="headerlink" title="17.2 过度加载"></a>17.2 过度加载</h3><p>原因：</p>
+<ul>
+<li>指令要求先读所有文件；</li>
+<li>所有规则塞进一个巨大Reference；</li>
+<li>分支条件重叠；</li>
+<li>Agent为了“保险”扫描整个目录。</li>
+</ul>
+<p>结果是Token成本、噪声和冲突重新上升。</p>
+<h3 id="17-3-加载太晚"><a href="#17-3-加载太晚" class="headerlink" title="17.3 加载太晚"></a>17.3 加载太晚</h3><p>Agent先形成结论，再读取证据规则或规范，产生确认偏差。</p>
+<p>解决方法是在路由中明确时机：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Before forming a root-cause hypothesis, read...<br></code></pre></td></tr></table></figure>
+
+<h3 id="17-4-加载太早"><a href="#17-4-加载太早" class="headerlink" title="17.4 加载太早"></a>17.4 加载太早</h3><p>任务尚未分类就读取所有领域资料。应先用主Workflow完成分诊，再加载对应分支。</p>
+<h3 id="17-5-读取脚本源码而不是执行脚本"><a href="#17-5-读取脚本源码而不是执行脚本" class="headerlink" title="17.5 读取脚本源码而不是执行脚本"></a>17.5 读取脚本源码而不是执行脚本</h3><p>如果目的是获得计算结果，应明确写<code>Run</code>而不是<code>Read</code>：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run <span class="hljs-code">`scripts/validate.py`</span> to validate the report.<br></code></pre></td></tr></table></figure>
+
+<p>如果目的是理解算法，才写：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read <span class="hljs-code">`scripts/validate.py`</span> only when reviewing the validation logic.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="18-Context-Pollution：上下文污染"><a href="#18-Context-Pollution：上下文污染" class="headerlink" title="18. Context Pollution：上下文污染"></a>18. Context Pollution：上下文污染</h2><p>上下文污染是指无关、过时、冲突或低质量内容进入当前活动上下文，并影响后续判断。</p>
+<p>典型来源：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">与当前分支无关的Reference<br>过时API示例<br>彼此冲突的平台说明<br>大量相似案例<br>未标明来源的Tool输出<br>历史任务残留信息<br>恶意外部文档指令<br></code></pre></td></tr></table></figure>
+
+<p>后果可能包括：</p>
+<ul>
+<li>把示例值当成真实值；</li>
+<li>使用错误平台API；</li>
+<li>采用旧版流程；</li>
+<li>混淆事实与模板；</li>
+<li>忽略当前用户要求；</li>
+<li>受到Prompt Injection影响。</li>
+</ul>
+<p>Progressive Disclosure通过减少无关内容暴露降低污染面，但不能替代来源审查、指令优先级和安全隔离。</p>
+<hr>
+<h2 id="19-Context-Compaction与信息保真"><a href="#19-Context-Compaction与信息保真" class="headerlink" title="19. Context Compaction与信息保真"></a>19. Context Compaction与信息保真</h2><p>长任务中，宿主可能压缩较早的对话或工具结果。此时需要区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">原始大数据<br>→ 保留在文件或外部存储<br><br>确定性中间结果<br>→ 保存为结构化artifact<br><br>活动上下文<br>→ 只保留摘要、证据索引和下一步状态<br></code></pre></td></tr></table></figure>
+
+<p>例如性能分析：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">原始trace.dat<br>→ 文件系统保存<br><br>latency-results.json<br>→ 脚本生成的结构化结果<br><br>上下文<br>→ “P99 runnable latency 84.1 ms，异常集中于CPU 3/4”<br></code></pre></td></tr></table></figure>
+
+<p>不要把原始数据的唯一副本寄托在对话上下文里。</p>
+<hr>
+<h2 id="20-Progressive-Disclosure与安全"><a href="#20-Progressive-Disclosure与安全" class="headerlink" title="20. Progressive Disclosure与安全"></a>20. Progressive Disclosure与安全</h2><p>按需加载可以减少敏感信息的无关暴露：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">当前任务不需要客户数据<br>→ 不读取客户Reference<br><br>当前任务不需要部署凭证<br>→ 不挂载或不访问相关Secret<br></code></pre></td></tr></table></figure>
+
+<p>但它不是权限系统。Agent仍可能主动读取可访问文件，因此还必须使用：</p>
+<ul>
+<li>文件系统权限；</li>
+<li>Tool Allowlist；</li>
+<li>MCP权限策略；</li>
+<li>Secret Store；</li>
+<li>网络隔离；</li>
+<li>沙箱；</li>
+<li>用户确认；</li>
+<li>审计日志。</li>
+</ul>
+<p>Claude官方建议把Skill视为安装软件来审查：不仅检查<code>SKILL.md</code>，还要检查脚本、资源、网络调用、外部依赖和文件访问范围。</p>
+<hr>
+<h2 id="21-如何评测Progressive-Disclosure"><a href="#21-如何评测Progressive-Disclosure" class="headerlink" title="21. 如何评测Progressive Disclosure"></a>21. 如何评测Progressive Disclosure</h2><p>不能只检查最终答案，还要观察资源访问路径。</p>
+<h3 id="21-1-必需资源召回"><a href="#21-1-必需资源召回" class="headerlink" title="21.1 必需资源召回"></a>21.1 必需资源召回</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">任务需要memory.md<br>→ 是否读取了memory.md？<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-2-无关资源加载率"><a href="#21-2-无关资源加载率" class="headerlink" title="21.2 无关资源加载率"></a>21.2 无关资源加载率</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">任务只涉及内存<br>→ 是否错误读取scheduler.md和io.md？<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-3-加载时机"><a href="#21-3-加载时机" class="headerlink" title="21.3 加载时机"></a>21.3 加载时机</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">是否在形成结论前读取证据规则？<br>是否在分诊完成前加载全部分支？<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-4-Context-Cost"><a href="#21-4-Context-Cost" class="headerlink" title="21.4 Context Cost"></a>21.4 Context Cost</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Loaded metadata tokens<br>Loaded SKILL.md tokens<br>Loaded reference tokens<br>Tool result tokens<br>Total context tokens<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-5-行为质量"><a href="#21-5-行为质量" class="headerlink" title="21.5 行为质量"></a>21.5 行为质量</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">减少加载后是否漏掉关键规则？<br>拆分后是否降低输出质量？<br>脚本化后结果是否更稳定？<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-6-路径稳定性"><a href="#21-6-路径稳定性" class="headerlink" title="21.6 路径稳定性"></a>21.6 路径稳定性</h3><p>同类请求是否能稳定读取相同的必要资源，而不是每次随机探索不同文件？</p>
+<hr>
+<h2 id="22-Progressive-Disclosure-Eval示例"><a href="#22-Progressive-Disclosure-Eval示例" class="headerlink" title="22. Progressive Disclosure Eval示例"></a>22. Progressive Disclosure Eval示例</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;分析这段trace中的内存回收延迟&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expected_skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;performance-analysis&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;required_resources&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;references/memory.md&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;references/confidence-policy.md&quot;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;forbidden_resources&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;references/io.md&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;references/network.md&quot;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;required_scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;scripts/validate_trace.py&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;scripts/calc_reclaim_latency.py&quot;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;forbidden_behaviors&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;read_all_references&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-string">&quot;infer_missing_latency&quot;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>评测不能只要求“答对”，还应检查：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">读了什么<br>为什么读<br>什么时候读<br>运行了什么<br>是否加载无关内容<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="23-重构超长SKILL-md"><a href="#23-重构超长SKILL-md" class="headerlink" title="23. 重构超长SKILL.md"></a>23. 重构超长<code>SKILL.md</code></h2><p>假设原文件包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">200行核心Workflow<br>400行调度知识<br>500行内存知识<br>300行IO知识<br>200行API文档<br>100行模板<br>300行示例<br></code></pre></td></tr></table></figure>
+
+<p>重构步骤：</p>
+<h3 id="第一步：保留Workflow-Spine"><a href="#第一步：保留Workflow-Spine" class="headerlink" title="第一步：保留Workflow Spine"></a>第一步：保留Workflow Spine</h3><p>在<code>SKILL.md</code>中保留：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Purpose<br>Preconditions<br>Main Workflow<br>Branch Conditions<br>Resource Routing<br>Failure Handling<br>Output Contract<br>Final Check<br></code></pre></td></tr></table></figure>
+
+<h3 id="第二步：按独立访问模式拆Reference"><a href="#第二步：按独立访问模式拆Reference" class="headerlink" title="第二步：按独立访问模式拆Reference"></a>第二步：按独立访问模式拆Reference</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">references/scheduler.md<br>references/memory.md<br>references/io.md<br>references/api.md<br></code></pre></td></tr></table></figure>
+
+<h3 id="第三步：把产物模板移到Asset"><a href="#第三步：把产物模板移到Asset" class="headerlink" title="第三步：把产物模板移到Asset"></a>第三步：把产物模板移到Asset</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">assets/report-template.md<br></code></pre></td></tr></table></figure>
+
+<h3 id="第四步：把稳定操作移到Script"><a href="#第四步：把稳定操作移到Script" class="headerlink" title="第四步：把稳定操作移到Script"></a>第四步：把稳定操作移到Script</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">scripts/validate_input.py<br>scripts/calculate_metrics.py<br>scripts/validate_output.py<br></code></pre></td></tr></table></figure>
+
+<h3 id="第五步：在主文件中加入明确路由"><a href="#第五步：在主文件中加入明确路由" class="headerlink" title="第五步：在主文件中加入明确路由"></a>第五步：在主文件中加入明确路由</h3><p>每个Resource写清Condition、Purpose和Timing。</p>
+<h3 id="第六步：运行访问路径Eval"><a href="#第六步：运行访问路径Eval" class="headerlink" title="第六步：运行访问路径Eval"></a>第六步：运行访问路径Eval</h3><p>确认拆分后没有漏读关键规则，也没有重新变成“全部读取”。</p>
+<hr>
+<h2 id="24-Performance-Analysis-Skill示例"><a href="#24-Performance-Analysis-Skill示例" class="headerlink" title="24. Performance Analysis Skill示例"></a>24. Performance Analysis Skill示例</h2><p>目录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis/<br>├── SKILL.md<br>├── references/<br>│   ├── scheduler.md<br>│   ├── memory.md<br>│   ├── io.md<br>│   ├── network.md<br>│   └── confidence-policy.md<br>├── scripts/<br>│   ├── validate_trace.py<br>│   ├── calc_sched_latency.py<br>│   ├── calc_reclaim_latency.py<br>│   └── validate_report.py<br>└── assets/<br>    ├── report-template.md<br>    └── report.schema.json<br></code></pre></td></tr></table></figure>
+
+<p>加载路径一：调度问题</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">Metadata<br>  ↓<br>SKILL.md<br>  ↓<br>references/scheduler.md<br>  ↓<br>scripts/validate_trace.py<br>  ↓<br>scripts/calc_sched_latency.py<br>  ↓<br>references/confidence-policy.md<br>  ↓<br>assets/report-template.md<br></code></pre></td></tr></table></figure>
+
+<p>加载路径二：内存问题</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">Metadata<br>  ↓<br>SKILL.md<br>  ↓<br>references/memory.md<br>  ↓<br>scripts/validate_trace.py<br>  ↓<br>scripts/calc_reclaim_latency.py<br>  ↓<br>references/confidence-policy.md<br>  ↓<br>assets/report-template.md<br></code></pre></td></tr></table></figure>
+
+<p>两个路径共享主干、证据规则和报告模板，但不会互相加载无关领域资料。</p>
+<hr>
+<h2 id="25-设计Checklist"><a href="#25-设计Checklist" class="headerlink" title="25. 设计Checklist"></a>25. 设计Checklist</h2><h3 id="Metadata"><a href="#Metadata" class="headerlink" title="Metadata"></a>Metadata</h3><ul>
+<li>是否只包含发现所需信息？</li>
+<li>是否明确What和When？</li>
+<li>是否避免塞入Workflow细节？</li>
+</ul>
+<h3 id="SKILL-md"><a href="#SKILL-md" class="headerlink" title="SKILL.md"></a><code>SKILL.md</code></h3><ul>
+<li>是否能一次读取后理解完整主流程？</li>
+<li>是否保留每次执行都需要的规则？</li>
+<li>是否包含清晰的资源路由？</li>
+<li>是否说明加载时机和目的？</li>
+</ul>
+<h3 id="References"><a href="#References" class="headerlink" title="References"></a>References</h3><ul>
+<li>是否按领域、阶段或复杂度拆分？</li>
+<li>文件名是否具有描述性？</li>
+<li>长文件是否有目录？</li>
+<li>是否避免深层引用链？</li>
+<li>是否存在从未读取的冗余文件？</li>
+</ul>
+<h3 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h3><ul>
+<li>是否用于确定性操作？</li>
+<li>指令是否明确“运行”而不是“读取”？</li>
+<li>是否只返回必要的结构化结果？</li>
+<li>是否有清晰错误和退出状态？</li>
+</ul>
+<h3 id="Context"><a href="#Context" class="headerlink" title="Context"></a>Context</h3><ul>
+<li>是否加载了与当前任务无关的内容？</li>
+<li>是否为Tool结果和最终输出保留空间？</li>
+<li>是否保存原始数据和结构化中间结果？</li>
+<li>是否评测资源访问路径？</li>
+</ul>
+<h3 id="Security"><a href="#Security" class="headerlink" title="Security"></a>Security</h3><ul>
+<li>未使用资源是否仍拥有过大访问权限？</li>
+<li>是否审查全部脚本和外部依赖？</li>
+<li>是否用权限系统而非懒加载保护敏感信息？</li>
+</ul>
+<hr>
+<h2 id="26-本章实践"><a href="#26-本章实践" class="headerlink" title="26. 本章实践"></a>26. 本章实践</h2><p>现有<code>SKILL.md</code>包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">80行主流程<br>300行PDF提取说明<br>500行表单填写说明<br>400行OCR说明<br>200行签名PDF说明<br>5个Python脚本源码<br>20个完整示例<br>一个报告模板<br></code></pre></td></tr></table></figure>
+
+<p>请设计重构方案，要求：</p>
+<ol>
+<li>定义Level 1 Metadata；</li>
+<li>保留一个可独立理解的Workflow Spine；</li>
+<li>按任务分支拆分References；</li>
+<li>判断脚本应被读取还是执行；</li>
+<li>把模板放入Asset；</li>
+<li>为“普通文本提取”“表单填写”“OCR回退”“签名PDF”分别画出加载路径；</li>
+<li>设计一个Eval，确保普通文本提取不会加载表单和签名资料；</li>
+<li>设计一个Eval，确保OCR失败时能够加载OCR Fallback规则。</li>
+</ol>
+<hr>
+<h2 id="27-学完检查题"><a href="#27-学完检查题" class="headerlink" title="27. 学完检查题"></a>27. 学完检查题</h2><ol>
+<li>Progressive Disclosure为什么不只是Token优化？</li>
+<li>Level 1、Level 2和Level 3分别解决什么问题？</li>
+<li>为什么不能把完整Workflow放进Description？</li>
+<li>为什么<code>SKILL.md</code>不能只剩一个文件目录？</li>
+<li>文件拆开后，为什么仍可能没有实现按需加载？</li>
+<li>一个好的资源路由语句应包含哪四项信息？</li>
+<li>Script为什么可能比让模型现场计算更节省上下文？</li>
+<li>Script不进入上下文是否意味着不需要安全审查？</li>
+<li>什么是Context Pollution？</li>
+<li>为什么关键Reference应该直接从<code>SKILL.md</code>链接？</li>
+<li>加载太晚和加载太早分别有什么问题？</li>
+<li>如何评测是否读取了不相关资源？</li>
+<li>为什么原始数据不应只存在对话上下文中？</li>
+<li>Progressive Disclosure能否替代权限控制？</li>
+<li>怎样判断一段内容应该放在哪一层？</li>
+</ol>
+<hr>
+<h2 id="28-本章总结"><a href="#28-本章总结" class="headerlink" title="28. 本章总结"></a>28. 本章总结</h2><blockquote>
+<p>Progressive Disclosure通过Metadata、<code>SKILL.md</code>和Supporting Resources三层结构，把信息推迟到真正需要它的阶段。Metadata用于发现，主文件用于理解工作流，References提供分支知识，Scripts承担确定性操作，Assets支持产物生成。它的目标不是盲目拆文件，而是提高活动上下文中的相关信息密度：核心主干必须立即可见，条件性细节必须可准确路由，原始数据和确定性计算应尽量留在文件和程序层。</p>
+</blockquote>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI：Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI：Build Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI：Skills概念</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Claude：Agent Skills与三级加载模型</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Claude：Skill编写最佳实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/claude-api-skill">Claude：Claude API Skill的渐进加载示例</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Claude：Skills for Enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Skill/" class="print-no-link">#Skill</a>
+      
+        <a href="/tags/SKILL-md/" class="print-no-link">#SKILL.md</a>
+      
+        <a href="/tags/Progressive-Disclosure/" class="print-no-link">#Progressive Disclosure</a>
+      
+        <a href="/tags/Context-Engineering/" class="print-no-link">#Context Engineering</a>
+      
+        <a href="/tags/Token/" class="print-no-link">#Token</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Progressive Disclosure：为什么不能一次加载全部内容</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/07-Progressive-Disclosure-为什么不能一次加载全部内容/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/01-Skill%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88-%E4%BB%8EPrompt%E5%88%B0%E5%8F%AF%E5%A4%8D%E7%94%A8Workflow/" title="Skill到底是什么：从Prompt到可复用Workflow">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Skill到底是什么：从Prompt到可复用Workflow</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/06-Skill-Discovery-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9Skill/" title="Skill Discovery：模型如何知道该用哪个Skill">
+                        <span class="hidden-mobile">Skill Discovery：模型如何知道该用哪个Skill</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

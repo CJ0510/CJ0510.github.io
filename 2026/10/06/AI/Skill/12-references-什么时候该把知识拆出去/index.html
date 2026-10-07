@@ -1,0 +1,1282 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去前面几章已经完成了 Skill 的核心工作流设计：输入、输出、步骤、前置条件、后置条件和最终检查。 接下来会遇到一个非常实际的问题：  领域知识、规范、Schema、示例和 API 说明越来越多，是否应该全部写进 SKILL.md？  答案通常是否定的。 SKILL.md 的主要职责是保存工作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/06/AI/Skill/12-references-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E6%8A%8A%E7%9F%A5%E8%AF%86%E6%8B%86%E5%87%BA%E5%8E%BB/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去前面几章已经完成了 Skill 的核心工作流设计：输入、输出、步骤、前置条件、后置条件和最终检查。 接下来会遇到一个非常实际的问题：  领域知识、规范、Schema、示例和 API 说明越来越多，是否应该全部写进 SKILL.md？  答案通常是否定的。 SKILL.md 的主要职责是保存工作">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-05T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-06T07:17:37.525Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Context Engineering">
+<meta property="article:tag" content="Progressive Disclosure">
+<meta property="article:tag" content="SKILL.md">
+<meta property="article:tag" content="references">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-06 00:00" pubdate>
+          2026-10-06
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          94 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（十二）：references-——什么时候该把知识拆出去"><a href="#Agent-Skill-原理与工程实践（十二）：references-——什么时候该把知识拆出去" class="headerlink" title="Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去"></a>Agent Skill 原理与工程实践（十二）：references&#x2F;——什么时候该把知识拆出去</h1><p>前面几章已经完成了 Skill 的核心工作流设计：输入、输出、步骤、前置条件、后置条件和最终检查。</p>
+<p>接下来会遇到一个非常实际的问题：</p>
+<blockquote>
+<p>领域知识、规范、Schema、示例和 API 说明越来越多，是否应该全部写进 <code>SKILL.md</code>？</p>
+</blockquote>
+<p>答案通常是否定的。</p>
+<p><code>SKILL.md</code> 的主要职责是保存工作流主干，<code>references/</code> 的主要职责是保存执行工作流时按需查阅的知识。合理拆分之后，Agent 不需要在每次触发 Skill 时都加载全部资料，只需在进入特定任务分支时读取相关文件。</p>
+<p>本章将建立以下核心认知：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>→ 告诉 Agent 怎样完成任务<br><br>references/<br>→ 为某个步骤提供完成任务所需的知识<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-这一章要解决什么问题"><a href="#1-这一章要解决什么问题" class="headerlink" title="1. 这一章要解决什么问题"></a>1. 这一章要解决什么问题</h2><p>本章集中回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">什么内容应该继续留在 SKILL.md？<br>什么内容应该移入 references/？<br>reference 与 instruction、asset、script 有什么区别？<br>怎样让 Agent 知道何时读取哪一个 reference？<br>reference 文件应该怎样命名和组织？<br>拆得太细或嵌套太深会有什么问题？<br>如何验证拆分确实改善了 Skill？<br></code></pre></td></tr></table></figure>
+
+<p>目标不是机械地创建一个 <code>references</code> 目录，而是建立一套<strong>知识分层与按需加载机制</strong>。</p>
+<hr>
+<h2 id="2-为什么需要-references"><a href="#2-为什么需要-references" class="headerlink" title="2. 为什么需要 references&#x2F;"></a>2. 为什么需要 references&#x2F;</h2><p>假设我们正在编写一个 Performance Analysis Skill。最初的 <code>SKILL.md</code> 可能只有：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 确认 trace 文件可读。<br><span class="hljs-bullet">2.</span> 解析调度、内存和 I/O 事件。<br><span class="hljs-bullet">3.</span> 提取异常指标。<br><span class="hljs-bullet">4.</span> 交叉验证证据。<br><span class="hljs-bullet">5.</span> 生成诊断报告。<br></code></pre></td></tr></table></figure>
+
+<p>随着功能增加，我们又加入：</p>
+<ul>
+<li>Linux scheduler 各类事件的含义；</li>
+<li>内存回收指标解释；</li>
+<li>block I&#x2F;O 延迟分析方法；</li>
+<li>不同内核版本的字段差异；</li>
+<li>报告 Schema；</li>
+<li>根因判断准则；</li>
+<li>若干完整诊断示例。</li>
+</ul>
+<p>最后，<code>SKILL.md</code> 可能膨胀成数千行。模型每次只想分析 I&#x2F;O 问题，却同时加载调度器、内存回收和所有历史示例。</p>
+<p>这会带来几个问题。</p>
+<h3 id="2-1-上下文浪费"><a href="#2-1-上下文浪费" class="headerlink" title="2.1 上下文浪费"></a>2.1 上下文浪费</h3><p>并非每次任务都需要全部知识，但所有内容都占据上下文窗口。</p>
+<h3 id="2-2-主流程被淹没"><a href="#2-2-主流程被淹没" class="headerlink" title="2.2 主流程被淹没"></a>2.2 主流程被淹没</h3><p>Agent 很难从大量背景材料中快速识别真正必须执行的步骤。</p>
+<h3 id="2-3-指令与资料混杂"><a href="#2-3-指令与资料混杂" class="headerlink" title="2.3 指令与资料混杂"></a>2.3 指令与资料混杂</h3><p>“必须执行的动作”和“供判断时参考的知识”混在一起，模型可能把示例当成规则，或者忽略真正的硬约束。</p>
+<h3 id="2-4-维护困难"><a href="#2-4-维护困难" class="headerlink" title="2.4 维护困难"></a>2.4 维护困难</h3><p>修改某一领域规范时，需要编辑核心工作流文件，更容易引入冲突和回归。</p>
+<h3 id="2-5-无法有效按需加载"><a href="#2-5-无法有效按需加载" class="headerlink" title="2.5 无法有效按需加载"></a>2.5 无法有效按需加载</h3><p>Progressive Disclosure 的价值没有发挥出来：虽然 Skill 只在相关时加载，但 Skill 内部仍然是“一次加载全部”。</p>
+<p>因此，需要把稳定的工作流骨架与条件性知识拆开。</p>
+<hr>
+<h2 id="3-整体架构：SKILL-md-是路由器，references-是知识层"><a href="#3-整体架构：SKILL-md-是路由器，references-是知识层" class="headerlink" title="3. 整体架构：SKILL.md 是路由器，references&#x2F; 是知识层"></a>3. 整体架构：SKILL.md 是路由器，references&#x2F; 是知识层</h2><p>推荐把 Skill 看成下面的结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs text">User Request<br>     │<br>     ▼<br>Skill metadata<br>name + description<br>     │<br>     ▼<br>Load SKILL.md<br>     │<br>     ├── 核心 Workflow<br>     ├── 输入输出 Contract<br>     ├── 强制约束<br>     └── Reference Routing<br>              │<br>        ┌─────┼─────────┐<br>        ▼     ▼         ▼<br>  scheduler  memory     io<br>  reference reference  reference<br>        └─────┼─────────┘<br>              ▼<br>         Execute Workflow<br></code></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>SKILL.md</code> 是执行入口和导航层；</li>
+<li><code>references/</code> 是按任务分支组织的知识层；</li>
+<li>Agent 根据 <code>SKILL.md</code> 中的加载条件选择必要资料；</li>
+<li>没有进入某个分支，就不应加载对应资料。</li>
+</ul>
+<p>OpenAI 官方文档建议保持 <code>SKILL.md</code> 简洁，将 policy、Schema、示例和背景材料放入 <code>references/</code>，并在 <code>SKILL.md</code> 中说明何时读取这些文件。Anthropic 官方文档也把 supporting files 视为 Progressive Disclosure 的第三级，只在需要时读取。</p>
+<hr>
+<h2 id="4-references-适合放什么"><a href="#4-references-适合放什么" class="headerlink" title="4. references&#x2F; 适合放什么"></a>4. references&#x2F; 适合放什么</h2><p>大纲列出的五类内容是本章的核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">domain knowledge<br>spec<br>schemas<br>examples<br>design docs<br>API docs<br></code></pre></td></tr></table></figure>
+
+<p>下面分别解释。</p>
+<h3 id="4-1-Domain-Knowledge：领域知识"><a href="#4-1-Domain-Knowledge：领域知识" class="headerlink" title="4.1 Domain Knowledge：领域知识"></a>4.1 Domain Knowledge：领域知识</h3><p>例如：</p>
+<ul>
+<li>Linux 调度延迟的判断方法；</li>
+<li>财务报表中的指标定义；</li>
+<li>法律审查中的条款分类；</li>
+<li>公司内部的业务术语；</li>
+<li>某类故障的诊断特征。</li>
+</ul>
+<p>这些知识影响 Agent 如何理解材料，但通常不是每次都需要完整加载。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">references/<br>├── scheduler-signals.md<br>├── memory-reclaim.md<br>└── block-io.md<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-2-Spec：规范与政策"><a href="#4-2-Spec：规范与政策" class="headerlink" title="4.2 Spec：规范与政策"></a>4.2 Spec：规范与政策</h3><p>例如：</p>
+<ul>
+<li>组织内部审核规则；</li>
+<li>输出合规要求；</li>
+<li>协议字段定义；</li>
+<li>文档格式规范；</li>
+<li>安全审查基线。</li>
+</ul>
+<p>如果规范只在某种任务中适用，就应通过条件路由加载，而不是默认塞入主流程。</p>
+<h3 id="4-3-Schema：数据结构说明"><a href="#4-3-Schema：数据结构说明" class="headerlink" title="4.3 Schema：数据结构说明"></a>4.3 Schema：数据结构说明</h3><p>例如：</p>
+<ul>
+<li>输入 JSON Schema；</li>
+<li>报告字段定义；</li>
+<li>Tool 返回结构；</li>
+<li>数据库表字段含义；</li>
+<li>事件格式说明。</li>
+</ul>
+<p>需要注意：如果 Schema 是程序要直接使用的机器资源，后续也可能更适合放进 <code>assets/</code>。如果它主要用于让 Agent 阅读和理解字段语义，可以放在 <code>references/</code>。判断标准不是扩展名，而是它在工作流中的角色。</p>
+<h3 id="4-4-Examples：示例"><a href="#4-4-Examples：示例" class="headerlink" title="4.4 Examples：示例"></a>4.4 Examples：示例</h3><p>适合拆出的示例包括：</p>
+<ul>
+<li>完整输入输出样例；</li>
+<li>边界案例；</li>
+<li>正例与反例；</li>
+<li>某种特殊场景的处理过程；</li>
+<li>不同报告类型的对照。</li>
+</ul>
+<p>主文件中可以保留一个最小示例，把大量案例移到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">references/examples/<br></code></pre></td></tr></table></figure>
+
+<p>不过要警惕示例被模型误当成固定事实。应明确写出示例的用途和不可复制部分。</p>
+<h3 id="4-5-Design-Docs：设计说明"><a href="#4-5-Design-Docs：设计说明" class="headerlink" title="4.5 Design Docs：设计说明"></a>4.5 Design Docs：设计说明</h3><p>例如：</p>
+<ul>
+<li>为什么选择某种分析路径；</li>
+<li>系统组件关系；</li>
+<li>历史兼容性决策；</li>
+<li>已知限制；</li>
+<li>术语和抽象模型。</li>
+</ul>
+<p>设计说明适合帮助 Agent理解复杂背景，但不应让它替代可执行 Workflow。</p>
+<h3 id="4-6-API-Docs：API-说明"><a href="#4-6-API-Docs：API-说明" class="headerlink" title="4.6 API Docs：API 说明"></a>4.6 API Docs：API 说明</h3><p>如果 Skill 使用一个稳定、内部或离线的 API，可以提供：</p>
+<ul>
+<li>必要端点；</li>
+<li>参数含义；</li>
+<li>返回结构；</li>
+<li>错误语义；</li>
+<li>调用约束。</li>
+</ul>
+<p>但不要无选择地复制整套 API 文档。只保留 Skill 实际使用的部分，并关注时效性。对于经常变化的外部 API，静态 reference 可能过期，应在工作流中要求查询当前官方文档或绑定受控工具。</p>
+<hr>
+<h2 id="5-什么内容必须留在-SKILL-md"><a href="#5-什么内容必须留在-SKILL-md" class="headerlink" title="5. 什么内容必须留在 SKILL.md"></a>5. 什么内容必须留在 SKILL.md</h2><p>不是所有长内容都应该拆走。以下内容即使很重要，也应该留在主文件中。</p>
+<h3 id="5-1-Skill-的职责与边界"><a href="#5-1-Skill-的职责与边界" class="headerlink" title="5.1 Skill 的职责与边界"></a>5.1 Skill 的职责与边界</h3><p>Agent 必须一加载 Skill 就能知道：</p>
+<ul>
+<li>这个 Skill 解决什么问题；</li>
+<li>不解决什么问题；</li>
+<li>输入和输出是什么；</li>
+<li>哪些情况应询问或停止。</li>
+</ul>
+<h3 id="5-2-工作流主干"><a href="#5-2-工作流主干" class="headerlink" title="5.2 工作流主干"></a>5.2 工作流主干</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Validate input<br>→ Classify evidence<br>→ Load relevant reference<br>→ Analyze<br>→ Cross-check<br>→ Produce report<br></code></pre></td></tr></table></figure>
+
+<p>如果连执行顺序都拆进 reference，Agent 读取 <code>SKILL.md</code> 后就无法开始工作。</p>
+<h3 id="5-3-强制性规则"><a href="#5-3-强制性规则" class="headerlink" title="5.3 强制性规则"></a>5.3 强制性规则</h3><p>安全约束、禁止事项、必须执行的 Final Check 不应藏在某个可能不被读取的参考文件中。</p>
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Never infer a root cause without evidence.<br><span class="hljs-bullet">-</span> Do not modify the source trace.<br><span class="hljs-bullet">-</span> Ask the user when the trace time unit is ambiguous.<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-4-Reference-路由规则"><a href="#5-4-Reference-路由规则" class="headerlink" title="5.4 Reference 路由规则"></a>5.4 Reference 路由规则</h3><p><code>SKILL.md</code> 必须告诉 Agent：</p>
+<ul>
+<li>哪些文件存在；</li>
+<li>每个文件解决什么问题；</li>
+<li>什么条件下读取；</li>
+<li>是否需要完整读取；</li>
+<li>多个文件同时相关时按什么顺序读取。</li>
+</ul>
+<h3 id="5-5-成功标准"><a href="#5-5-成功标准" class="headerlink" title="5.5 成功标准"></a>5.5 成功标准</h3><p>输出 Contract、关键 Postcondition 和 Final Check 应保留在主工作流中。详细字段表可以拆出，但“必须通过验证才能交付”不能藏起来。</p>
+<hr>
+<h2 id="6-拆分判断：五问法"><a href="#6-拆分判断：五问法" class="headerlink" title="6. 拆分判断：五问法"></a>6. 拆分判断：五问法</h2><p>遇到一段内容时，可以连续问五个问题。</p>
+<h3 id="问题一：每次执行都需要吗？"><a href="#问题一：每次执行都需要吗？" class="headerlink" title="问题一：每次执行都需要吗？"></a>问题一：每次执行都需要吗？</h3><ul>
+<li>是：倾向留在 <code>SKILL.md</code>；</li>
+<li>否：倾向移入 <code>references/</code>。</li>
+</ul>
+<h3 id="问题二：它是动作还是知识？"><a href="#问题二：它是动作还是知识？" class="headerlink" title="问题二：它是动作还是知识？"></a>问题二：它是动作还是知识？</h3><ul>
+<li>告诉 Agent 必须做什么：留在主流程；</li>
+<li>帮助 Agent 理解如何判断：可以放 reference。</li>
+</ul>
+<h3 id="问题三：不读取它是否还能选择正确分支？"><a href="#问题三：不读取它是否还能选择正确分支？" class="headerlink" title="问题三：不读取它是否还能选择正确分支？"></a>问题三：不读取它是否还能选择正确分支？</h3><p>如果不能，分支选择规则必须留在 <code>SKILL.md</code>；分支内部的详细知识才可以拆出。</p>
+<h3 id="问题四：它是否有独立变化周期？"><a href="#问题四：它是否有独立变化周期？" class="headerlink" title="问题四：它是否有独立变化周期？"></a>问题四：它是否有独立变化周期？</h3><p>如果某份政策、Schema 或领域规范会独立更新，拆成单独文件更容易维护和评审。</p>
+<h3 id="问题五：它是否需要整体加载？"><a href="#问题五：它是否需要整体加载？" class="headerlink" title="问题五：它是否需要整体加载？"></a>问题五：它是否需要整体加载？</h3><p>如果只会按主题查阅，应该继续按主题拆分，并提供清晰目录或标题。</p>
+<p>可以得到一个实用决策表：</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th align="right">每次需要</th>
+<th>类型</th>
+<th>推荐位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>核心执行步骤</td>
+<td align="right">是</td>
+<td>指令</td>
+<td><code>SKILL.md</code></td>
+</tr>
+<tr>
+<td>必须遵守的安全约束</td>
+<td align="right">是</td>
+<td>指令</td>
+<td><code>SKILL.md</code></td>
+</tr>
+<tr>
+<td>调度器事件解释</td>
+<td align="right">否</td>
+<td>领域知识</td>
+<td><code>references/</code></td>
+</tr>
+<tr>
+<td>完整输出字段说明</td>
+<td align="right">条件性</td>
+<td>Schema 说明</td>
+<td><code>references/</code></td>
+</tr>
+<tr>
+<td>可复制的报告模板</td>
+<td align="right">否</td>
+<td>模板资源</td>
+<td><code>assets/</code></td>
+</tr>
+<tr>
+<td>确定性数据计算</td>
+<td align="right">否</td>
+<td>可执行逻辑</td>
+<td><code>scripts/</code></td>
+</tr>
+<tr>
+<td>当前系统中的实时状态</td>
+<td align="right">动态</td>
+<td>外部数据</td>
+<td>Tool &#x2F; MCP &#x2F; API</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-references、assets、scripts、Tools-的边界"><a href="#7-references、assets、scripts、Tools-的边界" class="headerlink" title="7. references、assets、scripts、Tools 的边界"></a>7. references、assets、scripts、Tools 的边界</h2><p>这一章虽然聚焦 references，但必须知道它不负责什么。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">references/<br>→ 让 Agent 阅读和理解<br><br>assets/<br>→ 让工作流复制、填充或转换<br><br>scripts/<br>→ 让机器确定性地执行计算和处理<br><br>Tool / MCP / API<br>→ 获取实时信息或执行外部动作<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-1-Reference-不是-Asset"><a href="#7-1-Reference-不是-Asset" class="headerlink" title="7.1 Reference 不是 Asset"></a>7.1 Reference 不是 Asset</h3><p>一份报告格式说明供 Agent 理解，可以是 reference；一份要被原样复制并填写的报告模板，更适合 asset。</p>
+<h3 id="7-2-Reference-不是-Script"><a href="#7-2-Reference-不是-Script" class="headerlink" title="7.2 Reference 不是 Script"></a>7.2 Reference 不是 Script</h3><p>把复杂计算公式写进 reference 只能指导模型推理。如果计算要求可重复、可验证，应该由脚本完成；reference 可以解释计算含义。</p>
+<h3 id="7-3-Reference-不是-Tool"><a href="#7-3-Reference-不是-Tool" class="headerlink" title="7.3 Reference 不是 Tool"></a>7.3 Reference 不是 Tool</h3><p>reference 是随 Skill 分发的静态资料，不适合表示账户余额、当前工单、最新天气等实时数据。动态事实应通过 Tool、MCP 或 API 获取。</p>
+<h3 id="7-4-Reference-不是另一个隐形-SKILL-md"><a href="#7-4-Reference-不是另一个隐形-SKILL-md" class="headerlink" title="7.4 Reference 不是另一个隐形 SKILL.md"></a>7.4 Reference 不是另一个隐形 SKILL.md</h3><p>如果一个文件拥有独立触发条件、完整工作流和独立成功标准，它可能应该成为另一个 Skill，而不是藏在主 Skill 的 reference 中。</p>
+<hr>
+<h2 id="8-Reference-Routing：最重要但最容易漏掉的机制"><a href="#8-Reference-Routing：最重要但最容易漏掉的机制" class="headerlink" title="8. Reference Routing：最重要但最容易漏掉的机制"></a>8. Reference Routing：最重要但最容易漏掉的机制</h2><p>仅仅把文件放进 <code>references/</code> 不代表 Agent 会正确使用它。主文件必须包含明确路由。</p>
+<h3 id="8-1-差的写法"><a href="#8-1-差的写法" class="headerlink" title="8.1 差的写法"></a>8.1 差的写法</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">See files in references/ for more information.<br></code></pre></td></tr></table></figure>
+
+<p>问题是：</p>
+<ul>
+<li>看哪个文件？</li>
+<li>什么时候看？</li>
+<li>是否全部看？</li>
+<li>看完要用于哪一步？</li>
+</ul>
+<h3 id="8-2-更好的写法"><a href="#8-2-更好的写法" class="headerlink" title="8.2 更好的写法"></a>8.2 更好的写法</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Reference routing</span><br><br><span class="hljs-bullet">-</span> For scheduler latency or run-queue anomalies, read<br>  <span class="hljs-code">`references/scheduler-analysis.md`</span> before forming hypotheses.<br><span class="hljs-bullet">-</span> For reclaim, page faults, swap, or slab growth, read<br>  <span class="hljs-code">`references/memory-analysis.md`</span>.<br><span class="hljs-bullet">-</span> For block latency, queue depth, or device saturation, read<br>  <span class="hljs-code">`references/io-analysis.md`</span>.<br><span class="hljs-bullet">-</span> Read <span class="hljs-code">`references/report-schema.md`</span> only when constructing or validating<br>  the final report.<br><span class="hljs-bullet">-</span> Do not load unrelated domain references.<br></code></pre></td></tr></table></figure>
+
+<p>这段文字同时定义了：</p>
+<ul>
+<li>触发信号；</li>
+<li>文件路径；</li>
+<li>加载时机；</li>
+<li>使用目的；</li>
+<li>不应执行的行为。</li>
+</ul>
+<h3 id="8-3-路由应发生在证据初筛之后"><a href="#8-3-路由应发生在证据初筛之后" class="headerlink" title="8.3 路由应发生在证据初筛之后"></a>8.3 路由应发生在证据初筛之后</h3><p>推荐顺序：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">读取输入<br> ↓<br>识别信号类型<br> ↓<br>选择 reference<br> ↓<br>加载对应知识<br> ↓<br>进行详细分析<br></code></pre></td></tr></table></figure>
+
+<p>如果在观察输入之前加载所有 reference，就失去了按需加载的意义。</p>
+<hr>
+<h2 id="9-Reference-文件应如何组织"><a href="#9-Reference-文件应如何组织" class="headerlink" title="9. Reference 文件应如何组织"></a>9. Reference 文件应如何组织</h2><h3 id="9-1-按任务维度，而不是随意按资料来源划分"><a href="#9-1-按任务维度，而不是随意按资料来源划分" class="headerlink" title="9.1 按任务维度，而不是随意按资料来源划分"></a>9.1 按任务维度，而不是随意按资料来源划分</h3><p>推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">references/<br>├── scheduler-analysis.md<br>├── memory-analysis.md<br>├── io-analysis.md<br>├── evidence-grading.md<br>└── report-schema.md<br></code></pre></td></tr></table></figure>
+
+<p>不推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">references/<br>├── notes1.md<br>├── old-doc.md<br>├── misc.md<br>└── copied-webpage.md<br></code></pre></td></tr></table></figure>
+
+<p>文件名本身应该帮助 Agent 做选择。</p>
+<h3 id="9-2-一个文件解决一个清晰问题"><a href="#9-2-一个文件解决一个清晰问题" class="headerlink" title="9.2 一个文件解决一个清晰问题"></a>9.2 一个文件解决一个清晰问题</h3><p>如果 <code>all-knowledge.md</code> 同时包含调度、内存、I&#x2F;O、报告和 API 说明，那么它只是把超长 Prompt 从 <code>SKILL.md</code> 搬到了另一个文件，没有真正实现 Progressive Disclosure。</p>
+<h3 id="9-3-避免过深嵌套"><a href="#9-3-避免过深嵌套" class="headerlink" title="9.3 避免过深嵌套"></a>9.3 避免过深嵌套</h3><p>Anthropic 官方最佳实践建议文件引用尽量保持一层深度。深层引用链容易让模型只预览文件、遗漏后续资料，或者无法判断加载顺序。</p>
+<p>优先：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  → references/scheduler-analysis.md<br>  → references/io-analysis.md<br></code></pre></td></tr></table></figure>
+
+<p>谨慎使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  → references/index.md<br>      → references/linux/index.md<br>          → references/linux/scheduler/details.md<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-4-长文件提供目录"><a href="#9-4-长文件提供目录" class="headerlink" title="9.4 长文件提供目录"></a>9.4 长文件提供目录</h3><p>一个 reference 如果不可避免地很长，应在开头提供目录和清晰标题：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Scheduler Analysis Reference</span><br><br><span class="hljs-section">## Contents</span><br><span class="hljs-bullet">-</span> Event semantics<br><span class="hljs-bullet">-</span> Derived metrics<br><span class="hljs-bullet">-</span> Diagnostic patterns<br><span class="hljs-bullet">-</span> Counterexamples<br><span class="hljs-bullet">-</span> Kernel-version notes<br></code></pre></td></tr></table></figure>
+
+<p>这样 Agent 可以先定位相关章节，而不是盲目读取。</p>
+<h3 id="9-5-统一术语"><a href="#9-5-统一术语" class="headerlink" title="9.5 统一术语"></a>9.5 统一术语</h3><p><code>SKILL.md</code> 和 references 应使用同一术语。例如主文件叫 <code>evidence</code>，reference 不应无解释地换成 <code>proof item</code> 或 <code>signal record</code>。</p>
+<hr>
+<h2 id="10-Reference-的内部结构"><a href="#10-Reference-的内部结构" class="headerlink" title="10. Reference 的内部结构"></a>10. Reference 的内部结构</h2><p>一份高质量 reference 可以采用以下模板：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># [Topic]</span><br><br><span class="hljs-section">## Purpose</span><br>说明该文件解决什么问题，以及不解决什么问题。<br><br><span class="hljs-section">## Read this when</span><br><span class="hljs-bullet">-</span> 条件一<br><span class="hljs-bullet">-</span> 条件二<br><br><span class="hljs-section">## Key concepts</span><br>定义术语和模型。<br><br><span class="hljs-section">## Decision rules</span><br>给出判断规则、证据等级和反例。<br><br><span class="hljs-section">## Examples</span><br>给出最少但有代表性的正例、反例和边界例。<br><br><span class="hljs-section">## Known limitations</span><br>说明版本、范围和不确定性。<br><br><span class="hljs-section">## Source and freshness</span><br>记录来源、适用版本和最近核验时间。<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-1-Purpose-防止误用"><a href="#10-1-Purpose-防止误用" class="headerlink" title="10.1 Purpose 防止误用"></a>10.1 Purpose 防止误用</h3><p>例如 <code>scheduler-analysis.md</code> 应明确它不能单独证明所有延迟根因，仍需与 CPU、I&#x2F;O 和应用时间线交叉验证。</p>
+<h3 id="10-2-Read-this-when-与-SKILL-md-路由相互对应"><a href="#10-2-Read-this-when-与-SKILL-md-路由相互对应" class="headerlink" title="10.2 Read this when 与 SKILL.md 路由相互对应"></a>10.2 Read this when 与 SKILL.md 路由相互对应</h3><p>主文件从外部告诉 Agent 何时加载；reference 开头再次确认自己的适用条件。两者不应冲突。</p>
+<h3 id="10-3-Decision-rules-比百科知识更有用"><a href="#10-3-Decision-rules-比百科知识更有用" class="headerlink" title="10.3 Decision rules 比百科知识更有用"></a>10.3 Decision rules 比百科知识更有用</h3><p>Skill reference 的价值不在于覆盖所有背景，而在于支持工作流中的判断。</p>
+<h3 id="10-4-Known-limitations-防止过度泛化"><a href="#10-4-Known-limitations-防止过度泛化" class="headerlink" title="10.4 Known limitations 防止过度泛化"></a>10.4 Known limitations 防止过度泛化</h3><p>例如规则只适用于某些内核版本、数据源或采样方式，就应该明确说明。</p>
+<hr>
+<h2 id="11-最小示例：从超长-SKILL-md-拆出-references"><a href="#11-最小示例：从超长-SKILL-md-拆出-references" class="headerlink" title="11. 最小示例：从超长 SKILL.md 拆出 references&#x2F;"></a>11. 最小示例：从超长 SKILL.md 拆出 references&#x2F;</h2><h3 id="11-1-拆分前"><a href="#11-1-拆分前" class="headerlink" title="11.1 拆分前"></a>11.1 拆分前</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis/<br>└── SKILL.md  # 1800 行<br></code></pre></td></tr></table></figure>
+
+<p>内容混在一起：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Workflow</span><br>...<br><br><span class="hljs-section">## Scheduler event definitions</span><br>... 300 行<br><br><span class="hljs-section">## Memory reclaim theory</span><br>... 400 行<br><br><span class="hljs-section">## I/O diagnosis patterns</span><br>... 350 行<br><br><span class="hljs-section">## Report field specification</span><br>... 200 行<br></code></pre></td></tr></table></figure>
+
+<h3 id="11-2-拆分后"><a href="#11-2-拆分后" class="headerlink" title="11.2 拆分后"></a>11.2 拆分后</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis/<br>├── SKILL.md<br>└── references/<br>    ├── scheduler-analysis.md<br>    ├── memory-analysis.md<br>    ├── io-analysis.md<br>    ├── evidence-grading.md<br>    └── report-schema.md<br></code></pre></td></tr></table></figure>
+
+<p><code>SKILL.md</code> 只保留：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Validate the trace and analysis scope.<br><span class="hljs-bullet">2.</span> Perform a lightweight signal inventory.<br><span class="hljs-bullet">3.</span> Load only the references matching observed signals.<br><span class="hljs-bullet">4.</span> Analyze each selected domain.<br><span class="hljs-bullet">5.</span> Cross-check findings using <span class="hljs-code">`references/evidence-grading.md`</span>.<br><span class="hljs-bullet">6.</span> Generate and validate the report using<br>   <span class="hljs-code">`references/report-schema.md`</span>.<br><br><span class="hljs-section">## Reference routing</span><br><br><span class="hljs-bullet">-</span> Scheduler signals → <span class="hljs-code">`references/scheduler-analysis.md`</span><br><span class="hljs-bullet">-</span> Memory signals → <span class="hljs-code">`references/memory-analysis.md`</span><br><span class="hljs-bullet">-</span> I/O signals → <span class="hljs-code">`references/io-analysis.md`</span><br><span class="hljs-bullet">-</span> Evidence correlation → <span class="hljs-code">`references/evidence-grading.md`</span><br><span class="hljs-bullet">-</span> Final report construction → <span class="hljs-code">`references/report-schema.md`</span><br></code></pre></td></tr></table></figure>
+
+<p>这样，I&#x2F;O 专项任务不再默认加载内存回收的全部知识。</p>
+<hr>
+<h2 id="12-完整生命周期"><a href="#12-完整生命周期" class="headerlink" title="12. 完整生命周期"></a>12. 完整生命周期</h2><p>reference 参与一次 Skill 执行的完整过程如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill 被触发<br>   ↓<br>读取 SKILL.md<br>   ↓<br>理解核心 Workflow<br>   ↓<br>验证输入<br>   ↓<br>执行轻量分类<br>   ↓<br>命中 reference 路由条件？<br>   ├── 否 → 不加载<br>   └── 是<br>        ↓<br>    读取目标 reference<br>        ↓<br>    将知识用于当前步骤<br>        ↓<br>    执行并验证该步骤<br>        ↓<br>生成最终输出<br></code></pre></td></tr></table></figure>
+
+<p>这里最重要的是：</p>
+<blockquote>
+<p>reference 不是 Skill 启动时必须全部加载的依赖，而是工作流运行到特定状态时选择性读取的知识资源。</p>
+</blockquote>
+<hr>
+<h2 id="13-时效性、来源与安全"><a href="#13-时效性、来源与安全" class="headerlink" title="13. 时效性、来源与安全"></a>13. 时效性、来源与安全</h2><h3 id="13-1-静态知识会过期"><a href="#13-1-静态知识会过期" class="headerlink" title="13.1 静态知识会过期"></a>13.1 静态知识会过期</h3><p>政策、API、产品行为和版本兼容表都可能变化。reference 应记录：</p>
+<ul>
+<li>来源；</li>
+<li>适用版本；</li>
+<li>最近核验日期；</li>
+<li>哪些事实必须在执行时重新验证。</li>
+</ul>
+<p>不要仅因为资料随 Skill 分发，就把它视为永远正确。</p>
+<h3 id="13-2-外部资料不是自动可信"><a href="#13-2-外部资料不是自动可信" class="headerlink" title="13.2 外部资料不是自动可信"></a>13.2 外部资料不是自动可信</h3><p>从网页、仓库或第三方 Skill 复制进来的 reference 可能包含：</p>
+<ul>
+<li>恶意指令；</li>
+<li>数据外传要求；</li>
+<li>与主 Skill 冲突的规则；</li>
+<li>已过期内容；</li>
+<li>伪装成资料的 Prompt Injection。</li>
+</ul>
+<p>Anthropic 官方安全说明建议像审查软件一样审查 Skill 的所有文件，而不是只看 <code>SKILL.md</code>。</p>
+<h3 id="13-3-Reference-不应偷偷升级权限"><a href="#13-3-Reference-不应偷偷升级权限" class="headerlink" title="13.3 Reference 不应偷偷升级权限"></a>13.3 Reference 不应偷偷升级权限</h3><p>reference 是知识材料，不应通过隐藏指令要求 Agent：</p>
+<ul>
+<li>访问无关文件；</li>
+<li>调用额外网络服务；</li>
+<li>覆盖用户数据；</li>
+<li>绕过确认；</li>
+<li>忽略系统或用户指令。</li>
+</ul>
+<h3 id="13-4-冲突时谁优先"><a href="#13-4-冲突时谁优先" class="headerlink" title="13.4 冲突时谁优先"></a>13.4 冲突时谁优先</h3><p>一般应遵循：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">System / 平台规则<br>  ↓<br>项目级指令<br>  ↓<br>用户明确请求<br>  ↓<br>SKILL.md 工作流<br>  ↓<br>reference 中的领域资料<br></code></pre></td></tr></table></figure>
+
+<p>reference 不应成为改变上层指令优先级的通道。</p>
+<hr>
+<h2 id="14-实验验证：拆分真的更好吗"><a href="#14-实验验证：拆分真的更好吗" class="headerlink" title="14. 实验验证：拆分真的更好吗"></a>14. 实验验证：拆分真的更好吗</h2><p>不能只凭“文件更整洁”判断拆分成功。需要实验。</p>
+<h3 id="14-1-建立两个版本"><a href="#14-1-建立两个版本" class="headerlink" title="14.1 建立两个版本"></a>14.1 建立两个版本</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Version A：所有知识都在 SKILL.md<br>Version B：核心 Workflow + 按需 references<br></code></pre></td></tr></table></figure>
+
+<h3 id="14-2-准备任务集"><a href="#14-2-准备任务集" class="headerlink" title="14.2 准备任务集"></a>14.2 准备任务集</h3><p>至少包含：</p>
+<ol>
+<li>只需要调度知识的任务；</li>
+<li>只需要内存知识的任务；</li>
+<li>同时需要多个领域的任务；</li>
+<li>不需要任何详细 reference 的简单任务；</li>
+<li>输入模糊、应先询问的任务；</li>
+<li>容易被无关示例干扰的任务。</li>
+</ol>
+<h3 id="14-3-观察指标"><a href="#14-3-观察指标" class="headerlink" title="14.3 观察指标"></a>14.3 观察指标</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">Reference Selection Accuracy<br>→ 是否读取了正确资料<br><br>Unnecessary Load Rate<br>→ 是否加载了无关文件<br><br>Workflow Compliance<br>→ 是否仍然遵循核心步骤<br><br>Output Quality<br>→ 结论质量是否下降或提高<br><br>Context Cost<br>→ 实际加载了多少内容<br><br>Latency<br>→ 多次文件读取是否带来明显延迟<br></code></pre></td></tr></table></figure>
+
+<h3 id="14-4-一个简单检查表"><a href="#14-4-一个简单检查表" class="headerlink" title="14.4 一个简单检查表"></a>14.4 一个简单检查表</h3><table>
+<thead>
+<tr>
+<th>测试</th>
+<th>预期结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>调度问题</td>
+<td>读取 scheduler，不读取 memory&#x2F;io</td>
+</tr>
+<tr>
+<td>内存问题</td>
+<td>读取 memory，不读取 scheduler&#x2F;io</td>
+</tr>
+<tr>
+<td>混合问题</td>
+<td>读取所有被证据支持的相关文件</td>
+</tr>
+<tr>
+<td>简单格式任务</td>
+<td>只读取 report schema</td>
+</tr>
+<tr>
+<td>无匹配信号</td>
+<td>不凭猜测加载全部 reference</td>
+</tr>
+</tbody></table>
+<p>如果拆分后 Agent 经常找不到资料，问题通常不在 <code>references/</code> 本身，而在 <code>SKILL.md</code> 的路由不清楚。</p>
+<hr>
+<h2 id="15-工程意义"><a href="#15-工程意义" class="headerlink" title="15. 工程意义"></a>15. 工程意义</h2><p>合理使用 <code>references/</code> 会带来五方面收益。</p>
+<h3 id="15-1-上下文更经济"><a href="#15-1-上下文更经济" class="headerlink" title="15.1 上下文更经济"></a>15.1 上下文更经济</h3><p>只加载当前任务真正需要的知识。</p>
+<h3 id="15-2-工作流更清晰"><a href="#15-2-工作流更清晰" class="headerlink" title="15.2 工作流更清晰"></a>15.2 工作流更清晰</h3><p>核心指令从背景材料中被重新凸显出来。</p>
+<h3 id="15-3-模块可以独立维护"><a href="#15-3-模块可以独立维护" class="headerlink" title="15.3 模块可以独立维护"></a>15.3 模块可以独立维护</h3><p>领域专家可以分别维护调度、内存、I&#x2F;O 或政策资料。</p>
+<h3 id="15-4-评审边界更清楚"><a href="#15-4-评审边界更清楚" class="headerlink" title="15.4 评审边界更清楚"></a>15.4 评审边界更清楚</h3><p>工作流改动和知识更新可以采用不同评审策略。</p>
+<h3 id="15-5-更容易演进为多-Skill-系统"><a href="#15-5-更容易演进为多-Skill-系统" class="headerlink" title="15.5 更容易演进为多 Skill 系统"></a>15.5 更容易演进为多 Skill 系统</h3><p>当某个 reference 逐渐形成自己的触发条件、工作流和产物时，可以识别出它已经适合升级为独立 Skill。</p>
+<hr>
+<h2 id="16-常见错误"><a href="#16-常见错误" class="headerlink" title="16. 常见错误"></a>16. 常见错误</h2><h3 id="16-1-把所有内容都移出-SKILL-md"><a href="#16-1-把所有内容都移出-SKILL-md" class="headerlink" title="16.1 把所有内容都移出 SKILL.md"></a>16.1 把所有内容都移出 SKILL.md</h3><p>主文件只剩“请阅读 references”，Agent 无法立即理解工作流。</p>
+<h3 id="16-2-只拆文件，不写加载条件"><a href="#16-2-只拆文件，不写加载条件" class="headerlink" title="16.2 只拆文件，不写加载条件"></a>16.2 只拆文件，不写加载条件</h3><p>这会让 Agent 要么忽略文件，要么全部读取。</p>
+<h3 id="16-3-建立一个巨大的-all-in-one-reference"><a href="#16-3-建立一个巨大的-all-in-one-reference" class="headerlink" title="16.3 建立一个巨大的 all-in-one reference"></a>16.3 建立一个巨大的 all-in-one reference</h3><p>只是移动了问题，没有实现按需加载。</p>
+<h3 id="16-4-文件名没有语义"><a href="#16-4-文件名没有语义" class="headerlink" title="16.4 文件名没有语义"></a>16.4 文件名没有语义</h3><p><code>misc.md</code>、<code>notes-final-v2.md</code> 无法支持可靠路由。</p>
+<h3 id="16-5-嵌套引用过深"><a href="#16-5-嵌套引用过深" class="headerlink" title="16.5 嵌套引用过深"></a>16.5 嵌套引用过深</h3><p>Agent 可能只读取入口文件，漏掉深层关键规则。</p>
+<h3 id="16-6-把强制规则藏进条件-reference"><a href="#16-6-把强制规则藏进条件-reference" class="headerlink" title="16.6 把强制规则藏进条件 reference"></a>16.6 把强制规则藏进条件 reference</h3><p>如果文件没有加载，强制规则就不会进入上下文。</p>
+<h3 id="16-7-把实时信息保存为静态-reference"><a href="#16-7-把实时信息保存为静态-reference" class="headerlink" title="16.7 把实时信息保存为静态 reference"></a>16.7 把实时信息保存为静态 reference</h3><p>最终会产生过期事实，应改由 Tool 或当前官方来源提供。</p>
+<h3 id="16-8-把可执行逻辑写成自然语言资料"><a href="#16-8-把可执行逻辑写成自然语言资料" class="headerlink" title="16.8 把可执行逻辑写成自然语言资料"></a>16.8 把可执行逻辑写成自然语言资料</h3><p>需要稳定计算或校验时，应交给 <code>scripts/</code>；第 13 章会详细讨论。</p>
+<h3 id="16-9-示例过多且缺少标注"><a href="#16-9-示例过多且缺少标注" class="headerlink" title="16.9 示例过多且缺少标注"></a>16.9 示例过多且缺少标注</h3><p>模型可能复制案例中的姓名、数字和结论。示例应明确区分固定格式与虚构数据。</p>
+<h3 id="16-10-Reference-与-SKILL-md-规则冲突"><a href="#16-10-Reference-与-SKILL-md-规则冲突" class="headerlink" title="16.10 Reference 与 SKILL.md 规则冲突"></a>16.10 Reference 与 SKILL.md 规则冲突</h3><p>知识文件不应重新定义主流程。发现冲突时要统一来源，而不是依赖模型自行选择。</p>
+<hr>
+<h2 id="17-博客总结"><a href="#17-博客总结" class="headerlink" title="17. 博客总结"></a>17. 博客总结</h2><p><code>references/</code> 并不是“放不下的文字仓库”，而是 Skill 的按需知识层。</p>
+<p>好的拆分应满足：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md 保留 Workflow Spine<br>references/ 保存 Conditional Knowledge<br>SKILL.md 明确 Reference Routing<br>Agent 只加载当前分支需要的资料<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI 官方文档明确把政策、Schema、示例和背景材料列为适合放入 <code>references/</code> 的内容，并要求从 <code>SKILL.md</code> 引用这些文件、说明何时加载。Anthropic 官方文档则进一步强调 Progressive Disclosure、避免深层嵌套，并建议在主文件变长时将详细内容拆分出去。</p>
+<p>判断一段内容是否应该放进 reference，最关键的问题不是“它长不长”，而是：</p>
+<blockquote>
+<p>它是每次都必须执行的主流程，还是只在某个条件成立时才需要读取的知识？</p>
+</blockquote>
+<hr>
+<h2 id="18-学完检查题"><a href="#18-学完检查题" class="headerlink" title="18. 学完检查题"></a>18. 学完检查题</h2><ol>
+<li><code>SKILL.md</code> 与 <code>references/</code> 的核心职责分别是什么？</li>
+<li>为什么“把所有内容移到一个 <code>all-knowledge.md</code>”不算真正的 Progressive Disclosure？</li>
+<li>哪些强制规则不能拆进条件性 reference？</li>
+<li>Reference Routing 至少需要说明哪四项信息？</li>
+<li>Schema 在什么情况下适合放 reference，什么情况下更像 asset？</li>
+<li>为什么动态 API 状态不适合保存为静态 reference？</li>
+<li>深层嵌套引用可能造成哪些问题？</li>
+<li>怎样测试 Agent 是否只加载了相关 reference？</li>
+<li>一个 reference 何时应该升级为独立 Skill？</li>
+<li>为什么 reference 也需要安全审查和时效性管理？</li>
+</ol>
+<hr>
+<h2 id="19-Skill-专项复盘"><a href="#19-Skill-专项复盘" class="headerlink" title="19. Skill 专项复盘"></a>19. Skill 专项复盘</h2><h3 id="19-1-这个逻辑应该写在-SKILL-md-还是-reference？"><a href="#19-1-这个逻辑应该写在-SKILL-md-还是-reference？" class="headerlink" title="19.1 这个逻辑应该写在 SKILL.md 还是 reference？"></a>19.1 这个逻辑应该写在 SKILL.md 还是 reference？</h3><p>核心步骤、强制约束、路由条件写入 <code>SKILL.md</code>；条件性领域知识、详细规范和大量案例写入 reference。</p>
+<h3 id="19-2-这个步骤应该交给-LLM-还是-script？"><a href="#19-2-这个步骤应该交给-LLM-还是-script？" class="headerlink" title="19.2 这个步骤应该交给 LLM 还是 script？"></a>19.2 这个步骤应该交给 LLM 还是 script？</h3><p>读取资料、理解语义和做有上下文的判断可以交给 LLM；确定性计算和校验应优先交给 script。下一章会专门展开。</p>
+<h3 id="19-3-这个能力应该是-Skill-还是-Tool？"><a href="#19-3-这个能力应该是-Skill-还是-Tool？" class="headerlink" title="19.3 这个能力应该是 Skill 还是 Tool？"></a>19.3 这个能力应该是 Skill 还是 Tool？</h3><p>reference 本身既不是 Skill，也不是 Tool。它没有独立触发和完整工作流，也不执行外部动作，只向当前 Skill 提供知识。</p>
+<h3 id="19-4-什么条件下应该触发这个-Skill？"><a href="#19-4-什么条件下应该触发这个-Skill？" class="headerlink" title="19.4 什么条件下应该触发这个 Skill？"></a>19.4 什么条件下应该触发这个 Skill？</h3><p>由 <code>name</code> 和 <code>description</code> 决定 Skill 是否触发；reference 不应单独参与全局 Skill Discovery，而应在 Skill 内部由路由条件选择。</p>
+<h3 id="19-5-如何证明拆分比不拆分更好？"><a href="#19-5-如何证明拆分比不拆分更好？" class="headerlink" title="19.5 如何证明拆分比不拆分更好？"></a>19.5 如何证明拆分比不拆分更好？</h3><p>通过对照实验测量 reference 选择准确率、无关加载率、工作流遵从、输出质量、上下文成本和延迟，而不是只看目录是否整洁。</p>
+<hr>
+<h2 id="20-本章实践"><a href="#20-本章实践" class="headerlink" title="20. 本章实践"></a>20. 本章实践</h2><p>选择一个现有的长 <code>SKILL.md</code>，执行以下练习：</p>
+<ol>
+<li>标记每一段是 Workflow、Constraint、Domain Knowledge、Example、Schema 还是 Template；</li>
+<li>保留所有核心步骤和强制规则；</li>
+<li>将条件性知识按任务主题拆成 3～5 个 reference；</li>
+<li>为每个文件写清 Purpose、Read this when 和 Known limitations；</li>
+<li>在 <code>SKILL.md</code> 中加入明确的 Reference Routing；</li>
+<li>删除深层嵌套引用，使主文件可以直接指向关键资料；</li>
+<li>用至少五类任务测试加载行为；</li>
+<li>对比拆分前后的上下文占用与输出质量。</li>
+</ol>
+<p>一个可直接使用的目录起点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">my-skill/<br>├── SKILL.md<br>└── references/<br>    ├── domain-a.md<br>    ├── domain-b.md<br>    ├── decision-rules.md<br>    ├── examples.md<br>    └── output-schema.md<br></code></pre></td></tr></table></figure>
+
+<p>下一章将严格按照大纲进入：</p>
+<blockquote>
+<p>第 13 章：<code>scripts/</code>——什么时候 Prompt 不够，需要代码。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI — Build skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-skills">OpenAI API — Skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI — Skills concepts</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Anthropic — Agent Skills overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/SKILL-md/" class="print-no-link">#SKILL.md</a>
+      
+        <a href="/tags/references/" class="print-no-link">#references</a>
+      
+        <a href="/tags/Progressive-Disclosure/" class="print-no-link">#Progressive Disclosure</a>
+      
+        <a href="/tags/Context-Engineering/" class="print-no-link">#Context Engineering</a>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（十二）：references/——什么时候该把知识拆出去</div>
+      <div>https://cj0510.github.io/2026/10/06/AI/Skill/12-references-什么时候该把知识拆出去/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/10-Step-by-Step-Instruction%E6%80%8E%E4%B9%88%E5%86%99/" title="Step-by-Step Instruction怎么写">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Step-by-Step Instruction怎么写</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/06/AI/Skill/13-scripts-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99Prompt%E4%B8%8D%E5%A4%9F%E9%9C%80%E8%A6%81%E4%BB%A3%E7%A0%81/" title="Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十三）：scripts/——什么时候 Prompt 不够，需要代码</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
