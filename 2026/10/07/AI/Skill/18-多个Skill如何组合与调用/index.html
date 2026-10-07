@@ -1,0 +1,1268 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill 独立完成。 例如一次系统性能分析，至少可能包含： 123456performance-analysis       │       ├── scheduler-analysis       ├── memory-a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill 独立完成。 例如一次系统性能分析，至少可能包含： 123456performance-analysis       │       ├── scheduler-analysis       ├── memory-a">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-07T22:45:58.329Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Composition">
+<meta property="article:tag" content="Delegation">
+<meta property="article:tag" content="Dependency">
+<meta property="article:tag" content="Orchestration">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-07 00:00" pubdate>
+          2026-10-07
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          15k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          126 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill 独立完成。</p>
+<p>例如一次系统性能分析，至少可能包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis<br>       │<br>       ├── scheduler-analysis<br>       ├── memory-analysis<br>       ├── io-analysis<br>       └── report-generation<br></code></pre></td></tr></table></figure>
+
+<p>表面上看，只要让总 Skill 依次调用几个子 Skill 即可。真正困难的却是：</p>
+<ul>
+<li>谁决定调用哪个 Skill；</li>
+<li>子 Skill 是提供结果，还是接管后续任务；</li>
+<li>上游结果如何变成下游输入；</li>
+<li>多个 Skill 能否并行；</li>
+<li>某个 Skill 失败后，整体任务如何收敛；</li>
+<li>谁负责校验和生成最终答复。</li>
+</ul>
+<p>因此，本章严格围绕大纲中的四个概念展开：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Orchestration  编排：谁控制整个执行过程<br>Composition    组合：多个能力怎样构成一个完整能力<br>Delegation     委派：谁把哪部分任务交给谁<br>Dependency     依赖：执行顺序由哪些数据和条件决定<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-先澄清：组合-Skill-不等于拼接-Prompt"><a href="#1-先澄清：组合-Skill-不等于拼接-Prompt" class="headerlink" title="1. 先澄清：组合 Skill 不等于拼接 Prompt"></a>1. 先澄清：组合 Skill 不等于拼接 Prompt</h2><p>一个常见误区是把多个 Skill 的 <code>SKILL.md</code> 全部读入上下文，再让模型“综合执行”。这只是指令堆叠，不是工程意义上的组合。</p>
+<p>真正的 Skill 组合至少应明确五种关系：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Task<br>  ↓<br>Router：选择需要的能力<br>  ↓<br>Orchestrator：安排调用顺序<br>  ↓<br>Specialists：完成边界明确的子任务<br>  ↓<br>Aggregator：合并结果并验证最终输出<br></code></pre></td></tr></table></figure>
+
+<p>如果缺少这些边界，常见结果是：</p>
+<ul>
+<li>多个 Skill 同时认为自己应该主导任务；</li>
+<li>同一份数据被重复分析；</li>
+<li>中间结果只有自然语言，无法可靠传递；</li>
+<li>子 Skill 修改了不属于自己的状态；</li>
+<li>最终报告互相矛盾，却没有组件负责仲裁。</li>
+</ul>
+<p>所以，多 Skill 系统的核心不是“多”，而是<strong>清楚的控制权、数据契约和责任边界</strong>。</p>
+<hr>
+<h2 id="2-Skill、Agent-与-Tool-的组合层级"><a href="#2-Skill、Agent-与-Tool-的组合层级" class="headerlink" title="2. Skill、Agent 与 Tool 的组合层级"></a>2. Skill、Agent 与 Tool 的组合层级</h2><p>组合之前，必须先区分三个层级：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Agent<br>  ├── Skill A：领域工作流与判断规则<br>  │     ├── Tool 1<br>  │     └── Tool 2<br>  └── Skill B：另一套领域工作流<br>        └── Tool 3<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-Tool-组合"><a href="#2-1-Tool-组合" class="headerlink" title="2.1 Tool 组合"></a>2.1 Tool 组合</h3><p>Tool 是一次明确操作，例如读取 trace、解析 JSON、查询指标或生成图表。组合 Tool 主要解决“动作如何执行”。</p>
+<h3 id="2-2-Skill-组合"><a href="#2-2-Skill-组合" class="headerlink" title="2.2 Skill 组合"></a>2.2 Skill 组合</h3><p>Skill 是带有工作流、约束和领域知识的可复用能力。组合 Skill 主要解决“任务应怎样分解、判断和完成”。</p>
+<h3 id="2-3-Agent-组合"><a href="#2-3-Agent-组合" class="headerlink" title="2.3 Agent 组合"></a>2.3 Agent 组合</h3><p>多个 Agent 通常意味着不同的模型上下文、工具权限、系统指令或对话所有权。组合 Agent 主要解决“谁来承担哪类角色”。</p>
+<p>这三者不能简单画等号：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">调用另一个 Skill<br>≠ 必然创建另一个 Agent<br>≠ 必然执行一个 Tool<br></code></pre></td></tr></table></figure>
+
+<p>一个 Agent 可以在同一上下文中依次使用多个 Skill；也可以把某个专门 Agent 包装成工具；还可以把控制权交给另一个 Agent。后两种模式与 Skill 组合相关，但属于运行时编排机制。</p>
+<hr>
+<h2 id="3-Orchestration：谁拥有整个流程"><a href="#3-Orchestration：谁拥有整个流程" class="headerlink" title="3. Orchestration：谁拥有整个流程"></a>3. Orchestration：谁拥有整个流程</h2><p>Orchestration 是多 Skill 系统的控制平面。它负责：</p>
+<ul>
+<li>理解总目标；</li>
+<li>分解子任务；</li>
+<li>选择 Skill；</li>
+<li>建立依赖关系；</li>
+<li>调度串行或并行执行；</li>
+<li>汇总状态；</li>
+<li>处理失败；</li>
+<li>验证最终结果。</li>
+</ul>
+<p>可以把 Orchestrator 理解为“总导演”，但它不应该亲自完成所有专业分析。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">User Request<br>      ↓<br>Orchestrator<br>      ├── plan<br>      ├── route<br>      ├── schedule<br>      ├── collect<br>      ├── validate<br>      └── respond<br></code></pre></td></tr></table></figure>
+
+<p>一个稳健的 Orchestrator 至少保存以下状态：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">goal:</span> <span class="hljs-string">分析服务器延迟抖动的根因</span><br><span class="hljs-attr">available_skills:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">scheduler-analysis</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">memory-analysis</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">io-analysis</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">report-generation</span><br><span class="hljs-attr">task_graph:</span> []<br><span class="hljs-attr">completed:</span> []<br><span class="hljs-attr">failed:</span> []<br><span class="hljs-attr">evidence:</span> []<br><span class="hljs-attr">open_questions:</span> []<br><span class="hljs-attr">budget:</span><br>  <span class="hljs-attr">max_skill_calls:</span> <span class="hljs-number">8</span><br>  <span class="hljs-attr">deadline_seconds:</span> <span class="hljs-number">600</span><br></code></pre></td></tr></table></figure>
+
+<p>关键点是：Orchestrator 管理的是<strong>任务图与状态</strong>，不是一段不断增长的思维过程。</p>
+<hr>
+<h2 id="4-官方文档给出的首要判断：谁拥有最终答复"><a href="#4-官方文档给出的首要判断：谁拥有最终答复" class="headerlink" title="4. 官方文档给出的首要判断：谁拥有最终答复"></a>4. 官方文档给出的首要判断：谁拥有最终答复</h2><p>OpenAI 官方的 orchestration 文档把多 Agent 编排分为两种核心模式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Handoff<br>  专门 Agent 接管当前分支和后续答复<br><br>Agent as Tool<br>  管理 Agent 保持控制权，把专门 Agent 当作有边界的能力调用<br></code></pre></td></tr></table></figure>
+
+<p>这个判断同样适用于多个 Skill 的组合：</p>
+<h3 id="4-1-管理者保持控制权"><a href="#4-1-管理者保持控制权" class="headerlink" title="4.1 管理者保持控制权"></a>4.1 管理者保持控制权</h3><p>当子能力只是提供局部结果时，应由主 Skill 或 Orchestrator 保持控制权：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis<br>  ├── call scheduler-analysis → scheduler finding<br>  ├── call memory-analysis    → memory finding<br>  ├── call io-analysis        → I/O finding<br>  └── synthesize final report<br></code></pre></td></tr></table></figure>
+
+<p>适用于：</p>
+<ul>
+<li>最终报告需要综合多个领域；</li>
+<li>子任务有清晰的输入输出；</li>
+<li>用户只需要一个统一答复；</li>
+<li>主流程需要统一控制预算和质量。</li>
+</ul>
+<h3 id="4-2-专门能力接管控制权"><a href="#4-2-专门能力接管控制权" class="headerlink" title="4.2 专门能力接管控制权"></a>4.2 专门能力接管控制权</h3><p>当任务进入一个独立领域，且后续对话、工具、规则都应由专门角色负责时，可以 handoff：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">triage<br>  ↓ identify database incident<br>database-incident-specialist<br>  ↓ owns subsequent interaction<br></code></pre></td></tr></table></figure>
+
+<p>适用于：</p>
+<ul>
+<li>后续步骤需要完全不同的权限或政策；</li>
+<li>专门能力需要直接向用户追问；</li>
+<li>专门能力应负责其分支上的最终答复；</li>
+<li>主 Agent 不应继续充当中间转述者。</li>
+</ul>
+<p>不要把 handoff 当作普通函数调用。一旦移交控制权，就必须定义如何返回、是否返回，以及会话状态如何继承。</p>
+<hr>
+<h2 id="5-Composition：四种常见组合结构"><a href="#5-Composition：四种常见组合结构" class="headerlink" title="5. Composition：四种常见组合结构"></a>5. Composition：四种常见组合结构</h2><h3 id="5-1-顺序组合-Pipeline"><a href="#5-1-顺序组合-Pipeline" class="headerlink" title="5.1 顺序组合 Pipeline"></a>5.1 顺序组合 Pipeline</h3><p>后一步依赖前一步输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">collect-data<br>    ↓ trace_bundle<br>normalize-data<br>    ↓ normalized_events<br>scheduler-analysis<br>    ↓ findings<br>report-generation<br></code></pre></td></tr></table></figure>
+
+<p>适合确定性较强的流水线。重点是每一步都要输出下游可消费的结构，而不是只输出面向人的解释。</p>
+<h3 id="5-2-并行组合-Fan-out-Fan-in"><a href="#5-2-并行组合-Fan-out-Fan-in" class="headerlink" title="5.2 并行组合 Fan-out &#x2F; Fan-in"></a>5.2 并行组合 Fan-out &#x2F; Fan-in</h3><p>多个分析彼此独立，可以共享同一份输入并行执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">                    ┌→ scheduler-analysis ─┐<br>normalized bundle ──┼→ memory-analysis    ─┼→ evidence merge<br>                    └→ io-analysis        ─┘<br></code></pre></td></tr></table></figure>
+
+<p>适合缩短总延迟，但必须处理：</p>
+<ul>
+<li>共享输入是否只读；</li>
+<li>各分支是否会产生冲突副作用；</li>
+<li>部分失败能否继续；</li>
+<li>合并时如何去重和处理矛盾。</li>
+</ul>
+<h3 id="5-3-路由组合-Router"><a href="#5-3-路由组合-Router" class="headerlink" title="5.3 路由组合 Router"></a>5.3 路由组合 Router</h3><p>先分类，再调用必要的 Skill：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">request / evidence<br>        ↓<br>      router<br>  ┌─────┼────────┐<br>  ↓     ↓        ↓<br>sched memory     io<br></code></pre></td></tr></table></figure>
+
+<p>路由不应只靠关键词。更可靠的路由条件包括：</p>
+<ul>
+<li>用户目标；</li>
+<li>输入类型；</li>
+<li>已检测到的信号；</li>
+<li>所需权限；</li>
+<li>能力契约；</li>
+<li>成本和时延预算。</li>
+</ul>
+<h3 id="5-4-层级组合-Hierarchical"><a href="#5-4-层级组合-Hierarchical" class="headerlink" title="5.4 层级组合 Hierarchical"></a>5.4 层级组合 Hierarchical</h3><p>总 Skill 调用领域 Skill，领域 Skill 再调用更小能力：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">performance-analysis<br>  └── scheduler-analysis<br>        ├── runqueue-analysis<br>        ├── wakeup-latency-analysis<br>        └── cpu-affinity-analysis<br></code></pre></td></tr></table></figure>
+
+<p>层级组合适合大型系统，但要限制深度。层级过深会造成上下文重复、调用链难以追踪、错误难以定位和预算失控。</p>
+<hr>
+<h2 id="6-Delegation：委派的是任务，不是模糊目标"><a href="#6-Delegation：委派的是任务，不是模糊目标" class="headerlink" title="6. Delegation：委派的是任务，不是模糊目标"></a>6. Delegation：委派的是任务，不是模糊目标</h2><p>差的委派：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">请分析一下性能问题。<br></code></pre></td></tr></table></figure>
+
+<p>好的委派应形成 Delegation Contract：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">task_id:</span> <span class="hljs-string">sched-001</span><br><span class="hljs-attr">skill:</span> <span class="hljs-string">scheduler-analysis</span><br><span class="hljs-attr">objective:</span> <span class="hljs-string">判断</span> <span class="hljs-number">14</span><span class="hljs-string">:00-14:10</span> <span class="hljs-string">的</span> <span class="hljs-string">P99</span> <span class="hljs-string">延迟是否由</span> <span class="hljs-string">CPU</span> <span class="hljs-string">调度导致</span><br><span class="hljs-attr">inputs:</span><br>  <span class="hljs-attr">trace_path:</span> <span class="hljs-string">artifacts/perf.trace</span><br>  <span class="hljs-attr">time_range:</span> [<span class="hljs-number">14</span><span class="hljs-string">:00:00</span>, <span class="hljs-number">14</span><span class="hljs-string">:10:00</span>]<br>  <span class="hljs-attr">symptom:</span> <span class="hljs-string">request_p99_spike</span><br><span class="hljs-attr">allowed_tools:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">trace-reader</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">statistics</span><br><span class="hljs-attr">constraints:</span><br>  <span class="hljs-attr">max_runtime_seconds:</span> <span class="hljs-number">120</span><br>  <span class="hljs-attr">read_only:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">expected_output:</span><br>  <span class="hljs-attr">schema:</span> <span class="hljs-string">scheduler_finding_v1</span><br><span class="hljs-attr">success_criteria:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">给出支持或反对调度根因的结论</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">每个结论关联证据</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">明确置信度与未知项</span><br><span class="hljs-attr">return_control_to:</span> <span class="hljs-string">performance-analysis</span><br></code></pre></td></tr></table></figure>
+
+<p>一个完整委派至少包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Objective + Inputs + Scope + Permissions<br>+ Output Contract + Budget + Return Rule<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-1-最小必要上下文"><a href="#6-1-最小必要上下文" class="headerlink" title="6.1 最小必要上下文"></a>6.1 最小必要上下文</h3><p>不要把父任务的全部历史复制给每个子 Skill。只传递：</p>
+<ul>
+<li>子任务目标；</li>
+<li>必要输入或工件路径；</li>
+<li>已确认事实；</li>
+<li>不可违反的约束；</li>
+<li>预期输出 Schema。</li>
+</ul>
+<p>这既减少上下文成本，也避免子 Skill 被无关讨论干扰。</p>
+<h3 id="6-2-明确禁止越界"><a href="#6-2-明确禁止越界" class="headerlink" title="6.2 明确禁止越界"></a>6.2 明确禁止越界</h3><p>例如 scheduler-analysis 应明确：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">- 只分析调度证据；<br>- 不重写原始 trace；<br>- 不直接生成整体根因结论；<br>- 发现内存信号时仅返回 cross_domain_signal；<br>- 最终控制权交回 performance-analysis。<br></code></pre></td></tr></table></figure>
+
+<p>这能避免子 Skill 逐渐膨胀成第二个总控 Skill。</p>
+<hr>
+<h2 id="7-Dependency：先画数据依赖，再安排调用顺序"><a href="#7-Dependency：先画数据依赖，再安排调用顺序" class="headerlink" title="7. Dependency：先画数据依赖，再安排调用顺序"></a>7. Dependency：先画数据依赖，再安排调用顺序</h2><p>多个 Skill 的依赖不应只写成“先 A，再 B”。至少要区分四类依赖。</p>
+<h3 id="7-1-数据依赖"><a href="#7-1-数据依赖" class="headerlink" title="7.1 数据依赖"></a>7.1 数据依赖</h3><p>B 需要 A 的输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">trace-normalization → scheduler-analysis<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-2-条件依赖"><a href="#7-2-条件依赖" class="headerlink" title="7.2 条件依赖"></a>7.2 条件依赖</h3><p>只有 A 发现特定信号才运行 B：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">baseline-scan<br>  └── if major_fault_rate &gt; threshold<br>        → memory-analysis<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-3-资源依赖"><a href="#7-3-资源依赖" class="headerlink" title="7.3 资源依赖"></a>7.3 资源依赖</h3><p>两个 Skill 争用同一资源，不能并行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">system-profiler ─┐<br>                 ├─ exclusive host access<br>kernel-tracer  ──┘<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-4-权限依赖"><a href="#7-4-权限依赖" class="headerlink" title="7.4 权限依赖"></a>7.4 权限依赖</h3><p>某个 Skill 需要审批、凭证或更高权限，必须先完成授权检查。</p>
+<p>因此，应把任务表示成有向无环图，而不是静态清单：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">collect<br>   ↓<br>normalize<br>   ├─────────────┬─────────────┐<br>   ↓             ↓             ↓<br>scheduler      memory          io<br>   └─────────────┴─────────────┘<br>                 ↓<br>              correlate<br>                 ↓<br>               report<br></code></pre></td></tr></table></figure>
+
+<p>只有没有未完成依赖的节点才进入 <code>ready</code> 状态。</p>
+<hr>
+<h2 id="8-为-Skill-定义可组合的输入输出契约"><a href="#8-为-Skill-定义可组合的输入输出契约" class="headerlink" title="8. 为 Skill 定义可组合的输入输出契约"></a>8. 为 Skill 定义可组合的输入输出契约</h2><p>Skill 能否组合，首先取决于接口，而不是文字写得是否漂亮。</p>
+<h3 id="8-1-不可组合的输出"><a href="#8-1-不可组合的输出" class="headerlink" title="8.1 不可组合的输出"></a>8.1 不可组合的输出</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">系统似乎存在一些调度问题，建议继续观察。<br></code></pre></td></tr></table></figure>
+
+<p>下游无法判断：证据是什么、时间范围是什么、置信度多高、是否需要进一步分析。</p>
+<h3 id="8-2-可组合的输出"><a href="#8-2-可组合的输出" class="headerlink" title="8.2 可组合的输出"></a>8.2 可组合的输出</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;schema_version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler_finding_v1&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;completed&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;conclusion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler_contention_likely&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;confidence&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0.86</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;evidence&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;metric&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;runqueue_latency_p99_ms&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">47.2</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;time_range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03:10/14:04:00&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;artifact_ref&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;artifacts/sched-summary.json&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;cross_domain_signals&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;possible_io_wait&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;unknowns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;cpu_affinity_history_unavailable&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;recommended_next_skills&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;io-analysis&quot;</span><span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="8-3-Envelope-与领域-Payload-分离"><a href="#8-3-Envelope-与领域-Payload-分离" class="headerlink" title="8.3 Envelope 与领域 Payload 分离"></a>8.3 Envelope 与领域 Payload 分离</h3><p>推荐所有 Skill 共用统一外壳：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">task_id:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">skill_name:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">skill_version:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">status:</span> <span class="hljs-string">completed</span> <span class="hljs-string">|</span> <span class="hljs-string">partial</span> <span class="hljs-string">|</span> <span class="hljs-string">failed</span> <span class="hljs-string">|</span> <span class="hljs-string">blocked</span><br><span class="hljs-attr">started_at:</span> <span class="hljs-string">timestamp</span><br><span class="hljs-attr">finished_at:</span> <span class="hljs-string">timestamp</span><br><span class="hljs-attr">payload:</span> <span class="hljs-string">object</span><br><span class="hljs-attr">artifacts:</span> <span class="hljs-string">list</span><br><span class="hljs-attr">warnings:</span> <span class="hljs-string">list</span><br><span class="hljs-attr">error:</span> <span class="hljs-string">object</span> <span class="hljs-string">|</span> <span class="hljs-literal">null</span><br></code></pre></td></tr></table></figure>
+
+<p><code>payload</code> 由各领域定义，外壳则帮助 Orchestrator 统一处理状态、日志、失败和工件。</p>
+<h3 id="8-4-Schema-必须版本化"><a href="#8-4-Schema-必须版本化" class="headerlink" title="8.4 Schema 必须版本化"></a>8.4 Schema 必须版本化</h3><p>如果 <code>scheduler-analysis</code> 修改字段名，而 <code>report-generation</code> 仍按旧格式读取，组合链会在运行时断裂。因此应：</p>
+<ul>
+<li>给输入输出 Schema 加版本；</li>
+<li>明确兼容范围；</li>
+<li>在边界执行校验；</li>
+<li>不兼容时尽早失败；</li>
+<li>必要时提供 adapter，而不是让下游猜测。</li>
+</ul>
+<hr>
+<h2 id="9-一个完整的-performance-analysis-编排设计"><a href="#9-一个完整的-performance-analysis-编排设计" class="headerlink" title="9. 一个完整的 performance-analysis 编排设计"></a>9. 一个完整的 performance-analysis 编排设计</h2><h3 id="9-1-总-Skill-的职责"><a href="#9-1-总-Skill-的职责" class="headerlink" title="9.1 总 Skill 的职责"></a>9.1 总 Skill 的职责</h3><p><code>performance-analysis</code> 不负责深入分析所有领域，而负责：</p>
+<ol>
+<li>确认分析目标和输入；</li>
+<li>做最低成本的初筛；</li>
+<li>建立任务图；</li>
+<li>调用必要的专业 Skill；</li>
+<li>合并跨域证据；</li>
+<li>识别矛盾和缺口；</li>
+<li>调用报告 Skill；</li>
+<li>验证最终报告。</li>
+</ol>
+<h3 id="9-2-执行状态机"><a href="#9-2-执行状态机" class="headerlink" title="9.2 执行状态机"></a>9.2 执行状态机</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs text">RECEIVED<br>   ↓<br>VALIDATING_INPUT<br>   ├── invalid → BLOCKED<br>   ↓<br>TRIAGING<br>   ↓<br>PLANNED<br>   ↓<br>RUNNING_SPECIALISTS<br>   ├── partial failure → DEGRADED<br>   ↓<br>CORRELATING<br>   ├── evidence conflict → RESOLUTION<br>   ↓<br>GENERATING_REPORT<br>   ↓<br>FINAL_CHECK<br>   ├── failed → REPAIR<br>   ↓<br>COMPLETED<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-3-Orchestrator-伪代码"><a href="#9-3-Orchestrator-伪代码" class="headerlink" title="9.3 Orchestrator 伪代码"></a>9.3 Orchestrator 伪代码</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">run_performance_analysis</span>(<span class="hljs-params">request</span>):<br>    context = validate_and_normalize(request)<br>    signals = run_skill(<span class="hljs-string">&quot;baseline-triage&quot;</span>, context)<br><br>    graph = build_task_graph(signals)<br>    results = &#123;&#125;<br><br>    <span class="hljs-keyword">while</span> graph.has_ready_nodes():<br>        batch = graph.ready_nodes()<br>        batch_results = run_independent_skills_in_parallel(batch)<br><br>        <span class="hljs-keyword">for</span> result <span class="hljs-keyword">in</span> batch_results:<br>            validate_result_envelope(result)<br>            results[result.task_id] = result<br>            graph.update(result)<br><br>        <span class="hljs-keyword">if</span> budget_exhausted() <span class="hljs-keyword">or</span> no_progress(graph):<br>            <span class="hljs-keyword">break</span><br><br>    correlated = run_skill(<br>        <span class="hljs-string">&quot;evidence-correlation&quot;</span>,<br>        select_relevant_results(results),<br>    )<br><br>    report = run_skill(<br>        <span class="hljs-string">&quot;report-generation&quot;</span>,<br>        build_report_input(correlated, results),<br>    )<br><br>    <span class="hljs-keyword">return</span> validate_final_report(report, context)<br></code></pre></td></tr></table></figure>
+
+<p>注意：这里的并行、状态更新、预算与 Schema 校验最好由运行时代码保障；Skill 指令负责描述策略和判定规则。</p>
+<hr>
+<h2 id="10-结果合并不是简单拼接"><a href="#10-结果合并不是简单拼接" class="headerlink" title="10. 结果合并不是简单拼接"></a>10. 结果合并不是简单拼接</h2><p>多个 Skill 返回的内容不能直接依次放入报告。Aggregator 至少应做四件事。</p>
+<h3 id="10-1-证据去重"><a href="#10-1-证据去重" class="headerlink" title="10.1 证据去重"></a>10.1 证据去重</h3><p>多个分析可能引用同一个时间段、指标或日志。应根据稳定标识去重，而不是靠文本相似度猜测。</p>
+<h3 id="10-2-证据关联"><a href="#10-2-证据关联" class="headerlink" title="10.2 证据关联"></a>10.2 证据关联</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">I/O latency ↑<br>    ↓<br>task enters uninterruptible sleep<br>    ↓<br>runnable pattern changes<br>    ↓<br>request latency ↑<br></code></pre></td></tr></table></figure>
+
+<p>这比把“I&#x2F;O 异常”和“调度异常”并列展示更有价值。</p>
+<h3 id="10-3-冲突处理"><a href="#10-3-冲突处理" class="headerlink" title="10.3 冲突处理"></a>10.3 冲突处理</h3><p>如果两个 Skill 得出冲突结论，不要让最后执行者覆盖前者。应记录：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">conflict:</span><br>  <span class="hljs-attr">claim:</span> <span class="hljs-string">CPU</span> <span class="hljs-string">contention</span> <span class="hljs-string">is</span> <span class="hljs-string">primary</span> <span class="hljs-string">cause</span><br>  <span class="hljs-attr">supporting:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">scheduler-analysis/evidence-3</span><br>  <span class="hljs-attr">opposing:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">io-analysis/evidence-7</span><br>  <span class="hljs-attr">resolution:</span> <span class="hljs-string">request</span> <span class="hljs-string">additional</span> <span class="hljs-string">off-CPU</span> <span class="hljs-string">evidence</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="10-4-不确定性传播"><a href="#10-4-不确定性传播" class="headerlink" title="10.4 不确定性传播"></a>10.4 不确定性传播</h3><p>下游不能把上游的低置信度推测改写成确定事实。报告中的结论强度，应受最弱关键证据约束。</p>
+<hr>
+<h2 id="11-并行调用的安全条件"><a href="#11-并行调用的安全条件" class="headerlink" title="11. 并行调用的安全条件"></a>11. 并行调用的安全条件</h2><p>满足以下条件时，两个 Skill 才适合并行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">No data dependency<br>+ No conflicting write<br>+ Independent permission<br>+ Merge rule exists<br>+ Budget allows<br></code></pre></td></tr></table></figure>
+
+<p>例如，scheduler-analysis 与 memory-analysis 读取同一个不可变 trace，可以并行；但两个 Skill 都要启动独占系统采样器时，必须串行。</p>
+<p>可以为每个任务声明：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">reads:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">artifact://normalized-trace</span><br><span class="hljs-attr">writes:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">artifact://scheduler-findings</span><br><span class="hljs-attr">locks:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-literal">null</span><br><span class="hljs-attr">side_effects:</span> <span class="hljs-string">none</span><br></code></pre></td></tr></table></figure>
+
+<p>调度器据此判断冲突，而不是让模型临场猜测。</p>
+<hr>
+<h2 id="12-失败语义：局部失败不等于整体失败"><a href="#12-失败语义：局部失败不等于整体失败" class="headerlink" title="12. 失败语义：局部失败不等于整体失败"></a>12. 失败语义：局部失败不等于整体失败</h2><p>多 Skill 系统至少需要四种结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">completed  完整成功<br>partial    有结果，但证据或覆盖不完整<br>blocked    缺少输入、权限或用户决定<br>failed     执行失败且当前无法恢复<br></code></pre></td></tr></table></figure>
+
+<p>Orchestrator 应根据依赖关系判断影响：</p>
+<table>
+<thead>
+<tr>
+<th>子 Skill 状态</th>
+<th align="right">是否继续</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可选分析失败</td>
+<td align="right">是</td>
+<td>标记覆盖缺口</td>
+</tr>
+<tr>
+<td>关键上游失败</td>
+<td align="right">否</td>
+<td>阻断依赖节点</td>
+</tr>
+<tr>
+<td>部分成功</td>
+<td align="right">通常是</td>
+<td>降低结论强度</td>
+</tr>
+<tr>
+<td>权限阻塞</td>
+<td align="right">视情况</td>
+<td>请求授权或走无权限路径</td>
+</tr>
+<tr>
+<td>输出不符合 Schema</td>
+<td align="right">否</td>
+<td>修复一次，随后失败</td>
+</tr>
+</tbody></table>
+<p>最终输出必须披露未完成的分支，不能把“其他 Skill 成功”包装成“整体完整成功”。</p>
+<hr>
+<h2 id="13-Skill-选择：自动触发与显式编排如何配合"><a href="#13-Skill-选择：自动触发与显式编排如何配合" class="headerlink" title="13. Skill 选择：自动触发与显式编排如何配合"></a>13. Skill 选择：自动触发与显式编排如何配合</h2><p>Anthropic 官方文档说明，Skill 在可用环境中会根据任务相关性自动触发；其 metadata 用于发现，完整 <code>SKILL.md</code> 在触发后才加载。这使多个 Skill 可以按需组合，而不必预先把全部正文装入上下文。</p>
+<p>但自动触发不等于无需编排。推荐分成两层：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Discovery Layer<br>  根据 name + description 找到候选 Skill<br><br>Execution Layer<br>  根据任务图、契约、权限和预算决定是否调用<br></code></pre></td></tr></table></figure>
+
+<p>对低风险开放任务，可以让模型动态选择；对高风险或稳定流水线，应显式规定允许的 Skill 集合、调用顺序和退出条件。</p>
+<h3 id="13-1-不要挂载所有-Skill"><a href="#13-1-不要挂载所有-Skill" class="headerlink" title="13.1 不要挂载所有 Skill"></a>13.1 不要挂载所有 Skill</h3><p>Anthropic 的 Managed Agents 文档明确提醒：挂载更多 Skill 会增加会话沙箱启动时间，应只附加当前 Agent 所需的 Skill。</p>
+<p>工程上可以进一步建立 Capability Profile：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">agent:</span> <span class="hljs-string">performance-orchestrator</span><br><span class="hljs-attr">skills:</span><br>  <span class="hljs-attr">always_available:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">performance-triage</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">report-generation</span><br>  <span class="hljs-attr">conditionally_mount:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">scheduler-analysis</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">memory-analysis</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">io-analysis</span><br></code></pre></td></tr></table></figure>
+
+<p>这会比“全量挂载后依靠模型自律”更稳定。</p>
+<hr>
+<h2 id="14-Orchestrator-Skill-的-SKILL-md-模板"><a href="#14-Orchestrator-Skill-的-SKILL-md-模板" class="headerlink" title="14. Orchestrator Skill 的 SKILL.md 模板"></a>14. Orchestrator Skill 的 SKILL.md 模板</h2><p>下面是一个可复用骨架：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs markdown">---<br>name: performance-analysis<br><span class="hljs-section">description: Orchestrate scheduler, memory, and I/O analysis for system performance incidents. Use when the user asks for cross-domain root-cause analysis or a consolidated performance report.</span><br><span class="hljs-section">---</span><br><br><span class="hljs-section"># Performance Analysis</span><br><br><span class="hljs-section">## Role</span><br><br>Own task planning, specialist selection, evidence correlation,<br>final validation, and the user-facing report.<br><br>Do not perform deep scheduler, memory, or I/O analysis directly.<br><br><span class="hljs-section">## Inputs</span><br><br><span class="hljs-bullet">-</span> Incident objective<br><span class="hljs-bullet">-</span> Time range<br><span class="hljs-bullet">-</span> Trace, metrics, or log artifact references<br><span class="hljs-bullet">-</span> Runtime and cost budget<br><br><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Validate inputs and preserve originals as read-only.<br><span class="hljs-bullet">2.</span> Run baseline triage.<br><span class="hljs-bullet">3.</span> Build a dependency graph from observed signals.<br><span class="hljs-bullet">4.</span> Delegate only to relevant specialist Skills.<br><span class="hljs-bullet">5.</span> Run independent, read-only analyses in parallel.<br><span class="hljs-bullet">6.</span> Validate every returned result against its declared schema.<br><span class="hljs-bullet">7.</span> Correlate evidence; never concatenate findings blindly.<br><span class="hljs-bullet">8.</span> Resolve or disclose contradictory findings.<br><span class="hljs-bullet">9.</span> Invoke report-generation with selected evidence.<br><span class="hljs-bullet">10.</span> Run the final checklist before returning.<br><br><span class="hljs-section">## Delegation rules</span><br><br><span class="hljs-bullet">-</span> scheduler-analysis owns scheduler evidence only.<br><span class="hljs-bullet">-</span> memory-analysis owns memory evidence only.<br><span class="hljs-bullet">-</span> io-analysis owns storage and I/O evidence only.<br><span class="hljs-bullet">-</span> Every specialist returns control to this Skill.<br><span class="hljs-bullet">-</span> Pass only the minimum context required by the subtask.<br><br><span class="hljs-section">## Failure policy</span><br><br><span class="hljs-bullet">-</span> Block dependents when a required upstream result fails.<br><span class="hljs-bullet">-</span> Continue after optional branch failure and disclose the gap.<br><span class="hljs-bullet">-</span> Never present partial coverage as complete analysis.<br><br><span class="hljs-section">## Final check</span><br><br><span class="hljs-bullet">-</span> Every conclusion references evidence.<br><span class="hljs-bullet">-</span> Evidence time ranges match the incident window.<br><span class="hljs-bullet">-</span> Conflicts and unknowns are visible.<br><span class="hljs-bullet">-</span> Recommendations follow from confirmed or clearly labeled hypotheses.<br></code></pre></td></tr></table></figure>
+
+<p>这个模板表达的是组合策略。真正的并行执行、超时、锁、Schema 校验和持久化状态，应由运行时或脚本完成。</p>
+<hr>
+<h2 id="15-子-Skill-的最小模板"><a href="#15-子-Skill-的最小模板" class="headerlink" title="15. 子 Skill 的最小模板"></a>15. 子 Skill 的最小模板</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs markdown">---<br>name: scheduler-analysis<br><span class="hljs-section">description: Analyze scheduler traces and CPU scheduling symptoms. Use when run-queue delay, wakeup latency, CPU contention, or affinity problems require focused analysis.</span><br><span class="hljs-section">---</span><br><br><span class="hljs-section"># Scheduler Analysis</span><br><br><span class="hljs-section">## Scope</span><br><br>Analyze only scheduler-related evidence.<br><br><span class="hljs-section">## Required inputs</span><br><br><span class="hljs-bullet">-</span> task<span class="hljs-emphasis">_id</span><br><span class="hljs-emphasis">- incident time range</span><br><span class="hljs-emphasis">- normalized trace reference</span><br><span class="hljs-emphasis">- analysis question</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">## Workflow</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">1. Validate trace availability and time range.</span><br><span class="hljs-emphasis">2. Calculate scheduler indicators.</span><br><span class="hljs-emphasis">3. Compare anomalies with the incident window.</span><br><span class="hljs-emphasis">4. Record evidence and counter-evidence.</span><br><span class="hljs-emphasis">5. Return scheduler_</span>finding<span class="hljs-emphasis">_v1.</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">## Boundaries</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">- Do not modify source artifacts.</span><br><span class="hljs-emphasis">- Do not generate the final incident report.</span><br><span class="hljs-emphasis">- Return memory or I/O observations as cross_</span>domain<span class="hljs-emphasis">_signals only.</span><br><span class="hljs-emphasis">- Return control to performance-analysis.</span><br></code></pre></td></tr></table></figure>
+
+<p>父 Skill 和子 Skill 都明确“做什么”和“不做什么”，组合关系才稳定。</p>
+<hr>
+<h2 id="16-Composition-与-Delegation-的区别"><a href="#16-Composition-与-Delegation-的区别" class="headerlink" title="16. Composition 与 Delegation 的区别"></a>16. Composition 与 Delegation 的区别</h2><p>这两个概念经常混用：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>关注点</th>
+<th>典型问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Composition</td>
+<td>能力怎样拼成更大能力</td>
+<td>A、B、C 是顺序、并行还是路由关系？</td>
+</tr>
+<tr>
+<td>Delegation</td>
+<td>一次运行中任务怎样交出去</td>
+<td>谁执行？传什么？何时归还控制权？</td>
+</tr>
+</tbody></table>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">“性能分析由调度、内存和 I/O 分析组成”<br>→ Composition<br><br>“本次发现 runqueue 延迟，把 14:00-14:10 的 trace 交给 scheduler-analysis”<br>→ Delegation<br></code></pre></td></tr></table></figure>
+
+<p>Composition 是静态架构关系，Delegation 是动态执行行为。</p>
+<hr>
+<h2 id="17-常见反模式"><a href="#17-常见反模式" class="headerlink" title="17. 常见反模式"></a>17. 常见反模式</h2><h3 id="17-1-God-Skill"><a href="#17-1-God-Skill" class="headerlink" title="17.1 God Skill"></a>17.1 God Skill</h3><p>一个总 Skill 同时包含所有领域知识和全部执行细节。结果是无法复用、难以测试、上下文巨大。</p>
+<h3 id="17-2-俄罗斯套娃式委派"><a href="#17-2-俄罗斯套娃式委派" class="headerlink" title="17.2 俄罗斯套娃式委派"></a>17.2 俄罗斯套娃式委派</h3><p>子 Skill 随意继续委派，调用深度没有上限。最终无法判断控制权在哪里。</p>
+<p>修复：规定最大深度、允许调用列表和返回规则。</p>
+<h3 id="17-3-自然语言作为唯一接口"><a href="#17-3-自然语言作为唯一接口" class="headerlink" title="17.3 自然语言作为唯一接口"></a>17.3 自然语言作为唯一接口</h3><p>子 Skill 返回散文，下游依靠模型重新理解。结果容易发生字段遗漏、事实升级和解析歧义。</p>
+<p>修复：结构化 Envelope + 版本化 Payload。</p>
+<h3 id="17-4-把所有上下文广播给所有-Skill"><a href="#17-4-把所有上下文广播给所有-Skill" class="headerlink" title="17.4 把所有上下文广播给所有 Skill"></a>17.4 把所有上下文广播给所有 Skill</h3><p>这会增加成本，也会让专业 Skill 越界。修复方法是最小必要上下文和工件引用。</p>
+<h3 id="17-5-没有最终结果所有者"><a href="#17-5-没有最终结果所有者" class="headerlink" title="17.5 没有最终结果所有者"></a>17.5 没有最终结果所有者</h3><p>多个 Skill 各说一段，却没有组件负责冲突、去重和最终质量。修复：在设计开始时明确最终答复的 owner。</p>
+<h3 id="17-6-循环调用"><a href="#17-6-循环调用" class="headerlink" title="17.6 循环调用"></a>17.6 循环调用</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill A → Skill B → Skill C → Skill A<br></code></pre></td></tr></table></figure>
+
+<p>修复：任务图尽量保持 DAG；若业务必须回环，则使用上一章的显式循环状态、进展条件和预算。</p>
+<h3 id="17-7-隐藏失败"><a href="#17-7-隐藏失败" class="headerlink" title="17.7 隐藏失败"></a>17.7 隐藏失败</h3><p>某个分支失败后，系统仍输出漂亮报告，却不说明证据缺口。这是组合系统最危险的错误之一。</p>
+<hr>
+<h2 id="18-可观测性：记录“为什么调用”，不只记录“调用了什么”"><a href="#18-可观测性：记录“为什么调用”，不只记录“调用了什么”" class="headerlink" title="18. 可观测性：记录“为什么调用”，不只记录“调用了什么”"></a>18. 可观测性：记录“为什么调用”，不只记录“调用了什么”</h2><p>建议每次 Skill 调用产生统一事件：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;trace_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;perf-20261007-001&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;parent_task_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;root&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;task_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sched-001&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;skill&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler-analysis&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;skill_version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2.1.0&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;reason&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;runqueue_latency exceeded triage threshold&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;input_artifacts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;normalized-trace@sha256:...&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;completed&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;duration_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">18420</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;output_schema&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler_finding_v1&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;token_usage&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4380</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;warnings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>至少要能回答：</p>
+<ul>
+<li>为什么选择这个 Skill；</li>
+<li>谁发起了委派；</li>
+<li>输入来自哪里；</li>
+<li>使用了哪个版本；</li>
+<li>是否发生 handoff；</li>
+<li>控制权最终回到哪里；</li>
+<li>哪个结果影响了最终结论。</li>
+</ul>
+<p>否则，一旦最终报告出错，很难判断是路由错误、子 Skill 错误、数据契约错误，还是合并错误。</p>
+<hr>
+<h2 id="19-多-Skill-组合的测试矩阵"><a href="#19-多-Skill-组合的测试矩阵" class="headerlink" title="19. 多 Skill 组合的测试矩阵"></a>19. 多 Skill 组合的测试矩阵</h2><p>单独测试每个 Skill 还不够，还要测试它们的连接处。</p>
+<h3 id="19-1-Contract-Test"><a href="#19-1-Contract-Test" class="headerlink" title="19.1 Contract Test"></a>19.1 Contract Test</h3><p>验证上游输出是否满足下游输入 Schema。</p>
+<h3 id="19-2-Routing-Test"><a href="#19-2-Routing-Test" class="headerlink" title="19.2 Routing Test"></a>19.2 Routing Test</h3><p>验证不同症状是否选择正确的 Skill，并确保不相关 Skill 不被调用。</p>
+<h3 id="19-3-Graph-Test"><a href="#19-3-Graph-Test" class="headerlink" title="19.3 Graph Test"></a>19.3 Graph Test</h3><p>验证依赖顺序、可并行节点和循环检测。</p>
+<h3 id="19-4-Partial-Failure-Test"><a href="#19-4-Partial-Failure-Test" class="headerlink" title="19.4 Partial Failure Test"></a>19.4 Partial Failure Test</h3><p>让一个可选分支失败，检查系统是否继续并披露缺口；让关键上游失败，检查下游是否被阻断。</p>
+<h3 id="19-5-Conflict-Test"><a href="#19-5-Conflict-Test" class="headerlink" title="19.5 Conflict Test"></a>19.5 Conflict Test</h3><p>让两个 Skill 返回矛盾结论，验证系统不会静默覆盖。</p>
+<h3 id="19-6-Context-Isolation-Test"><a href="#19-6-Context-Isolation-Test" class="headerlink" title="19.6 Context Isolation Test"></a>19.6 Context Isolation Test</h3><p>验证子 Skill 只能得到完成任务所需的最小上下文和权限。</p>
+<h3 id="19-7-Ownership-Test"><a href="#19-7-Ownership-Test" class="headerlink" title="19.7 Ownership Test"></a>19.7 Ownership Test</h3><p>验证 manager 模式下子 Skill 会归还控制权，handoff 模式下新 owner 能正确承接状态。</p>
+<h3 id="19-8-Version-Compatibility-Test"><a href="#19-8-Version-Compatibility-Test" class="headerlink" title="19.8 Version Compatibility Test"></a>19.8 Version Compatibility Test</h3><p>用新旧 Schema 组合运行，确认兼容版本成功、不兼容版本快速失败。</p>
+<hr>
+<h2 id="20-如何判断应该拆成多个-Skill"><a href="#20-如何判断应该拆成多个-Skill" class="headerlink" title="20. 如何判断应该拆成多个 Skill"></a>20. 如何判断应该拆成多个 Skill</h2><p>并不是流程长就必须拆。OpenAI 官方建议只在专业能力能够显著改善能力隔离、政策隔离、Prompt 清晰度或 trace 可读性时增加 specialist；过早拆分会增加 Prompt、trace 和审批面。</p>
+<p>可以使用以下判断表：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th align="right">倾向拆分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>是否有独立、可复用的领域目标？</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>是否需要不同工具或权限？</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>是否有稳定的输入输出契约？</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>是否能独立测试和版本化？</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>是否可能被其他工作流复用？</td>
+<td align="right">是</td>
+</tr>
+<tr>
+<td>是否只是同一流程中的两三个简单步骤？</td>
+<td align="right">否</td>
+</tr>
+<tr>
+<td>拆分后是否只能互相传递大量隐式上下文？</td>
+<td align="right">否</td>
+</tr>
+</tbody></table>
+<p>最稳妥的原则是：</p>
+<blockquote>
+<p>从一个清晰的 Skill 开始，在职责、权限、上下文或输出契约真正发生变化时再拆分。</p>
+</blockquote>
+<hr>
+<h2 id="21-官方资料带来的工程启示"><a href="#21-官方资料带来的工程启示" class="headerlink" title="21. 官方资料带来的工程启示"></a>21. 官方资料带来的工程启示</h2><h3 id="21-1-OpenAI：先选择控制权模型"><a href="#21-1-OpenAI：先选择控制权模型" class="headerlink" title="21.1 OpenAI：先选择控制权模型"></a>21.1 OpenAI：先选择控制权模型</h3><p>OpenAI 将 orchestration 的核心选择归纳为 handoff 与 agents-as-tools。对 Skill 系统而言，这意味着设计者首先要回答：子能力是接管对话，还是只返回有边界的结果？</p>
+<h3 id="21-2-OpenAI：专业化必须有实际收益"><a href="#21-2-OpenAI：专业化必须有实际收益" class="headerlink" title="21.2 OpenAI：专业化必须有实际收益"></a>21.2 OpenAI：专业化必须有实际收益</h3><p>专业组件应该职责狭窄，描述简短具体；只有当分支真的需要不同指令、工具或政策时才值得拆分。</p>
+<h3 id="21-3-Anthropic：Skill-天然支持组合，但依赖渐进加载"><a href="#21-3-Anthropic：Skill-天然支持组合，但依赖渐进加载" class="headerlink" title="21.3 Anthropic：Skill 天然支持组合，但依赖渐进加载"></a>21.3 Anthropic：Skill 天然支持组合，但依赖渐进加载</h3><p>Anthropic 将“组合多个 Skill 完成复杂多步骤任务”列为 Skill 的核心价值之一。metadata 常驻用于发现，<code>SKILL.md</code> 和资源按需进入上下文，因此组合不等于一次性加载全部内容。</p>
+<h3 id="21-4-Anthropic：可用数量不等于应该全部挂载"><a href="#21-4-Anthropic：可用数量不等于应该全部挂载" class="headerlink" title="21.4 Anthropic：可用数量不等于应该全部挂载"></a>21.4 Anthropic：可用数量不等于应该全部挂载</h3><p>平台可以支持很多 Skill，但更多挂载会增加启动成本；应按 Agent 的职责附加必要能力，并把 Skill 来源纳入信任边界。</p>
+<hr>
+<h2 id="22-本章最终模型"><a href="#22-本章最终模型" class="headerlink" title="22. 本章最终模型"></a>22. 本章最终模型</h2><p>可以把多 Skill 系统浓缩成下面这张图：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs text">                  User Goal<br>                      │<br>                      ▼<br>             ┌────────────────┐<br>             │  Orchestrator  │<br>             │ owner / budget │<br>             └───────┬────────┘<br>                     │ build DAG<br>      ┌──────────────┼──────────────┐<br>      │              │              │<br>      ▼              ▼              ▼<br>Scheduler Skill  Memory Skill    I/O Skill<br>narrow contract  narrow contract  narrow contract<br>      │              │              │<br>      └──────────────┼──────────────┘<br>                     ▼<br>             Evidence Aggregator<br>          dedupe / correlate / resolve<br>                     │<br>                     ▼<br>             Report Generation<br>                     │<br>                     ▼<br>                Final Check<br></code></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Orchestration 决定谁控制流程；<br>Composition 定义能力之间的静态结构；<br>Delegation 描述运行时如何交付子任务；<br>Dependency 决定节点何时可以执行；<br>Contract 保证结果可以可靠传递；<br>Ownership 保证最终有人负责。<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="23-Skill-专项复盘"><a href="#23-Skill-专项复盘" class="headerlink" title="23. Skill 专项复盘"></a>23. Skill 专项复盘</h2><h3 id="23-1-这个逻辑应该写在-SKILL-md-还是运行时代码？"><a href="#23-1-这个逻辑应该写在-SKILL-md-还是运行时代码？" class="headerlink" title="23.1 这个逻辑应该写在 SKILL.md 还是运行时代码？"></a>23.1 这个逻辑应该写在 SKILL.md 还是运行时代码？</h3><p>角色、路由原则、委派规则、输入输出语义和失败政策写在 <code>SKILL.md</code>；任务图调度、并发、锁、超时、持久化和 Schema 强校验由代码实现。</p>
+<h3 id="23-2-子-Skill-应该获得完整会话吗？"><a href="#23-2-子-Skill-应该获得完整会话吗？" class="headerlink" title="23.2 子 Skill 应该获得完整会话吗？"></a>23.2 子 Skill 应该获得完整会话吗？</h3><p>默认不应该。传递目标、必要事实、工件引用、约束和输出契约即可。只有 handoff 后需要承接用户交互时，才传递经过筛选的相关历史。</p>
+<h3 id="23-3-子-Skill-应该直接回答用户吗？"><a href="#23-3-子-Skill-应该直接回答用户吗？" class="headerlink" title="23.3 子 Skill 应该直接回答用户吗？"></a>23.3 子 Skill 应该直接回答用户吗？</h3><p>取决于所有权模型。manager 模式下只返回结构化结果；handoff 模式下可以接管该分支的用户答复。</p>
+<h3 id="23-4-什么时候可以并行？"><a href="#23-4-什么时候可以并行？" class="headerlink" title="23.4 什么时候可以并行？"></a>23.4 什么时候可以并行？</h3><p>没有数据依赖、写冲突和资源冲突，并且存在明确合并规则时才可以并行。</p>
+<h3 id="23-5-如何证明组合设计有效？"><a href="#23-5-如何证明组合设计有效？" class="headerlink" title="23.5 如何证明组合设计有效？"></a>23.5 如何证明组合设计有效？</h3><p>测量路由准确率、无效调用率、Contract 通过率、并行加速比、局部失败隔离率、冲突披露率、调用深度、上下文成本和最终任务成功率。</p>
+<hr>
+<h2 id="24-本章实践"><a href="#24-本章实践" class="headerlink" title="24. 本章实践"></a>24. 本章实践</h2><p>围绕 <code>performance-analysis</code> 完成以下设计：</p>
+<ol>
+<li>定义总 Skill 的最终答复所有权；</li>
+<li>为 scheduler、memory、I&#x2F;O 和 report 四个子 Skill 划定职责边界；</li>
+<li>分别写出输入输出 Schema；</li>
+<li>画出包含数据依赖与条件依赖的 DAG；</li>
+<li>标出可以并行和必须串行的节点；</li>
+<li>为每次委派定义目标、上下文、权限、预算和返回规则；</li>
+<li>设计统一结果 Envelope；</li>
+<li>设计证据去重、关联和冲突处理规则；</li>
+<li>模拟一个子 Skill 部分失败；</li>
+<li>编写 Contract、Routing、Ownership 和 Version Compatibility 测试。</li>
+</ol>
+<p>下一章将严格按照大纲进入：</p>
+<blockquote>
+<p>第 19 章：Skill 之间如何避免职责重叠。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agents/orchestration">OpenAI API — Orchestration and handoffs</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/learn/agents">OpenAI Developers — Agents</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Anthropic — Agent Skills overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/managed-agents/skills">Anthropic — Skills in Managed Agents</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+        <a href="/tags/Orchestration/" class="print-no-link">#Orchestration</a>
+      
+        <a href="/tags/Composition/" class="print-no-link">#Composition</a>
+      
+        <a href="/tags/Delegation/" class="print-no-link">#Delegation</a>
+      
+        <a href="/tags/Dependency/" class="print-no-link">#Dependency</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</div>
+      <div>https://cj0510.github.io/2026/10/07/AI/Skill/18-多个Skill如何组合与调用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/" title="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

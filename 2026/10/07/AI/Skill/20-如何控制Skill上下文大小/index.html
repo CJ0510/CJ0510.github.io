@@ -1,0 +1,1326 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小前面几章已经完成了 Skill 的工作流、工具调用、控制流和组合设计。从本章开始进入第六阶段：Context Engineering。 大纲给出的上下文加载链路是： 1234567Skill Metadata ↓Core Workflow ↓Conditional References ↓Tool Results  这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/07/AI/Skill/20-%E5%A6%82%E4%BD%95%E6%8E%A7%E5%88%B6Skill%E4%B8%8A%E4%B8%8B%E6%96%87%E5%A4%A7%E5%B0%8F/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小前面几章已经完成了 Skill 的工作流、工具调用、控制流和组合设计。从本章开始进入第六阶段：Context Engineering。 大纲给出的上下文加载链路是： 1234567Skill Metadata ↓Core Workflow ↓Conditional References ↓Tool Results  这">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-07T22:46:06.551Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Context Engineering">
+<meta property="article:tag" content="Context Window">
+<meta property="article:tag" content="Progressive Disclosure">
+<meta property="article:tag" content="Token Budget">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-07 00:00" pubdate>
+          2026-10-07
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          118 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（二十）：如何控制-Skill-上下文大小"><a href="#Agent-Skill-原理与工程实践（二十）：如何控制-Skill-上下文大小" class="headerlink" title="Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小"></a>Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小</h1><p>前面几章已经完成了 Skill 的工作流、工具调用、控制流和组合设计。从本章开始进入第六阶段：Context Engineering。</p>
+<p>大纲给出的上下文加载链路是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill Metadata<br> ↓<br>Core Workflow<br> ↓<br>Conditional References<br> ↓<br>Tool Results<br></code></pre></td></tr></table></figure>
+
+<p>这四层不是普通的目录分类，而是一套上下文预算策略：</p>
+<ul>
+<li>Metadata 只负责让模型发现 Skill；</li>
+<li>Core Workflow 只负责让模型正确执行主流程；</li>
+<li>Conditional References 只在特定分支需要时读取；</li>
+<li>Tool Results 只保留完成当前决策所必需的信息。</li>
+</ul>
+<p>控制上下文大小的目标并不是单纯“少用 token”，而是提高有效信息密度，让模型在正确的时刻看到正确的信息。</p>
+<hr>
+<h2 id="1-上下文窗口不是资料仓库"><a href="#1-上下文窗口不是资料仓库" class="headerlink" title="1. 上下文窗口不是资料仓库"></a>1. 上下文窗口不是资料仓库</h2><p>Skill 目录可以保存大量资料，但模型当前上下文不应该装下全部资料。</p>
+<p>应把两个概念分开：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Available Knowledge<br>  文件系统、数据库、向量库、API、工件存储中可访问的信息<br><br>Active Context<br>  当前推理步骤实际需要、已经进入模型窗口的信息<br></code></pre></td></tr></table></figure>
+
+<p>理想状态是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Available Knowledge 很大<br>Active Context 很小但足够<br></code></pre></td></tr></table></figure>
+
+<p>如果把所有可用知识都预先放入上下文，就会出现：</p>
+<ul>
+<li>与当前任务无关的信息争夺注意力；</li>
+<li>关键约束被长文淹没；</li>
+<li>输入成本和延迟增加；</li>
+<li>更早触发 compaction 或截断；</li>
+<li>相似规则发生冲突；</li>
+<li>工具结果不断累积，后续决策越来越不稳定。</li>
+</ul>
+<p>所以，Context Engineering 的本质是<strong>选择、组织、加载、压缩和淘汰信息</strong>。</p>
+<hr>
+<h2 id="2-“上下文越多，效果越好”为什么是错的"><a href="#2-“上下文越多，效果越好”为什么是错的" class="headerlink" title="2. “上下文越多，效果越好”为什么是错的"></a>2. “上下文越多，效果越好”为什么是错的</h2><p>大上下文窗口只表示模型最多能接收多少内容，不表示每一段内容都能带来正收益。</p>
+<p>可以用一个简单概念表达：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Context Utility<br>= Relevant Signal<br>- Noise<br>- Conflict<br>- Redundancy<br>- Staleness<br></code></pre></td></tr></table></figure>
+
+<p>同一份资料在不同阶段，价值并不相同：</p>
+<table>
+<thead>
+<tr>
+<th>信息</th>
+<th align="right">Triage 阶段</th>
+<th align="right">深度分析阶段</th>
+<th align="right">报告阶段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户目标</td>
+<td align="right">高</td>
+<td align="right">高</td>
+<td align="right">高</td>
+</tr>
+<tr>
+<td>完整 trace 原文</td>
+<td align="right">低</td>
+<td align="right">中</td>
+<td align="right">低</td>
+</tr>
+<tr>
+<td>领域规则</td>
+<td align="right">低</td>
+<td align="right">高</td>
+<td align="right">低</td>
+</tr>
+<tr>
+<td>已验证 finding</td>
+<td align="right">中</td>
+<td align="right">高</td>
+<td align="right">高</td>
+</tr>
+<tr>
+<td>报告模板</td>
+<td align="right">低</td>
+<td align="right">低</td>
+<td align="right">高</td>
+</tr>
+</tbody></table>
+<p>因此，上下文管理不能只设一个总 token 上限，还要按阶段决定哪些信息应该出现。</p>
+<hr>
+<h2 id="3-四层上下文模型"><a href="#3-四层上下文模型" class="headerlink" title="3. 四层上下文模型"></a>3. 四层上下文模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">┌──────────────────────────────────────┐<br>│ Level 1: Skill Metadata              │<br>│ name + description                   │<br>│ 作用：发现与触发                      │<br>├──────────────────────────────────────┤<br>│ Level 2: Core Workflow               │<br>│ SKILL.md 主体                         │<br>│ 作用：执行主干、边界与检查             │<br>├──────────────────────────────────────┤<br>│ Level 3: Conditional References      │<br>│ references / schemas / examples      │<br>│ 作用：按分支补充专门知识               │<br>├──────────────────────────────────────┤<br>│ Level 4: Tool Results                │<br>│ 检索结果、日志、分析产物、错误          │<br>│ 作用：提供当前任务的动态事实            │<br>└──────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<p>越靠上，越早加载、越常驻，因此必须越短、越稳定；越靠下，越贴近当前任务，可以更具体，但要严格按需读取和及时释放。</p>
+<hr>
+<h2 id="4-第一层：Skill-Metadata-只解决发现问题"><a href="#4-第一层：Skill-Metadata-只解决发现问题" class="headerlink" title="4. 第一层：Skill Metadata 只解决发现问题"></a>4. 第一层：Skill Metadata 只解决发现问题</h2><p>Metadata 的任务是帮助模型回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">这个 Skill 是做什么的？<br>当前请求何时应该使用它？<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">scheduler-analysis</span><br><span class="hljs-attr">description:</span> <span class="hljs-string">Analyze</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">traces</span> <span class="hljs-string">for</span> <span class="hljs-string">run-queue</span> <span class="hljs-string">latency,</span> <span class="hljs-string">wakeup</span> <span class="hljs-string">delay,</span> <span class="hljs-string">CPU</span> <span class="hljs-string">contention,</span> <span class="hljs-string">migration,</span> <span class="hljs-string">and</span> <span class="hljs-string">affinity</span> <span class="hljs-string">issues.</span> <span class="hljs-string">Use</span> <span class="hljs-string">after</span> <span class="hljs-string">triage</span> <span class="hljs-string">identifies</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">signals</span> <span class="hljs-string">or</span> <span class="hljs-string">when</span> <span class="hljs-string">the</span> <span class="hljs-string">user</span> <span class="hljs-string">explicitly</span> <span class="hljs-string">requests</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">analysis.</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<p>它不应该包含：</p>
+<ul>
+<li>完整执行步骤；</li>
+<li>大段领域知识；</li>
+<li>所有输入输出示例；</li>
+<li>工具 API 说明；</li>
+<li>故障排查手册；</li>
+<li>历史变更记录。</li>
+</ul>
+<p>OpenAI 官方资料指出，每个 Skill 的 name 和 description 都会进入模型上下文；当 Skill 太多、description 太长时，系统可能需要缩短描述，模型反而更难选择正确能力。</p>
+<p>因此 Metadata 要追求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Specific enough to route<br>Short enough to coexist<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-1-Metadata-的预算问题"><a href="#4-1-Metadata-的预算问题" class="headerlink" title="4.1 Metadata 的预算问题"></a>4.1 Metadata 的预算问题</h3><p>假设安装 50 个 Skill，每个 description 都写 300～500 个英文词，即使任何 Skill 尚未执行，发现层就已经很重。</p>
+<p>控制方式包括：</p>
+<ul>
+<li>只挂载当前角色需要的 Skill；</li>
+<li>description 用一两句说明能力与触发时机；</li>
+<li>删除营销式介绍和重复关键词；</li>
+<li>避免每个 Skill 都声称“必须在任何相关任务中使用”；</li>
+<li>对大型 Skill 集先做路由，再暴露子集合。</li>
+</ul>
+<hr>
+<h2 id="5-第二层：Core-Workflow-只保留执行主干"><a href="#5-第二层：Core-Workflow-只保留执行主干" class="headerlink" title="5. 第二层：Core Workflow 只保留执行主干"></a>5. 第二层：Core Workflow 只保留执行主干</h2><p>Skill 触发后，模型需要知道怎样正确执行。这部分放在 <code>SKILL.md</code> 主体中。</p>
+<p>Core Workflow 应包含：</p>
+<ul>
+<li>角色和职责边界；</li>
+<li>必要输入与前置条件；</li>
+<li>主流程步骤；</li>
+<li>关键分支入口；</li>
+<li>必须遵守的安全约束；</li>
+<li>输出契约；</li>
+<li>最终检查；</li>
+<li>去哪里读取条件资料。</li>
+</ul>
+<p>不应默认包含：</p>
+<ul>
+<li>每个工具的完整手册；</li>
+<li>所有领域背景知识；</li>
+<li>大量相似示例；</li>
+<li>很少使用的异常分支细节；</li>
+<li>可由脚本执行的算法实现；</li>
+<li>整份 Schema 或数据字典。</li>
+</ul>
+<h3 id="5-1-根-SKILL-md-应像路由器"><a href="#5-1-根-SKILL-md-应像路由器" class="headerlink" title="5.1 根 SKILL.md 应像路由器"></a>5.1 根 SKILL.md 应像路由器</h3><p>OpenAI 官方建议，对于包含多个工作流的 Skill，让根文档成为最小路由器：给模型足够信息判断下一步去哪里，但不要迫使它读取当前任务不需要的内容。</p>
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Scheduler Analysis</span><br><br><span class="hljs-section">## Workflow</span><br><br><span class="hljs-bullet">1.</span> Validate the trace type and requested time range.<br><span class="hljs-bullet">2.</span> Select one analysis path:<br><span class="hljs-bullet">   -</span> Run-queue latency → read <span class="hljs-code">`references/runqueue.md`</span><br><span class="hljs-bullet">   -</span> Wakeup delay → read <span class="hljs-code">`references/wakeup.md`</span><br><span class="hljs-bullet">   -</span> CPU affinity → read <span class="hljs-code">`references/affinity.md`</span><br><span class="hljs-bullet">3.</span> Run the referenced analysis script.<br><span class="hljs-bullet">4.</span> Validate the output against <span class="hljs-code">`schemas/scheduler-finding.json`</span>.<br><span class="hljs-bullet">5.</span> Return evidence, counter-evidence, confidence, and unknowns.<br><br><span class="hljs-section">## Boundaries</span><br><br><span class="hljs-bullet">-</span> Do not diagnose memory or storage causes.<br><span class="hljs-bullet">-</span> Emit cross-domain signals instead.<br></code></pre></td></tr></table></figure>
+
+<p>如果用户只调查 wakeup latency，模型无需加载 runqueue 和 affinity 的详细规则。</p>
+<hr>
+<h2 id="6-第三层：Conditional-References-按条件加载知识"><a href="#6-第三层：Conditional-References-按条件加载知识" class="headerlink" title="6. 第三层：Conditional References 按条件加载知识"></a>6. 第三层：Conditional References 按条件加载知识</h2><p>条件引用解决的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">这份知识很重要，但不是每一次执行都需要。<br></code></pre></td></tr></table></figure>
+
+<p>适合拆入 reference 的内容包括：</p>
+<ul>
+<li>特定子领域的判断规则；</li>
+<li>大型 API 或命令参考；</li>
+<li>数据字典和 Schema；</li>
+<li>平台差异；</li>
+<li>罕见故障处理；</li>
+<li>详细示例；</li>
+<li>术语表；</li>
+<li>历史兼容信息。</li>
+</ul>
+<h3 id="6-1-条件必须写得可执行"><a href="#6-1-条件必须写得可执行" class="headerlink" title="6.1 条件必须写得可执行"></a>6.1 条件必须写得可执行</h3><p>不推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">必要时参考 <span class="hljs-code">`references/advanced.md`</span>。<br></code></pre></td></tr></table></figure>
+
+<p>“必要时”没有可操作标准。</p>
+<p>推荐：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> If <span class="hljs-code">`trace_format == perf-script`</span>, read <span class="hljs-code">`references/perf-script.md`</span>.<br><span class="hljs-bullet">-</span> If the finding involves CPU affinity or migration, read <span class="hljs-code">`references/affinity.md`</span>.<br><span class="hljs-bullet">-</span> If the output fails schema validation, read <span class="hljs-code">`references/output-repair.md`</span> once.<br></code></pre></td></tr></table></figure>
+
+<p>这相当于为 reference 建立加载谓词：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">load(reference) only if condition == true<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-2-引用保持浅层"><a href="#6-2-引用保持浅层" class="headerlink" title="6.2 引用保持浅层"></a>6.2 引用保持浅层</h3><p>不推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  → overview.md<br>      → platform.md<br>          → linux.md<br>              → kernel-version.md<br></code></pre></td></tr></table></figure>
+
+<p>深层引用会让模型遗漏关键文件，也增加导航成本。</p>
+<p>推荐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">SKILL.md<br>  ├── references/runqueue.md<br>  ├── references/wakeup.md<br>  ├── references/affinity.md<br>  └── references/output-repair.md<br></code></pre></td></tr></table></figure>
+
+<p>根文件直接指向任务分支所需资料，尽量只跨一层。</p>
+<h3 id="6-3-大型-Reference-需要目录与定位提示"><a href="#6-3-大型-Reference-需要目录与定位提示" class="headerlink" title="6.3 大型 Reference 需要目录与定位提示"></a>6.3 大型 Reference 需要目录与定位提示</h3><p>如果一个 reference 无法继续合理拆分，应提供：</p>
+<ul>
+<li>目录；</li>
+<li>稳定标题；</li>
+<li>搜索关键词；</li>
+<li>适用条件；</li>
+<li>明确的不适用范围。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Read only the section matching the detected kernel family:<br><br><span class="hljs-bullet">-</span> Linux 5.x → <span class="hljs-code">`## Linux 5.x event mapping`</span><br><span class="hljs-bullet">-</span> Linux 6.x → <span class="hljs-code">`## Linux 6.x event mapping`</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-第四层：Tool-Results-是最容易失控的上下文"><a href="#7-第四层：Tool-Results-是最容易失控的上下文" class="headerlink" title="7. 第四层：Tool Results 是最容易失控的上下文"></a>7. 第四层：Tool Results 是最容易失控的上下文</h2><p>工具返回的是动态事实，也是 Agent 循环中增长最快的内容。</p>
+<p>典型膨胀来源包括：</p>
+<ul>
+<li>搜索返回完整网页；</li>
+<li>shell 输出数万行日志；</li>
+<li>API 返回整个对象树；</li>
+<li>解析器重复返回原始数据；</li>
+<li>每次重试都保留几乎相同的错误；</li>
+<li>子 Agent 把完整推理历史传回主 Agent。</li>
+</ul>
+<p>工具输出的正确原则不是“越完整越好”，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Raw data stays outside context.<br>Relevant evidence enters context.<br>Stable artifacts are referenced, not repeated.<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-1-原始数据、工件和摘要分离"><a href="#7-1-原始数据、工件和摘要分离" class="headerlink" title="7.1 原始数据、工件和摘要分离"></a>7.1 原始数据、工件和摘要分离</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Raw trace<br>  ↓ stored as artifact<br>artifact://trace/sha256-...<br>  ↓ analyzed by script<br>structured summary<br>  ↓ selected fields<br>model context<br></code></pre></td></tr></table></figure>
+
+<p>模型通常只需要：</p>
+<ul>
+<li>工件标识；</li>
+<li>查询范围；</li>
+<li>关键统计；</li>
+<li>异常片段；</li>
+<li>证据位置；</li>
+<li>截断说明。</li>
+</ul>
+<p>而不是完整原始文件。</p>
+<h3 id="7-2-Tool-应支持分页、过滤和投影"><a href="#7-2-Tool-应支持分页、过滤和投影" class="headerlink" title="7.2 Tool 应支持分页、过滤和投影"></a>7.2 Tool 应支持分页、过滤和投影</h3><p>不推荐接口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">read_all_logs()<br></code></pre></td></tr></table></figure>
+
+<p>推荐接口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">search_logs(<br>  time_range,<br>  predicates,<br>  fields,<br>  limit,<br>  cursor<br>)<br></code></pre></td></tr></table></figure>
+
+<p>工具应让调用者控制：</p>
+<ul>
+<li>时间范围；</li>
+<li>字段选择；</li>
+<li>结果数量；</li>
+<li>排序；</li>
+<li>去重；</li>
+<li>分页游标；</li>
+<li>是否包含原文片段。</li>
+</ul>
+<h3 id="7-3-输出摘要必须保留可追溯性"><a href="#7-3-输出摘要必须保留可追溯性" class="headerlink" title="7.3 输出摘要必须保留可追溯性"></a>7.3 输出摘要必须保留可追溯性</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;summary&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03-14:04 runqueue latency sharply increased&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;evidence_count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">28</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;top_examples&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;event-188&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;event-201&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;artifact_ref&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;artifact://sched/events.json&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;from&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03:00&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;to&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:04:30&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;truncated&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;next_cursor&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cursor-2&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>摘要不能变成无来源的结论；模型应能按需回查原始证据。</p>
+<hr>
+<h2 id="8-Context-Budget：给每一层设预算"><a href="#8-Context-Budget：给每一层设预算" class="headerlink" title="8. Context Budget：给每一层设预算"></a>8. Context Budget：给每一层设预算</h2><p>不要只依赖模型的最大 context window。应在 Skill 设计中定义软预算：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">context_budget:</span><br>  <span class="hljs-attr">metadata_tokens:</span> <span class="hljs-number">120</span><br>  <span class="hljs-attr">core_workflow_tokens:</span> <span class="hljs-number">2500</span><br>  <span class="hljs-attr">conditional_reference_tokens:</span> <span class="hljs-number">6000</span><br>  <span class="hljs-attr">active_tool_result_tokens:</span> <span class="hljs-number">8000</span><br>  <span class="hljs-attr">reserved_for_user_and_system:</span> <span class="hljs-number">4000</span><br>  <span class="hljs-attr">reserved_for_output:</span> <span class="hljs-number">3000</span><br></code></pre></td></tr></table></figure>
+
+<p>这里的数字只是示例，真实预算应通过 Eval 调整。重点是显式区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">固定成本<br>+ 按需知识<br>+ 动态证据<br>+ 输出预留<br></code></pre></td></tr></table></figure>
+
+<p>如果不预留输出空间，输入阶段即使没有超限，最终回答也可能被迫缩短或截断。</p>
+<hr>
+<h2 id="9-Context-Ledger：知道-token-花在了哪里"><a href="#9-Context-Ledger：知道-token-花在了哪里" class="headerlink" title="9. Context Ledger：知道 token 花在了哪里"></a>9. Context Ledger：知道 token 花在了哪里</h2><p>一次 Skill 执行可以维护上下文账本：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">context_ledger:</span><br>  <span class="hljs-attr">system_and_project_rules:</span> <span class="hljs-number">1800</span><br>  <span class="hljs-attr">skill_metadata:</span> <span class="hljs-number">950</span><br>  <span class="hljs-attr">active_skill_workflow:</span> <span class="hljs-number">2100</span><br>  <span class="hljs-attr">references:</span><br>    <span class="hljs-attr">wakeup.md:</span> <span class="hljs-number">1700</span><br>  <span class="hljs-attr">conversation_history:</span> <span class="hljs-number">3200</span><br>  <span class="hljs-attr">tool_results:</span><br>    <span class="hljs-attr">trace_summary:</span> <span class="hljs-number">2600</span><br>    <span class="hljs-attr">metrics_query:</span> <span class="hljs-number">900</span><br>  <span class="hljs-attr">working_state:</span> <span class="hljs-number">700</span><br>  <span class="hljs-attr">total_input_estimate:</span> <span class="hljs-number">13950</span><br></code></pre></td></tr></table></figure>
+
+<p>账本的作用不是追求绝对精确，而是发现主要增长点：</p>
+<ul>
+<li>Metadata 是否因 Skill 太多而膨胀；</li>
+<li><code>SKILL.md</code> 是否承担了百科全书职责；</li>
+<li>某个 reference 是否每次都被无条件读取；</li>
+<li>Tool 是否重复返回大量相同内容；</li>
+<li>历史会话是否应该压缩或新开任务。</li>
+</ul>
+<hr>
+<h2 id="10-上下文生命周期：进入、保留、压缩、淘汰"><a href="#10-上下文生命周期：进入、保留、压缩、淘汰" class="headerlink" title="10. 上下文生命周期：进入、保留、压缩、淘汰"></a>10. 上下文生命周期：进入、保留、压缩、淘汰</h2><p>每一类信息都应有生命周期：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Discover → Load → Use → Distill → Evict<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-1-Discover"><a href="#10-1-Discover" class="headerlink" title="10.1 Discover"></a>10.1 Discover</h3><p>只暴露 Metadata 或索引，让模型知道信息存在。</p>
+<h3 id="10-2-Load"><a href="#10-2-Load" class="headerlink" title="10.2 Load"></a>10.2 Load</h3><p>满足明确条件时读取正文或查询工具。</p>
+<h3 id="10-3-Use"><a href="#10-3-Use" class="headerlink" title="10.3 Use"></a>10.3 Use</h3><p>信息参与当前判断，并产生结论或下一步动作。</p>
+<h3 id="10-4-Distill"><a href="#10-4-Distill" class="headerlink" title="10.4 Distill"></a>10.4 Distill</h3><p>把大结果转成结构化 finding、状态摘要或工件引用。</p>
+<h3 id="10-5-Evict"><a href="#10-5-Evict" class="headerlink" title="10.5 Evict"></a>10.5 Evict</h3><p>当原始信息不再影响未来决策时，从活动上下文移除。</p>
+<p>这比“上下文满了再统一压缩”更主动，也更可控。</p>
+<hr>
+<h2 id="11-Working-State-与对话历史分离"><a href="#11-Working-State-与对话历史分离" class="headerlink" title="11. Working State 与对话历史分离"></a>11. Working State 与对话历史分离</h2><p>长任务不应该依赖模型从几十轮对话中重建当前状态。</p>
+<p>可以维护结构化 Working State：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">goal:</span> <span class="hljs-string">定位</span> <span class="hljs-number">14</span><span class="hljs-string">:00-14:10</span> <span class="hljs-string">P99</span> <span class="hljs-string">延迟异常</span><br><span class="hljs-attr">constraints:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">read_only</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-literal">no</span> <span class="hljs-string">production</span> <span class="hljs-string">restart</span><br><span class="hljs-attr">confirmed_facts:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">p99</span> <span class="hljs-string">increased</span> <span class="hljs-string">from</span> <span class="hljs-string">120ms</span> <span class="hljs-string">to</span> <span class="hljs-string">840ms</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">io</span> <span class="hljs-string">latency</span> <span class="hljs-string">correlated</span> <span class="hljs-string">at</span> <span class="hljs-number">0.81</span><br><span class="hljs-attr">open_hypotheses:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">H1</span><br>    <span class="hljs-attr">claim:</span> <span class="hljs-string">storage</span> <span class="hljs-string">saturation</span> <span class="hljs-string">contributed</span> <span class="hljs-string">to</span> <span class="hljs-string">latency</span><br>    <span class="hljs-attr">status:</span> <span class="hljs-string">supported</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">H2</span><br>    <span class="hljs-attr">claim:</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">contention</span> <span class="hljs-string">is</span> <span class="hljs-string">primary</span><br>    <span class="hljs-attr">status:</span> <span class="hljs-string">insufficient_evidence</span><br><span class="hljs-attr">artifacts:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">artifact://normalized-trace</span><br><span class="hljs-attr">completed_steps:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">triage</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">io-analysis</span><br><span class="hljs-attr">next_steps:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">collect</span> <span class="hljs-string">missing</span> <span class="hljs-string">scheduler</span> <span class="hljs-string">counters</span><br></code></pre></td></tr></table></figure>
+
+<p>后续步骤优先读取这份状态，而不是重复加载全部聊天和工具原文。</p>
+<p>Working State 应保存事实、决定、约束、工件和未决事项，不应保存冗长叙事。</p>
+<hr>
+<h2 id="12-Trimming-与-Summarization-如何选择"><a href="#12-Trimming-与-Summarization-如何选择" class="headerlink" title="12. Trimming 与 Summarization 如何选择"></a>12. Trimming 与 Summarization 如何选择</h2><p>OpenAI 的上下文管理资料区分了两种常见方法。</p>
+<h3 id="12-1-Trimming：裁掉旧内容"><a href="#12-1-Trimming：裁掉旧内容" class="headerlink" title="12.1 Trimming：裁掉旧内容"></a>12.1 Trimming：裁掉旧内容</h3><p>优点：</p>
+<ul>
+<li>行为确定；</li>
+<li>不需要额外模型调用；</li>
+<li>最近内容保持原样；</li>
+<li>容易调试和复现。</li>
+</ul>
+<p>风险：</p>
+<ul>
+<li>早期的重要约束可能突然消失；</li>
+<li>最近一次超大工具输出仍可能占满窗口；</li>
+<li>长期承诺和标识可能丢失。</li>
+</ul>
+<p>适合局部、短周期、工具密集且早期历史价值低的工作流。</p>
+<h3 id="12-2-Summarization：把旧内容压缩成状态"><a href="#12-2-Summarization：把旧内容压缩成状态" class="headerlink" title="12.2 Summarization：把旧内容压缩成状态"></a>12.2 Summarization：把旧内容压缩成状态</h3><p>优点：</p>
+<ul>
+<li>能保留长期目标与关键决定；</li>
+<li>用较小体积承载较长历史；</li>
+<li>适合研究、规划和长会话。</li>
+</ul>
+<p>风险：</p>
+<ul>
+<li>摘要可能遗漏或歪曲信息；</li>
+<li>错误事实可能污染后续上下文；</li>
+<li>需要记录摘要输入输出并单独评测。</li>
+</ul>
+<h3 id="12-3-Skill-中的推荐策略"><a href="#12-3-Skill-中的推荐策略" class="headerlink" title="12.3 Skill 中的推荐策略"></a>12.3 Skill 中的推荐策略</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Immutable constraints → 单独保留，不依赖摘要<br>Confirmed facts       → 结构化 Working State<br>Large raw results     → 工件引用<br>Recent interactions   → 原样保留有限轮次<br>Old narrative         → 压缩或淘汰<br></code></pre></td></tr></table></figure>
+
+<p>关键约束不能仅存在于会被裁剪的历史中，也不能完全依赖非确定性摘要。</p>
+<hr>
+<h2 id="13-Prompt-Caching-不是-Context-Reduction"><a href="#13-Prompt-Caching-不是-Context-Reduction" class="headerlink" title="13. Prompt Caching 不是 Context Reduction"></a>13. Prompt Caching 不是 Context Reduction</h2><p>这是一个常见误区。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Prompt Caching<br>  降低相同前缀重复处理的成本或延迟<br><br>Context Reduction<br>  减少当前窗口实际承载的信息量<br></code></pre></td></tr></table></figure>
+
+<p>缓存后，内容通常仍属于模型输入上下文，只是重复使用更经济。它不能解决：</p>
+<ul>
+<li>无关信息干扰；</li>
+<li>指令冲突；</li>
+<li>超过上下文上限；</li>
+<li>Tool Result 长期堆积；</li>
+<li>模型难以定位关键信息。</li>
+</ul>
+<p>所以，应先控制加载内容，再对稳定且必要的前缀使用缓存。</p>
+<hr>
+<h2 id="14-Tool-Search-与-Skill-Discovery-是同一种思想"><a href="#14-Tool-Search-与-Skill-Discovery-是同一种思想" class="headerlink" title="14. Tool Search 与 Skill Discovery 是同一种思想"></a>14. Tool Search 与 Skill Discovery 是同一种思想</h2><p>Anthropic 的工具上下文文档提出：大量工具时，不必把所有 Tool Schema 预先塞入上下文，可以先暴露搜索能力，按需发现工具。</p>
+<p>这与 Skill 的 Progressive Disclosure 本质一致：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill Discovery<br>  Metadata first → SKILL.md on demand<br><br>Tool Search<br>  Search interface first → Tool schema on demand<br><br>Reference Loading<br>  Index first → Detailed document on demand<br></code></pre></td></tr></table></figure>
+
+<p>三者遵循同一条原则：</p>
+<blockquote>
+<p>先提供选择所需的最小信息，做出选择后再加载执行所需的详细信息。</p>
+</blockquote>
+<hr>
+<h2 id="15-用脚本减少上下文，而不只是提高确定性"><a href="#15-用脚本减少上下文，而不只是提高确定性" class="headerlink" title="15. 用脚本减少上下文，而不只是提高确定性"></a>15. 用脚本减少上下文，而不只是提高确定性</h2><p>脚本除了提供稳定执行，还能避免把大量实现和中间数据放进模型上下文。</p>
+<p>例如分析一百万行 trace：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">错误方式：<br>trace 原文 → 全部进入模型 → 模型统计<br><br>正确方式：<br>trace 原文 → script 统计与筛选 → 结构化摘要进入模型<br></code></pre></td></tr></table></figure>
+
+<p>脚本输出应面向决策：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;window&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03:00/14:04:00&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;runqueue_p50_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3.2</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;runqueue_p99_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">47.2</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;top_tasks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;pid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1024</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;p99_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">61.8</span><span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;anomalous_intervals&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;start&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03:17&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;end&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;14:03:28&quot;</span><span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>而不是把原始事件重新打印一遍。</p>
+<hr>
+<h2 id="16-多-Skill-场景中的上下文隔离"><a href="#16-多-Skill-场景中的上下文隔离" class="headerlink" title="16. 多 Skill 场景中的上下文隔离"></a>16. 多 Skill 场景中的上下文隔离</h2><p>父 Skill 不应把全部上下文广播给每个子 Skill。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Parent Context<br>  ├── user history<br>  ├── all findings<br>  ├── all raw tool results<br>  ├── other Skills&#x27; instructions<br>  └── global state<br></code></pre></td></tr></table></figure>
+
+<p>应为子 Skill 构造 Task Packet：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">task_id:</span> <span class="hljs-string">sched-001</span><br><span class="hljs-attr">objective:</span> <span class="hljs-string">验证调度等待是否参与延迟异常</span><br><span class="hljs-attr">constraints:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">read_only</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">incident_window_only</span><br><span class="hljs-attr">inputs:</span><br>  <span class="hljs-attr">trace_ref:</span> <span class="hljs-string">artifact://normalized-trace</span><br>  <span class="hljs-attr">time_range:</span> <span class="hljs-number">14</span><span class="hljs-string">:00/14:10</span><br><span class="hljs-attr">known_facts:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">p99</span> <span class="hljs-string">spike</span> <span class="hljs-string">confirmed</span><br><span class="hljs-attr">expected_output:</span> <span class="hljs-string">scheduler_finding_v1</span><br></code></pre></td></tr></table></figure>
+
+<p>子 Skill 完成后，只返回结果 Envelope、必要工件引用和警告，不把自己的完整历史传回父上下文。</p>
+<p>这样既隔离职责，也防止上下文呈乘法增长。</p>
+<hr>
+<h2 id="17-Retrieval-不是把搜索结果全部放入-Prompt"><a href="#17-Retrieval-不是把搜索结果全部放入-Prompt" class="headerlink" title="17. Retrieval 不是把搜索结果全部放入 Prompt"></a>17. Retrieval 不是把搜索结果全部放入 Prompt</h2><p>检索系统应包含三个阶段：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Candidate Retrieval<br>  ↓ 找到可能相关的内容<br>Re-ranking / Filtering<br>  ↓ 根据当前问题筛选<br>Context Packaging<br>  ↓ 只注入必要片段和出处<br></code></pre></td></tr></table></figure>
+
+<p>如果只做第一步，就会把大量“可能相关”资料塞进窗口。</p>
+<p>Context Package 应包含：</p>
+<ul>
+<li>当前 claim 或子问题；</li>
+<li>精选片段；</li>
+<li>来源标识；</li>
+<li>时间与版本；</li>
+<li>适用范围；</li>
+<li>必要时的反证；</li>
+<li>是否截断。</li>
+</ul>
+<p>不要把检索排名当作事实置信度，也不要因为内容进入上下文就默认它正确。</p>
+<hr>
+<h2 id="18-过时信息与重复信息的处理"><a href="#18-过时信息与重复信息的处理" class="headerlink" title="18. 过时信息与重复信息的处理"></a>18. 过时信息与重复信息的处理</h2><h3 id="18-1-过时信息"><a href="#18-1-过时信息" class="headerlink" title="18.1 过时信息"></a>18.1 过时信息</h3><p>每条动态事实应带时间或版本：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">value:</span> <span class="hljs-number">47.2</span><br><span class="hljs-attr">metric:</span> <span class="hljs-string">runqueue_p99_ms</span><br><span class="hljs-attr">observed_at:</span> <span class="hljs-number">2026-10-07T14:03:40+08:00</span><br><span class="hljs-attr">source:</span> <span class="hljs-string">artifact://sched-summary</span><br></code></pre></td></tr></table></figure>
+
+<p>新结果到来时，不应让旧结果继续以同等权重常驻。</p>
+<h3 id="18-2-重复信息"><a href="#18-2-重复信息" class="headerlink" title="18.2 重复信息"></a>18.2 重复信息</h3><p>同一事实可能同时出现在：</p>
+<ul>
+<li>用户消息；</li>
+<li>Tool Result；</li>
+<li>工作摘要；</li>
+<li>子 Skill 输出；</li>
+<li>最终草稿。</li>
+</ul>
+<p>推荐保留一个规范状态，并让其他位置引用它：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Canonical Fact Store<br>        ↑<br>messages / tools / skills contribute<br>        ↓<br>current context selects<br></code></pre></td></tr></table></figure>
+
+<p>重复不仅浪费 token，还会在副本不一致时造成冲突。</p>
+<hr>
+<h2 id="19-注意力优先级：重要内容放在哪里"><a href="#19-注意力优先级：重要内容放在哪里" class="headerlink" title="19. 注意力优先级：重要内容放在哪里"></a>19. 注意力优先级：重要内容放在哪里</h2><p>精简之外，还要保证关键内容容易被找到。</p>
+<p>推荐结构：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># Skill Name</span><br><br><span class="hljs-section">## Role and boundaries</span><br><span class="hljs-section">## Required inputs</span><br><span class="hljs-section">## Workflow</span><br><span class="hljs-section">## Conditional references</span><br><span class="hljs-section">## Output contract</span><br><span class="hljs-section">## Failure policy</span><br><span class="hljs-section">## Final check</span><br></code></pre></td></tr></table></figure>
+
+<p>重要规则应：</p>
+<ul>
+<li>出现在相关步骤附近；</li>
+<li>使用一致术语；</li>
+<li>避免在多个文件重复定义；</li>
+<li>必要时用 <code>MUST</code> 或明确禁止，而不是含糊建议；</li>
+<li>能由脚本或 Schema 验证时，不只依赖自然语言强调。</li>
+</ul>
+<p>不要试图通过重复十遍来提高规则权重。重复会增加上下文，并可能出现版本不一致。</p>
+<hr>
+<h2 id="20-一个可复用的上下文路由模板"><a href="#20-一个可复用的上下文路由模板" class="headerlink" title="20. 一个可复用的上下文路由模板"></a>20. 一个可复用的上下文路由模板</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs markdown">---<br>name: performance-analysis<br><span class="hljs-section">description: Investigate cross-domain system performance incidents. Use when the responsible subsystem is unknown or findings from multiple domains must be correlated.</span><br><span class="hljs-section">---</span><br><br><span class="hljs-section"># Performance Analysis</span><br><br><span class="hljs-section">## Core workflow</span><br><br><span class="hljs-bullet">1.</span> Validate the incident objective and artifact references.<br><span class="hljs-bullet">2.</span> Read <span class="hljs-code">`references/triage.md`</span> only when no target domain is known.<br><span class="hljs-bullet">3.</span> Select specialist analysis:<br><span class="hljs-bullet">   -</span> Scheduler signals → delegate to <span class="hljs-code">`scheduler-analysis`</span>.<br><span class="hljs-bullet">   -</span> Memory signals → delegate to <span class="hljs-code">`memory-analysis`</span>.<br><span class="hljs-bullet">   -</span> I/O signals → delegate to <span class="hljs-code">`io-analysis`</span>.<br><span class="hljs-bullet">4.</span> Store raw outputs as artifacts; keep only validated findings active.<br><span class="hljs-bullet">5.</span> Correlate findings and record contradictions.<br><span class="hljs-bullet">6.</span> Invoke <span class="hljs-code">`report-generator`</span> only after analysis is complete.<br><br><span class="hljs-section">## Conditional references</span><br><br><span class="hljs-bullet">-</span> Kernel-version compatibility issue → read <span class="hljs-code">`references/kernel-compat.md`</span>.<br><span class="hljs-bullet">-</span> Conflicting findings → read <span class="hljs-code">`references/conflict-resolution.md`</span>.<br><span class="hljs-bullet">-</span> Schema validation failure → read <span class="hljs-code">`references/output-repair.md`</span> once.<br><br><span class="hljs-section">## Context policy</span><br><br><span class="hljs-bullet">-</span> Do not load every reference upfront.<br><span class="hljs-bullet">-</span> Do not paste raw traces into the conversation.<br><span class="hljs-bullet">-</span> Pass each specialist a minimal task packet.<br><span class="hljs-bullet">-</span> Replace completed tool exchanges with a validated finding and artifact reference.<br><span class="hljs-bullet">-</span> Preserve user constraints and unresolved questions verbatim.<br><br><span class="hljs-section">## Final check</span><br><br><span class="hljs-bullet">-</span> Every claim has a source or is labeled as a hypothesis.<br><span class="hljs-bullet">-</span> No stale tool result overrides a newer result.<br><span class="hljs-bullet">-</span> Partial coverage is disclosed.<br></code></pre></td></tr></table></figure>
+
+<p>这个模板把上下文策略变成工作流的一部分，而不是运行时出问题后再补救。</p>
+<hr>
+<h2 id="21-何时应把信息留在-SKILL-md"><a href="#21-何时应把信息留在-SKILL-md" class="headerlink" title="21. 何时应把信息留在 SKILL.md"></a>21. 何时应把信息留在 SKILL.md</h2><p>满足下面多数条件时，适合留在核心工作流：</p>
+<ul>
+<li>几乎每次执行都需要；</li>
+<li>遗漏会直接导致流程错误或安全问题；</li>
+<li>内容短而稳定；</li>
+<li>决定下一步读取哪个 reference；</li>
+<li>是输出契约或最终检查的一部分。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">“不要修改原始 trace”<br>“每个结论必须关联证据”<br>“先验证输入，再选择分析分支”<br></code></pre></td></tr></table></figure>
+
+<p>这类规则不应藏在深层 reference 中。</p>
+<hr>
+<h2 id="22-何时应把信息拆到-Reference"><a href="#22-何时应把信息拆到-Reference" class="headerlink" title="22. 何时应把信息拆到 Reference"></a>22. 何时应把信息拆到 Reference</h2><p>满足下面任一条件时，优先拆出：</p>
+<ul>
+<li>只在少数分支使用；</li>
+<li>内容较长；</li>
+<li>更新频率与核心工作流不同；</li>
+<li>属于平台、版本或领域细节；</li>
+<li>可以通过明确条件定位；</li>
+<li>不读取也能完成其他大多数任务。</li>
+</ul>
+<p>判断公式可以写成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Expected Context Cost<br>= Content Size × Load Frequency<br></code></pre></td></tr></table></figure>
+
+<p>一份 5,000 token 的资料如果只有 5% 任务需要，按需加载通常比放入核心工作流合理得多。</p>
+<hr>
+<h2 id="23-常见反模式"><a href="#23-常见反模式" class="headerlink" title="23. 常见反模式"></a>23. 常见反模式</h2><h3 id="23-1-Metadata-写成迷你文档"><a href="#23-1-Metadata-写成迷你文档" class="headerlink" title="23.1 Metadata 写成迷你文档"></a>23.1 Metadata 写成迷你文档</h3><p>结果是所有会话都承担成本，且相邻 Skill 的描述互相挤压。</p>
+<h3 id="23-2-SKILL-md-变成知识百科"><a href="#23-2-SKILL-md-变成知识百科" class="headerlink" title="23.2 SKILL.md 变成知识百科"></a>23.2 SKILL.md 变成知识百科</h3><p>所有背景、API、示例和故障都放在正文，导致 Skill 一触发就加载整套资料。</p>
+<h3 id="23-3-无条件读取-references"><a href="#23-3-无条件读取-references" class="headerlink" title="23.3 无条件读取 references"></a>23.3 无条件读取 references</h3><p>虽然文件拆开了，但第一步要求“阅读 references 下所有文档”，等于没有渐进披露。</p>
+<h3 id="23-4-Tool-返回完整原始数据"><a href="#23-4-Tool-返回完整原始数据" class="headerlink" title="23.4 Tool 返回完整原始数据"></a>23.4 Tool 返回完整原始数据</h3><p>缺少筛选、分页、摘要和工件引用，Agent 每执行一步都使上下文变大。</p>
+<h3 id="23-5-摘要替代事实来源"><a href="#23-5-摘要替代事实来源" class="headerlink" title="23.5 摘要替代事实来源"></a>23.5 摘要替代事实来源</h3><p>摘要经过模型解释，不能成为唯一证据。必须保留原始工件引用和可回查路径。</p>
+<h3 id="23-6-把缓存当作压缩"><a href="#23-6-把缓存当作压缩" class="headerlink" title="23.6 把缓存当作压缩"></a>23.6 把缓存当作压缩</h3><p>缓存减少重复计费或处理，不会消除无关内容对注意力和窗口容量的占用。</p>
+<h3 id="23-7-只在超限后处理"><a href="#23-7-只在超限后处理" class="headerlink" title="23.7 只在超限后处理"></a>23.7 只在超限后处理</h3><p>等 context overflow 或 compaction 才开始管理，往往已经丢失了重要结构。应从 Skill 信息架构阶段设计预算。</p>
+<h3 id="23-8-每个子-Skill-都接收完整父上下文"><a href="#23-8-每个子-Skill-都接收完整父上下文" class="headerlink" title="23.8 每个子 Skill 都接收完整父上下文"></a>23.8 每个子 Skill 都接收完整父上下文</h3><p>会让多 Skill 组合的上下文成本快速放大，也破坏职责隔离。</p>
+<hr>
+<h2 id="24-如何评测上下文设计"><a href="#24-如何评测上下文设计" class="headerlink" title="24. 如何评测上下文设计"></a>24. 如何评测上下文设计</h2><h3 id="24-1-Context-Cost"><a href="#24-1-Context-Cost" class="headerlink" title="24.1 Context Cost"></a>24.1 Context Cost</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">平均输入 token<br>P95 输入 token<br>每个阶段的 token 分布<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-2-Retrieval-Efficiency"><a href="#24-2-Retrieval-Efficiency" class="headerlink" title="24.2 Retrieval Efficiency"></a>24.2 Retrieval Efficiency</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">读取的 Reference 中有多少真正用于结果<br>未读取但本应读取的资料比例<br>平均引用深度<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-3-Tool-Result-Efficiency"><a href="#24-3-Tool-Result-Efficiency" class="headerlink" title="24.3 Tool Result Efficiency"></a>24.3 Tool Result Efficiency</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">原始输出大小 / 注入上下文大小<br>重复 Tool Result 比例<br>截断后是否仍能完成任务<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-4-Quality"><a href="#24-4-Quality" class="headerlink" title="24.4 Quality"></a>24.4 Quality</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">任务完成率<br>约束遵从率<br>证据引用正确率<br>摘要事实保真度<br>长任务中的遗忘率<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-5-Context-Ablation-Test"><a href="#24-5-Context-Ablation-Test" class="headerlink" title="24.5 Context Ablation Test"></a>24.5 Context Ablation Test</h3><p>逐步移除某段上下文，观察质量是否下降：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">删除后质量不变 → 可能是冗余<br>删除后特定分支下降 → 应改为条件引用<br>删除后所有任务下降 → 应留在核心工作流<br></code></pre></td></tr></table></figure>
+
+<p>这比凭感觉精简更可靠。</p>
+<hr>
+<h2 id="25-官方资料带来的工程启示"><a href="#25-官方资料带来的工程启示" class="headerlink" title="25. 官方资料带来的工程启示"></a>25. 官方资料带来的工程启示</h2><h3 id="25-1-OpenAI：Skill-根文档应成为最小路由器"><a href="#25-1-OpenAI：Skill-根文档应成为最小路由器" class="headerlink" title="25.1 OpenAI：Skill 根文档应成为最小路由器"></a>25.1 OpenAI：Skill 根文档应成为最小路由器</h3><p>官方 OpenAI Docs 强调，读取 Skill 本身会占用上下文。多工作流 Skill 应让根文档只提供选择分支所需的信息，再指向相应支持文档和脚本。</p>
+<h3 id="25-2-OpenAI：长会话需要裁剪或压缩，但两者风险不同"><a href="#25-2-OpenAI：长会话需要裁剪或压缩，但两者风险不同" class="headerlink" title="25.2 OpenAI：长会话需要裁剪或压缩，但两者风险不同"></a>25.2 OpenAI：长会话需要裁剪或压缩，但两者风险不同</h3><p>Trimming 更确定，却可能突然遗忘早期信息；Summarization 能保留长期状态，却可能产生摘要漂移和上下文污染。因此关键约束、确认事实和原始证据引用应分层保存。</p>
+<h3 id="25-3-Anthropic：上下文窗口是共享资源"><a href="#25-3-Anthropic：上下文窗口是共享资源" class="headerlink" title="25.3 Anthropic：上下文窗口是共享资源"></a>25.3 Anthropic：上下文窗口是共享资源</h3><p>Skill 与 system prompt、对话历史、其他 Skill metadata 和用户请求共享上下文。写入任何一段内容都应问：它是否值得长期占用注意力？</p>
+<h3 id="25-4-Anthropic：渐进披露是三级加载机制"><a href="#25-4-Anthropic：渐进披露是三级加载机制" class="headerlink" title="25.4 Anthropic：渐进披露是三级加载机制"></a>25.4 Anthropic：渐进披露是三级加载机制</h3><p>Metadata 常驻，<code>SKILL.md</code> 在触发时读取，额外资料与脚本按需访问。这使 Skill 可以携带丰富资源，而不必让全部资源进入当前上下文。</p>
+<h3 id="25-5-Anthropic：Tool-Context-也要按需发现和淘汰"><a href="#25-5-Anthropic：Tool-Context-也要按需发现和淘汰" class="headerlink" title="25.5 Anthropic：Tool Context 也要按需发现和淘汰"></a>25.5 Anthropic：Tool Context 也要按需发现和淘汰</h3><p>Tool Search 减少预加载定义，Programmatic Tool Calling 减少中间往返结果，Context Editing 清理失去价值的旧结果。它们分别处理上下文膨胀的不同阶段。</p>
+<hr>
+<h2 id="26-本章最终模型"><a href="#26-本章最终模型" class="headerlink" title="26. 本章最终模型"></a>26. 本章最终模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs text">                ┌─────────────────────────┐<br>Always Loaded   │ Skill Metadata          │<br>                │ short routing signal    │<br>                └────────────┬────────────┘<br>                             │ triggered<br>                             ▼<br>                ┌─────────────────────────┐<br>On Trigger      │ Core Workflow           │<br>                │ minimal execution router│<br>                └────────────┬────────────┘<br>                             │ branch condition<br>                             ▼<br>                ┌─────────────────────────┐<br>On Demand       │ Conditional References  │<br>                │ domain-specific detail  │<br>                └────────────┬────────────┘<br>                             │ current evidence need<br>                             ▼<br>                ┌─────────────────────────┐<br>Transient       │ Tool Results            │<br>                │ filter → distill → evict│<br>                └─────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<p>控制 Skill 上下文大小的核心不是固定某个 token 数字，而是建立加载纪律：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">先发现，再读取；<br>先路由，再展开；<br>先筛选，再注入；<br>原文留在工件，结论进入状态；<br>信息完成使命后及时压缩或淘汰。<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="27-Skill-专项复盘"><a href="#27-Skill-专项复盘" class="headerlink" title="27. Skill 专项复盘"></a>27. Skill 专项复盘</h2><h3 id="27-1-Skill-目录很大是否一定有问题？"><a href="#27-1-Skill-目录很大是否一定有问题？" class="headerlink" title="27.1 Skill 目录很大是否一定有问题？"></a>27.1 Skill 目录很大是否一定有问题？</h3><p>不一定。未读取的 reference、asset 和 script 不占用活动上下文。问题在于是否有清晰的按需加载路径。</p>
+<h3 id="27-2-SKILL-md-是否越短越好？"><a href="#27-2-SKILL-md-是否越短越好？" class="headerlink" title="27.2 SKILL.md 是否越短越好？"></a>27.2 SKILL.md 是否越短越好？</h3><p>不是。它必须完整承载核心工作流、关键约束和路由逻辑。目标是最小充分，而不是机械追求最少字数。</p>
+<h3 id="27-3-Tool-Result-应不应该进入上下文？"><a href="#27-3-Tool-Result-应不应该进入上下文？" class="headerlink" title="27.3 Tool Result 应不应该进入上下文？"></a>27.3 Tool Result 应不应该进入上下文？</h3><p>当前判断所需的结构化结果应该进入；大规模原始数据应保存为工件，通过引用和按需查询访问。</p>
+<h3 id="27-4-有-Prompt-Cache-后还需要精简吗？"><a href="#27-4-有-Prompt-Cache-后还需要精简吗？" class="headerlink" title="27.4 有 Prompt Cache 后还需要精简吗？"></a>27.4 有 Prompt Cache 后还需要精简吗？</h3><p>需要。缓存降低重复成本，但不能减少窗口占用、噪声或指令冲突。</p>
+<h3 id="27-5-如何证明上下文设计有效？"><a href="#27-5-如何证明上下文设计有效？" class="headerlink" title="27.5 如何证明上下文设计有效？"></a>27.5 如何证明上下文设计有效？</h3><p>同时测量输入 token、参考资料命中率、工具输出压缩比、任务完成率、约束遵从、摘要保真度和长任务遗忘率。</p>
+<hr>
+<h2 id="28-本章实践"><a href="#28-本章实践" class="headerlink" title="28. 本章实践"></a>28. 本章实践</h2><p>选择一个现有 Skill，完成一次 Context Audit：</p>
+<ol>
+<li>统计 Metadata、核心工作流、Reference 和 Tool Result 的大小；</li>
+<li>标记哪些信息始终需要、条件需要或只用于单步决策；</li>
+<li>把根 <code>SKILL.md</code> 重构为最小工作流路由器；</li>
+<li>为每个 reference 写出明确加载条件；</li>
+<li>将引用深度压到一层；</li>
+<li>为大 Tool Result 增加过滤、分页、摘要和工件引用；</li>
+<li>建立结构化 Working State；</li>
+<li>为关键约束设计不可丢失的保存位置；</li>
+<li>对裁剪和摘要分别做事实保真测试；</li>
+<li>运行 Context Ablation，删除没有质量贡献的内容。</li>
+</ol>
+<p>下一章将严格按照大纲继续讨论不同指令层的职责与优先级：</p>
+<blockquote>
+<p>第 21 章：Skill 与 AGENTS.md &#x2F; System Prompt &#x2F; User Prompt 的关系。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra">OpenAI Developers — Rethinking skills and prompts</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/cookbook/examples/agents_sdk/session_memory">OpenAI Cookbook — Context Engineering: Short-Term Memory Management with Sessions</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agents">OpenAI API — Agents</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview">Anthropic — Agent Skills overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/manage-tool-context">Anthropic — Manage tool context</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+        <a href="/tags/Context-Engineering/" class="print-no-link">#Context Engineering</a>
+      
+        <a href="/tags/Progressive-Disclosure/" class="print-no-link">#Progressive Disclosure</a>
+      
+        <a href="/tags/Context-Window/" class="print-no-link">#Context Window</a>
+      
+        <a href="/tags/Token-Budget/" class="print-no-link">#Token Budget</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（二十）：如何控制 Skill 上下文大小</div>
+      <div>https://cj0510.github.io/2026/10/07/AI/Skill/20-如何控制Skill上下文大小/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/19-Skill%E4%B9%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%81%8C%E8%B4%A3%E9%87%8D%E5%8F%A0/" title="Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

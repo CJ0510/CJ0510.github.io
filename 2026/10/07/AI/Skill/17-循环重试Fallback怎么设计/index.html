@@ -1,0 +1,1416 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计上一章讨论了条件判断与分支。分支解决“下一步走哪条路”，但复杂任务还会出现另一类控制流：同一类动作需要重复执行。 例如研究任务： 123456789Search  ↓Enough evidence?  ├── yes → continue  └── no       ↓    refine query">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计上一章讨论了条件判断与分支。分支解决“下一步走哪条路”，但复杂任务还会出现另一类控制流：同一类动作需要重复执行。 例如研究任务： 123456789Search  ↓Enough evidence?  ├── yes → continue  └── no       ↓    refine query">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-07T22:45:54.124Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Fallback">
+<meta property="article:tag" content="Loop">
+<meta property="article:tag" content="Recovery">
+<meta property="article:tag" content="Retry">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-07 00:00" pubdate>
+          2026-10-07
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          121 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计"><a href="#Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计" class="headerlink" title="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计"></a>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</h1><p>上一章讨论了条件判断与分支。分支解决“下一步走哪条路”，但复杂任务还会出现另一类控制流：同一类动作需要重复执行。</p>
+<p>例如研究任务：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Search<br>  ↓<br>Enough evidence?<br>  ├── yes → continue<br>  └── no<br>       ↓<br>    refine query<br>       ↓<br>    search again<br></code></pre></td></tr></table></figure>
+
+<p>又例如工具调用失败：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool A<br>  ↓ failed<br>Retry Tool A?<br>  ↓ no<br>Fallback Tool B<br></code></pre></td></tr></table></figure>
+
+<p>如果设计得好，循环能逐步收集证据、修正结果并完成恢复；如果设计得差，Agent 会陷入无限搜索、重复写入、成本失控或静默降级。</p>
+<p>本章的核心认知是：</p>
+<blockquote>
+<p>每个循环都必须有进度指标和终止条件；每次重试都必须有错误分类和预算；每个 Fallback 都必须声明适用条件与质量损失。</p>
+</blockquote>
+<hr>
+<h2 id="1-这一章要解决什么问题"><a href="#1-这一章要解决什么问题" class="headerlink" title="1. 这一章要解决什么问题"></a>1. 这一章要解决什么问题</h2><p>本章集中回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill 中为什么需要循环？<br>循环的状态、进度和终止条件怎样定义？<br>什么错误适合重试，什么错误不应重试？<br>重试次数、时间和成本预算怎样设计？<br>指数退避与 Retry-After 怎样使用？<br>为什么重试前必须确认副作用？<br>Fallback 与 Retry、Degradation 有何区别？<br>Fallback 何时触发，怎样证明结果仍然可用？<br>恢复后为什么必须重新验证？<br>如何测试死循环、重复副作用和静默降级？<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-三个概念先分清"><a href="#2-三个概念先分清" class="headerlink" title="2. 三个概念先分清"></a>2. 三个概念先分清</h2><h3 id="2-1-Loop：重复执行一个阶段"><a href="#2-1-Loop：重复执行一个阶段" class="headerlink" title="2.1 Loop：重复执行一个阶段"></a>2.1 Loop：重复执行一个阶段</h3><p>循环的目标通常是逐步逼近完成条件：</p>
+<ul>
+<li>搜索更多证据；</li>
+<li>修复验证错误；</li>
+<li>分页读取数据；</li>
+<li>处理批量对象；</li>
+<li>驱动 Tool Call Agent Loop；</li>
+<li>迭代生成和审查。</li>
+</ul>
+<h3 id="2-2-Retry：重新尝试同一逻辑操作"><a href="#2-2-Retry：重新尝试同一逻辑操作" class="headerlink" title="2.2 Retry：重新尝试同一逻辑操作"></a>2.2 Retry：重新尝试同一逻辑操作</h3><p>Retry 通常针对暂时性失败：</p>
+<ul>
+<li>网络中断；</li>
+<li>限流；</li>
+<li>服务过载；</li>
+<li>短暂超时；</li>
+<li>可解决的并发冲突。</li>
+</ul>
+<p>重试的前提是：导致失败的条件可能随时间或参数修正而改变。</p>
+<h3 id="2-3-Fallback：切换到替代路径"><a href="#2-3-Fallback：切换到替代路径" class="headerlink" title="2.3 Fallback：切换到替代路径"></a>2.3 Fallback：切换到替代路径</h3><p>Fallback 不是再次尝试原路径，而是使用另一个方案：</p>
+<ul>
+<li>Tool A 不可用，使用 Tool B；</li>
+<li>实时数据不可用，使用标明时间的缓存；</li>
+<li>专用解析器失败，使用通用解析器；</li>
+<li>无法生成图表，交付表格；</li>
+<li>高质量路径超出预算，切换到较低成本但合格的路径。</li>
+</ul>
+<p>可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Loop<br>→ 重复一个阶段直到满足退出条件<br><br>Retry<br>→ 同一逻辑操作再次尝试<br><br>Fallback<br>→ 改走另一条实现路径<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-整体控制流"><a href="#3-整体控制流" class="headerlink" title="3. 整体控制流"></a>3. 整体控制流</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs text">Enter Stage<br>    │<br>    ▼<br>Perform Attempt<br>    │<br>    ▼<br>Validate Result<br>    │<br> ┌──┼───────────────────────┐<br> │  │                       │<br> │ success                 failure<br> │  │                       │<br> │  ▼                       ▼<br> │ Exit              Classify Failure<br> │                          │<br> │             ┌────────────┼─────────────┐<br> │             ▼            ▼             ▼<br> │          Retry       Fallback       Ask / Stop<br> │             │            │<br> │             └──────┬─────┘<br> │                    ▼<br> │              Revalidate<br> │                    │<br> └────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<p>任何返回循环顶部的边都必须回答：</p>
+<ul>
+<li>状态发生了什么变化？</li>
+<li>为什么下一次可能成功？</li>
+<li>还剩多少预算？</li>
+<li>是否会重复副作用？</li>
+</ul>
+<hr>
+<h2 id="4-Loop-Contract：循环必须有契约"><a href="#4-Loop-Contract：循环必须有契约" class="headerlink" title="4. Loop Contract：循环必须有契约"></a>4. Loop Contract：循环必须有契约</h2><p>一个可靠循环至少包含七个元素。</p>
+<h3 id="4-1-Initial-State"><a href="#4-1-Initial-State" class="headerlink" title="4.1 Initial State"></a>4.1 Initial State</h3><p>循环开始前已经知道什么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">query、cursor、已收集证据、预算、目标<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-2-Loop-Body"><a href="#4-2-Loop-Body" class="headerlink" title="4.2 Loop Body"></a>4.2 Loop Body</h3><p>每轮执行什么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">搜索 → 筛选 → 去重 → 评估证据<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-Progress-Measure"><a href="#4-3-Progress-Measure" class="headerlink" title="4.3 Progress Measure"></a>4.3 Progress Measure</h3><p>如何知道正在前进：</p>
+<ul>
+<li>新增有效来源数量；</li>
+<li>未解决问题数量下降；</li>
+<li>验证错误数量下降；</li>
+<li>分页 cursor 前进；</li>
+<li>待处理对象数量减少；</li>
+<li>置信度达到阈值。</li>
+</ul>
+<h3 id="4-4-Success-Condition"><a href="#4-4-Success-Condition" class="headerlink" title="4.4 Success Condition"></a>4.4 Success Condition</h3><p>什么时候认为完成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">每个关键论断至少有一个可信来源，且没有阻断性证据缺口<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-5-Termination-Condition"><a href="#4-5-Termination-Condition" class="headerlink" title="4.5 Termination Condition"></a>4.5 Termination Condition</h3><p>即使没有成功，也必须退出：</p>
+<ul>
+<li>最大轮数；</li>
+<li>最大耗时；</li>
+<li>最大成本；</li>
+<li>无新增进展；</li>
+<li>重复相同错误；</li>
+<li>用户取消；</li>
+<li>安全边界触发。</li>
+</ul>
+<h3 id="4-6-State-Update"><a href="#4-6-State-Update" class="headerlink" title="4.6 State Update"></a>4.6 State Update</h3><p>每轮结束后保存：</p>
+<ul>
+<li>新结果；</li>
+<li>去重集合；</li>
+<li>下一 cursor；</li>
+<li>剩余问题；</li>
+<li>尝试次数；</li>
+<li>最新错误。</li>
+</ul>
+<h3 id="4-7-Exit-Behavior"><a href="#4-7-Exit-Behavior" class="headerlink" title="4.7 Exit Behavior"></a>4.7 Exit Behavior</h3><p>退出后怎样处理：</p>
+<ul>
+<li>成功进入下一阶段；</li>
+<li>部分完成并披露限制；</li>
+<li>尝试 Fallback；</li>
+<li>请求用户信息；</li>
+<li>停止。</li>
+</ul>
+<hr>
+<h2 id="5-循环的三类终止条件"><a href="#5-循环的三类终止条件" class="headerlink" title="5. 循环的三类终止条件"></a>5. 循环的三类终止条件</h2><h3 id="5-1-目标驱动终止"><a href="#5-1-目标驱动终止" class="headerlink" title="5.1 目标驱动终止"></a>5.1 目标驱动终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">until evidence is sufficient<br>until validator passes<br>until all pages are consumed<br>until pending items are empty<br></code></pre></td></tr></table></figure>
+
+<p>目标必须可判定。<code>until the answer is good enough</code> 太主观，除非进一步定义评价维度。</p>
+<h3 id="5-2-预算驱动终止"><a href="#5-2-预算驱动终止" class="headerlink" title="5.2 预算驱动终止"></a>5.2 预算驱动终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">maximum 5 search rounds<br>maximum 90 seconds<br>maximum 20 tool calls<br>maximum estimated cost<br></code></pre></td></tr></table></figure>
+
+<p>预算是安全阀，不是完成标准。达到预算时应报告未完成状态，而不是强行宣称成功。</p>
+<h3 id="5-3-无进展终止"><a href="#5-3-无进展终止" class="headerlink" title="5.3 无进展终止"></a>5.3 无进展终止</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">if two consecutive rounds add no new evidence:<br>    stop refining the same query<br></code></pre></td></tr></table></figure>
+
+<p>无进展检测可以避免 Agent 用不同措辞重复同一操作。</p>
+<p>最稳健的写法通常同时包含三类：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Continue until all required claims have supporting evidence, but stop after<br>five rounds, 20 tool calls, or two consecutive rounds with no new useful source.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-搜索循环怎样设计"><a href="#6-搜索循环怎样设计" class="headerlink" title="6. 搜索循环怎样设计"></a>6. 搜索循环怎样设计</h2><p>一个常见反模式：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Keep searching until enough information is found.<br></code></pre></td></tr></table></figure>
+
+<p>问题在于 <code>enough</code> 没有定义。</p>
+<p>更好的搜索循环：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Evidence collection loop</span><br><br>Initial state:<br><span class="hljs-bullet">-</span> unanswered questions from the analysis plan;<br><span class="hljs-bullet">-</span> an empty canonical-source set;<br><span class="hljs-bullet">-</span> search<span class="hljs-emphasis">_round = 0.</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">Each round:</span><br><span class="hljs-emphasis">1. Select the highest-priority unanswered question.</span><br><span class="hljs-emphasis">2. Build one focused query.</span><br><span class="hljs-emphasis">3. Search and inspect candidate sources.</span><br><span class="hljs-emphasis">4. Keep only sources that directly support or contradict the question.</span><br><span class="hljs-emphasis">5. Deduplicate by canonical URL and claim.</span><br><span class="hljs-emphasis">6. Update the evidence matrix.</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">Success:</span><br><span class="hljs-emphasis">- every blocking question has evidence; and</span><br><span class="hljs-emphasis">- conflicting evidence is either resolved or disclosed.</span><br><span class="hljs-emphasis"></span><br><span class="hljs-emphasis">Stop without success when:</span><br><span class="hljs-emphasis">- five rounds have completed;</span><br><span class="hljs-emphasis">- two rounds add no useful evidence;</span><br><span class="hljs-emphasis">- only inaccessible sources remain.</span><br></code></pre></td></tr></table></figure>
+
+<p>循环不是“多搜几次”，而是每轮减少一个明确的知识缺口。</p>
+<hr>
+<h2 id="7-分页循环怎样设计"><a href="#7-分页循环怎样设计" class="headerlink" title="7. 分页循环怎样设计"></a>7. 分页循环怎样设计</h2><p>分页看似简单，也容易出错：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">cursor = null<br>do:<br>    page = fetch(cursor)<br>    process(page.items)<br>    cursor = page.next_cursor<br>while cursor exists<br></code></pre></td></tr></table></figure>
+
+<p>还要验证：</p>
+<ul>
+<li>cursor 是否真的变化；</li>
+<li>页面是否重复；</li>
+<li>item ID 是否去重；</li>
+<li><code>next_cursor</code> 缺失是结束还是异常；</li>
+<li>是否有总页数或上限；</li>
+<li>中途失败后从哪个 cursor 恢复。</li>
+</ul>
+<p>安全规则：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">-</span> Stop if the next cursor equals the current cursor.<br><span class="hljs-bullet">-</span> Deduplicate items by stable ID.<br><span class="hljs-bullet">-</span> Record the last fully processed cursor.<br><span class="hljs-bullet">-</span> Do not restart from page 1 after a transient failure unless processing is<br>  idempotent.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="8-Validate–Fix-循环怎样设计"><a href="#8-Validate–Fix-循环怎样设计" class="headerlink" title="8. Validate–Fix 循环怎样设计"></a>8. Validate–Fix 循环怎样设计</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Generate<br>  ↓<br>Validate<br>  ├── pass → continue<br>  └── fail<br>       ↓<br>     Fix<br>       ↓<br>   Validate again<br></code></pre></td></tr></table></figure>
+
+<p>Anthropic Skill 最佳实践强调在质量关键任务中使用验证反馈循环：立即运行验证器、根据具体错误修复、重新验证，只有通过后才能继续。</p>
+<h3 id="8-1-修复必须针对错误"><a href="#8-1-修复必须针对错误" class="headerlink" title="8.1 修复必须针对错误"></a>8.1 修复必须针对错误</h3><p>不要每轮完全重写全部产物。应使用错误列表定位受影响部分。</p>
+<h3 id="8-2-修复后必须从验证器重新开始"><a href="#8-2-修复后必须从验证器重新开始" class="headerlink" title="8.2 修复后必须从验证器重新开始"></a>8.2 修复后必须从验证器重新开始</h3><p>模型认为“已经修好”不等于验证通过。</p>
+<h3 id="8-3-限制轮数"><a href="#8-3-限制轮数" class="headerlink" title="8.3 限制轮数"></a>8.3 限制轮数</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">最多 3 轮修复<br></code></pre></td></tr></table></figure>
+
+<p>如果相同错误持续出现，说明自动修复路径失效，应停止并报告。</p>
+<h3 id="8-4-错误变化时重新分类"><a href="#8-4-错误变化时重新分类" class="headerlink" title="8.4 错误变化时重新分类"></a>8.4 错误变化时重新分类</h3><p>第一次是缺字段，修复后变成文件损坏，不应继续沿用原来的重试策略。</p>
+<hr>
+<h2 id="9-Agent-Tool-Loop-的退出条件"><a href="#9-Agent-Tool-Loop-的退出条件" class="headerlink" title="9. Agent Tool Loop 的退出条件"></a>9. Agent Tool Loop 的退出条件</h2><p>客户端工具调用通常形成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">while stop_reason == tool_use:<br>    execute tool calls<br>    return tool results<br></code></pre></td></tr></table></figure>
+
+<p>Anthropic 官方 Tool Use 文档指出，遇到其他停止原因时循环应退出并按其语义处理，例如：</p>
+<ul>
+<li><code>end_turn</code>：正常结束；</li>
+<li><code>max_tokens</code>：输出被预算截断；</li>
+<li><code>stop_sequence</code>：遇到指定停止序列；</li>
+<li><code>refusal</code>：模型拒绝；</li>
+<li><code>pause_turn</code>：服务器侧循环暂时暂停，需要按协议继续。</li>
+</ul>
+<p>不能把所有非 <code>end_turn</code> 状态都当成失败后重新发送同一请求，否则可能重复工具副作用。</p>
+<hr>
+<h2 id="10-Retry-前先分类错误"><a href="#10-Retry-前先分类错误" class="headerlink" title="10. Retry 前先分类错误"></a>10. Retry 前先分类错误</h2><table>
+<thead>
+<tr>
+<th>错误类别</th>
+<th>例子</th>
+<th align="right">原样重试是否通常有效</th>
+<th>正确动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入错误</td>
+<td>缺参数、Schema 错误</td>
+<td align="right">否</td>
+<td>修正或询问</td>
+</tr>
+<tr>
+<td>认证错误</td>
+<td>Token 失效</td>
+<td align="right">否</td>
+<td>修复凭据</td>
+</tr>
+<tr>
+<td>权限错误</td>
+<td>无权访问资源</td>
+<td align="right">否</td>
+<td>请求授权或停止</td>
+</tr>
+<tr>
+<td>额度错误</td>
+<td>余额、预算耗尽</td>
+<td align="right">否</td>
+<td>等待外部处理</td>
+</tr>
+<tr>
+<td>冲突错误</td>
+<td>资源已被修改</td>
+<td align="right">有条件</td>
+<td>读取最新状态后重建请求</td>
+</tr>
+<tr>
+<td>临时错误</td>
+<td>限流、超时、过载</td>
+<td align="right">是</td>
+<td>有界退避重试</td>
+</tr>
+<tr>
+<td>工具实现错误</td>
+<td>脚本崩溃</td>
+<td align="right">通常否</td>
+<td>修复实现或 Fallback</td>
+</tr>
+<tr>
+<td>语义失败</td>
+<td>结果不满足 Contract</td>
+<td align="right">原样重试通常否</td>
+<td>修改策略或输入</td>
+</tr>
+</tbody></table>
+<p>原则：</p>
+<blockquote>
+<p>如果不改变任何条件，同一操作必然再次失败，就不应自动重试。</p>
+</blockquote>
+<hr>
+<h2 id="11-Retryable-与-Non-Retryable"><a href="#11-Retryable-与-Non-Retryable" class="headerlink" title="11. Retryable 与 Non-Retryable"></a>11. Retryable 与 Non-Retryable</h2><h3 id="11-1-通常可重试"><a href="#11-1-通常可重试" class="headerlink" title="11.1 通常可重试"></a>11.1 通常可重试</h3><ul>
+<li>临时网络失败；</li>
+<li>服务器过载；</li>
+<li>有明确恢复时间的速率限制；</li>
+<li>短暂超时；</li>
+<li>服务端标记可重试的错误；</li>
+<li>已重新读取状态并修正的并发冲突。</li>
+</ul>
+<h3 id="11-2-通常不可原样重试"><a href="#11-2-通常不可原样重试" class="headerlink" title="11.2 通常不可原样重试"></a>11.2 通常不可原样重试</h3><ul>
+<li>参数非法；</li>
+<li>文件不存在；</li>
+<li>凭据错误；</li>
+<li>没有权限；</li>
+<li>固定大小限制；</li>
+<li>账户额度耗尽；</li>
+<li>不支持的格式或版本；</li>
+<li>安全策略拒绝；</li>
+<li>确定性脚本 Bug。</li>
+</ul>
+<h3 id="11-3-429-也要分类"><a href="#11-3-429-也要分类" class="headerlink" title="11.3 429 也要分类"></a>11.3 429 也要分类</h3><p>有些 429 是短期限流，带 <code>Retry-After</code>；有些可能表示消费上限，等待几秒不会恢复。应依据结构化错误类型和响应头，而不是只看状态码。</p>
+<hr>
+<h2 id="12-Retry-Budget：重试必须有预算"><a href="#12-Retry-Budget：重试必须有预算" class="headerlink" title="12. Retry Budget：重试必须有预算"></a>12. Retry Budget：重试必须有预算</h2><p>至少定义：</p>
+<ul>
+<li><code>max_attempts</code>：最大尝试次数；</li>
+<li><code>max_elapsed_time</code>：最大总时长；</li>
+<li><code>retryable_codes</code>：允许重试的错误；</li>
+<li><code>backoff</code>：等待策略；</li>
+<li><code>stop_on_error_change</code>：错误变化是否停止；</li>
+<li><code>fallback_after</code>：何时切换替代方案；</li>
+<li><code>on_exhausted</code>：预算耗尽后的行为。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">retry_policy:</span><br>  <span class="hljs-attr">max_attempts:</span> <span class="hljs-number">3</span><br>  <span class="hljs-attr">max_elapsed_seconds:</span> <span class="hljs-number">90</span><br>  <span class="hljs-attr">retryable_codes:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">rate_limited</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">timeout</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">service_unavailable</span><br>  <span class="hljs-attr">honor_retry_after:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">stop_on_error_change:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">on_exhausted:</span> <span class="hljs-string">try_approved_fallback</span><br></code></pre></td></tr></table></figure>
+
+<p>OpenAI 官方错误恢复文档要求重试遵守 <code>Retry-After</code>，并设置尝试次数或截止时间；达到上限或错误变化时应停止自动重试。</p>
+<hr>
+<h2 id="13-指数退避与抖动"><a href="#13-指数退避与抖动" class="headerlink" title="13. 指数退避与抖动"></a>13. 指数退避与抖动</h2><h3 id="13-1-固定间隔的问题"><a href="#13-1-固定间隔的问题" class="headerlink" title="13.1 固定间隔的问题"></a>13.1 固定间隔的问题</h3><p>大量客户端同时每秒重试，会形成惊群效应，让刚恢复的服务再次过载。</p>
+<h3 id="13-2-指数退避"><a href="#13-2-指数退避" class="headerlink" title="13.2 指数退避"></a>13.2 指数退避</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">delay = min(base × 2^attempt, max_delay)<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">1s → 2s → 4s → 8s<br></code></pre></td></tr></table></figure>
+
+<h3 id="13-3-Jitter"><a href="#13-3-Jitter" class="headerlink" title="13.3 Jitter"></a>13.3 Jitter</h3><p>加入随机抖动：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">delay = random(0, min(base × 2^attempt, max_delay))<br></code></pre></td></tr></table></figure>
+
+<h3 id="13-4-服务端提示优先"><a href="#13-4-服务端提示优先" class="headerlink" title="13.4 服务端提示优先"></a>13.4 服务端提示优先</h3><p>如果响应包含 <code>Retry-After</code> 或等价指示，应优先遵守。</p>
+<h3 id="13-5-不在-Skill-中重新实现-SDK-已有策略"><a href="#13-5-不在-Skill-中重新实现-SDK-已有策略" class="headerlink" title="13.5 不在 Skill 中重新实现 SDK 已有策略"></a>13.5 不在 Skill 中重新实现 SDK 已有策略</h3><p>Anthropic 官方 SDK 对部分临时错误已经默认进行有限指数退避重试。Skill 层若再次重试，可能出现次数相乘：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">SDK 3 次 × Workflow 3 次 = 9 次调用<br></code></pre></td></tr></table></figure>
+
+<p>必须明确重试责任属于：</p>
+<ul>
+<li>SDK 请求层；</li>
+<li>Tool 层；</li>
+<li>Skill 步骤层；</li>
+<li>整体任务层。</li>
+</ul>
+<hr>
+<h2 id="14-重试前必须检查副作用"><a href="#14-重试前必须检查副作用" class="headerlink" title="14. 重试前必须检查副作用"></a>14. 重试前必须检查副作用</h2><p>这是本章最重要的安全原则之一。</p>
+<p>请求超时只代表客户端没有收到确定结果，不代表服务端没有执行。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Client sends create_issue<br>       ↓<br>Server creates issue<br>       ↓<br>Response lost<br>       ↓<br>Client sees timeout<br></code></pre></td></tr></table></figure>
+
+<p>如果直接重试，可能创建两个 Issue。</p>
+<p>OpenAI 官方 Agent 恢复文档明确要求：失败的 Turn 可能已经修改文件或调用外部工具，重试前必须检查保存状态和已完成动作。</p>
+<p>推荐模式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">failure / timeout<br>  ↓<br>query operation status<br>  ├── completed → reuse result<br>  ├── confirmed absent → safe retry<br>  └── unknown → do not blindly retry non-idempotent action<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="15-Idempotency：安全重试的基础"><a href="#15-Idempotency：安全重试的基础" class="headerlink" title="15. Idempotency：安全重试的基础"></a>15. Idempotency：安全重试的基础</h2><p>幂等表示同一个逻辑操作执行多次，最终效果与执行一次相同。</p>
+<h3 id="15-1-较容易幂等"><a href="#15-1-较容易幂等" class="headerlink" title="15.1 较容易幂等"></a>15.1 较容易幂等</h3><ul>
+<li>读取资源；</li>
+<li>将字段设置为确定值；</li>
+<li>使用稳定键执行 upsert；</li>
+<li>生成到新临时路径。</li>
+</ul>
+<h3 id="15-2-通常非幂等"><a href="#15-2-通常非幂等" class="headerlink" title="15.2 通常非幂等"></a>15.2 通常非幂等</h3><ul>
+<li>发送邮件；</li>
+<li>创建资源；</li>
+<li>扣款；</li>
+<li>对计数器加一；</li>
+<li>追加日志或评论；</li>
+<li>触发外部任务。</li>
+</ul>
+<h3 id="15-3-Idempotency-Key"><a href="#15-3-Idempotency-Key" class="headerlink" title="15.3 Idempotency Key"></a>15.3 Idempotency Key</h3><p>同一逻辑操作的重试应复用同一幂等键：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">run_id + step_id + target_id<br></code></pre></td></tr></table></figure>
+
+<p>每次重试都生成新键会失去幂等保护。</p>
+<h3 id="15-4-服务不支持幂等键时"><a href="#15-4-服务不支持幂等键时" class="headerlink" title="15.4 服务不支持幂等键时"></a>15.4 服务不支持幂等键时</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">生成稳定业务标识<br>→ 操作前查询<br>→ 执行<br>→ 超时后按业务标识回读<br>→ 仅在确认未执行时重试<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="16-Fallback-与-Degradation-的区别"><a href="#16-Fallback-与-Degradation-的区别" class="headerlink" title="16. Fallback 与 Degradation 的区别"></a>16. Fallback 与 Degradation 的区别</h2><h3 id="16-1-Fallback：替代实现"><a href="#16-1-Fallback：替代实现" class="headerlink" title="16.1 Fallback：替代实现"></a>16.1 Fallback：替代实现</h3><p>目标基本相同，实现路径改变：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Primary parser → General parser<br>Primary search source → Secondary trusted source<br>Live endpoint → Versioned snapshot<br></code></pre></td></tr></table></figure>
+
+<h3 id="16-2-Degradation：降低交付等级"><a href="#16-2-Degradation：降低交付等级" class="headerlink" title="16.2 Degradation：降低交付等级"></a>16.2 Degradation：降低交付等级</h3><p>无法满足完整目标，交付较小但仍有用的成果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">无法生成图表 → 提供数据表<br>无法验证全部来源 → 标注未验证项<br>无法完成所有文件 → 交付成功列表与失败清单<br></code></pre></td></tr></table></figure>
+
+<h3 id="16-3-Retry：路径不变"><a href="#16-3-Retry：路径不变" class="headerlink" title="16.3 Retry：路径不变"></a>16.3 Retry：路径不变</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Tool A failed transiently → wait → Tool A again<br></code></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Retry ≠ Fallback ≠ Degradation<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="17-Fallback-Contract"><a href="#17-Fallback-Contract" class="headerlink" title="17. Fallback Contract"></a>17. Fallback Contract</h2><p>每个 Fallback 至少说明：</p>
+<h3 id="17-1-Trigger"><a href="#17-1-Trigger" class="headerlink" title="17.1 Trigger"></a>17.1 Trigger</h3><p>什么条件下启用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">primary tool unavailable after retry budget exhausted<br></code></pre></td></tr></table></figure>
+
+<h3 id="17-2-Preconditions"><a href="#17-2-Preconditions" class="headerlink" title="17.2 Preconditions"></a>17.2 Preconditions</h3><p>替代方案自身需要什么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">cached data is not older than 24 hours<br></code></pre></td></tr></table></figure>
+
+<h3 id="17-3-Capability-Difference"><a href="#17-3-Capability-Difference" class="headerlink" title="17.3 Capability Difference"></a>17.3 Capability Difference</h3><p>它与主路径有什么差别：</p>
+<ul>
+<li>数据更新频率；</li>
+<li>字段完整度；</li>
+<li>精度；</li>
+<li>权限；</li>
+<li>成本；</li>
+<li>可验证性。</li>
+</ul>
+<h3 id="17-4-Output-Label"><a href="#17-4-Output-Label" class="headerlink" title="17.4 Output Label"></a>17.4 Output Label</h3><p>最终结果怎样标注使用了 Fallback。</p>
+<h3 id="17-5-Validation"><a href="#17-5-Validation" class="headerlink" title="17.5 Validation"></a>17.5 Validation</h3><p>Fallback 结果需要独立的 Postcondition，不能因为它是“备用”就降低到没有验证。</p>
+<h3 id="17-6-Exit"><a href="#17-6-Exit" class="headerlink" title="17.6 Exit"></a>17.6 Exit</h3><p>Fallback 也失败时是再换路径、询问用户，还是停止。</p>
+<hr>
+<h2 id="18-Fallback-不是随意换工具"><a href="#18-Fallback-不是随意换工具" class="headerlink" title="18. Fallback 不是随意换工具"></a>18. Fallback 不是随意换工具</h2><p>错误写法：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If Tool A fails, try any other available tool.<br></code></pre></td></tr></table></figure>
+
+<p>问题：</p>
+<ul>
+<li>另一个工具可能语义不同；</li>
+<li>数据来源可信度不同；</li>
+<li>返回字段不兼容；</li>
+<li>可能产生额外副作用；</li>
+<li>用户可能没有授权。</li>
+</ul>
+<p>更好的写法：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">If <span class="hljs-code">`primary_trace_parser`</span> returns <span class="hljs-code">`UNSUPPORTED_VERSION`</span>, use<br><span class="hljs-code">`generic_trace_parser`</span> only for event types listed in<br><span class="hljs-code">`references/generic-parser-coverage.md`</span>. Mark unsupported events as omitted,<br>and do not claim full trace coverage.<br></code></pre></td></tr></table></figure>
+
+<p>Fallback 必须是经过设计和测试的备用路径。</p>
+<hr>
+<h2 id="19-Fallback-优先级"><a href="#19-Fallback-优先级" class="headerlink" title="19. Fallback 优先级"></a>19. Fallback 优先级</h2><p>多个备用路径可按质量排序：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Primary live API<br>  ↓ unavailable<br>Approved secondary API<br>  ↓ unavailable<br>Recent verified cache<br>  ↓ unavailable<br>Partial local analysis<br>  ↓ impossible<br>Ask / Stop<br></code></pre></td></tr></table></figure>
+
+<p>排序依据：</p>
+<ul>
+<li>正确性；</li>
+<li>数据新鲜度；</li>
+<li>安全性；</li>
+<li>授权范围；</li>
+<li>成本；</li>
+<li>延迟；</li>
+<li>用户目标。</li>
+</ul>
+<p>不能只按“哪个还能调用”排序。</p>
+<hr>
+<h2 id="20-透明-Fallback"><a href="#20-透明-Fallback" class="headerlink" title="20. 透明 Fallback"></a>20. 透明 Fallback</h2><p>最终结果应说明：</p>
+<ul>
+<li>主路径为什么不可用；</li>
+<li>启用了哪个替代方案；</li>
+<li>替代结果的时间和来源；</li>
+<li>覆盖、精度或能力损失；</li>
+<li>哪些结论因此不能成立；</li>
+<li>怎样获得完整结果。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">实时指标接口在重试预算内持续超时。本报告改用 2026-10-07 02:00<br>生成的验证缓存，因此不包含 02:00 之后的数据。关于故障恢复时间的结论<br>无法确认，其余历史区间分析已通过同一 Schema 校验。<br></code></pre></td></tr></table></figure>
+
+<p>静默 Fallback 会让用户误认为结果来自主数据源。</p>
+<hr>
+<h2 id="21-Checkpoint-与-Resume"><a href="#21-Checkpoint-与-Resume" class="headerlink" title="21. Checkpoint 与 Resume"></a>21. Checkpoint 与 Resume</h2><p>长循环应保存检查点，避免失败后从头重复。</p>
+<h3 id="21-1-检查点内容"><a href="#21-1-检查点内容" class="headerlink" title="21.1 检查点内容"></a>21.1 检查点内容</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;run_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;run_20261007_001&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;stage&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;evidence_collection&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;iteration&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;completed_items&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;claim-1&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;claim-2&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;pending_items&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;claim-3&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;cursor&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;page-token-8&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;artifacts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;evidence_matrix&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;artifacts/evidence.json&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;side_effects&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;remaining_budget&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;iterations&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;tool_calls&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="21-2-Resume-前验证"><a href="#21-2-Resume-前验证" class="headerlink" title="21.2 Resume 前验证"></a>21.2 Resume 前验证</h3><ul>
+<li>检查点版本兼容；</li>
+<li>输入未改变；</li>
+<li>中间产物完整；</li>
+<li>cursor 仍有效；</li>
+<li>外部状态未使计划失效；</li>
+<li>原授权仍适用。</li>
+</ul>
+<h3 id="21-3-只继续未完成工作"><a href="#21-3-只继续未完成工作" class="headerlink" title="21.3 只继续未完成工作"></a>21.3 只继续未完成工作</h3><p>OpenAI 官方恢复指导建议在已有 Session 中请求继续未完成部分，而不是让 Agent 重复整个 Turn。</p>
+<hr>
+<h2 id="22-Partial-Success：循环中的部分完成"><a href="#22-Partial-Success：循环中的部分完成" class="headerlink" title="22. Partial Success：循环中的部分完成"></a>22. Partial Success：循环中的部分完成</h2><p>批量任务可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">20 个文件<br>├── 17 complete<br>├── 1 retryable failure<br>├── 1 unsupported<br>└── 1 waiting for user input<br></code></pre></td></tr></table></figure>
+
+<p>不要用单个布尔值表示整体状态。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;partial_success&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;completed&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">17</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;retryable_failed&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;unsupported&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;waiting_for_input&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>恢复时只处理未完成集合，并对已经完成的副作用去重。</p>
+<hr>
+<h2 id="23-修复、重试、Fallback、询问、停止的决策树"><a href="#23-修复、重试、Fallback、询问、停止的决策树" class="headerlink" title="23. 修复、重试、Fallback、询问、停止的决策树"></a>23. 修复、重试、Fallback、询问、停止的决策树</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs text">Failure<br>│<br>├── Invalid input?<br>│   ├── safely fixable → fix → validate → retry<br>│   └── user information needed → ask<br>│<br>├── Auth / permission / budget?<br>│   └── stop automatic retry → report required action<br>│<br>├── Transient?<br>│   ├── side effect confirmed absent / idempotent<br>│   │   └── bounded backoff retry<br>│   └── side effect unknown and non-idempotent<br>│       └── inspect or ask; do not blind retry<br>│<br>├── Primary path unavailable?<br>│   ├── approved fallback exists → fallback → validate → disclose<br>│   └── no approved fallback → stop<br>│<br>└── Semantic validation failure?<br>    ├── targeted repair possible → fix loop<br>    ├── acceptable degradation → disclose and deliver partial result<br>    └── otherwise → stop<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="24-一份完整的-SKILL-md-模板"><a href="#24-一份完整的-SKILL-md-模板" class="headerlink" title="24. 一份完整的 SKILL.md 模板"></a>24. 一份完整的 SKILL.md 模板</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Loop policy</span><br><br>For every loop, define:<br><span class="hljs-bullet">-</span> initial state;<br><span class="hljs-bullet">-</span> per-iteration action;<br><span class="hljs-bullet">-</span> progress measure;<br><span class="hljs-bullet">-</span> success condition;<br><span class="hljs-bullet">-</span> iteration, time, tool-call, and cost limits;<br><span class="hljs-bullet">-</span> no-progress condition;<br><span class="hljs-bullet">-</span> checkpoint and exit behavior.<br><br>Never use an unbounded “repeat until successful” instruction.<br><br><span class="hljs-section">## Retry policy</span><br><br><span class="hljs-bullet">-</span> Classify the error before retrying.<br><span class="hljs-bullet">-</span> Retry only: <span class="hljs-code">`rate_limited`</span>, <span class="hljs-code">`timeout`</span>, <span class="hljs-code">`service_unavailable`</span>.<br><span class="hljs-bullet">-</span> Honor <span class="hljs-code">`Retry-After`</span>.<br><span class="hljs-bullet">-</span> Use exponential backoff with jitter.<br><span class="hljs-bullet">-</span> Maximum attempts: 3.<br><span class="hljs-bullet">-</span> Stop if the error changes.<br><span class="hljs-bullet">-</span> Account for retries already performed by the SDK.<br><span class="hljs-bullet">-</span> Before retrying a write, confirm its outcome or guarantee idempotency.<br><br><span class="hljs-section">## Fallback policy</span><br><br>Primary: [path A]<br><br>Use fallback [path B] only when:<br><span class="hljs-bullet">-</span> [explicit trigger]; and<br><span class="hljs-bullet">-</span> [fallback preconditions].<br><br>Differences:<br><span class="hljs-bullet">-</span> [freshness / coverage / precision / side-effect difference].<br><br>After fallback:<br><span class="hljs-bullet">-</span> run [validation];<br><span class="hljs-bullet">-</span> label the result as fallback-derived;<br><span class="hljs-bullet">-</span> disclose limitations;<br><span class="hljs-bullet">-</span> stop if [fallback failure condition].<br><br><span class="hljs-section">## Recovery</span><br><br><span class="hljs-bullet">-</span> Resume from the latest validated checkpoint.<br><span class="hljs-bullet">-</span> Revalidate external state and authorization.<br><span class="hljs-bullet">-</span> Execute only unfinished work.<br><span class="hljs-bullet">-</span> Rerun affected postconditions and final checks.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="25-完整示例：Performance-Analysis-Skill"><a href="#25-完整示例：Performance-Analysis-Skill" class="headerlink" title="25. 完整示例：Performance Analysis Skill"></a>25. 完整示例：Performance Analysis Skill</h2><h3 id="25-1-证据收集循环"><a href="#25-1-证据收集循环" class="headerlink" title="25.1 证据收集循环"></a>25.1 证据收集循环</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs markdown">For each unresolved root-cause question:<br><span class="hljs-bullet">1.</span> Select one missing evidence type.<br><span class="hljs-bullet">2.</span> Query the corresponding read-only tool.<br><span class="hljs-bullet">3.</span> Normalize and deduplicate results.<br><span class="hljs-bullet">4.</span> Update the evidence matrix.<br><br>Stop successfully when every high-priority hypothesis is supported, contradicted,<br>or explicitly marked unknown.<br><br>Stop without success after four rounds, 12 tool calls, or two no-progress rounds.<br></code></pre></td></tr></table></figure>
+
+<h3 id="25-2-Tool-Retry"><a href="#25-2-Tool-Retry" class="headerlink" title="25.2 Tool Retry"></a>25.2 Tool Retry</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown">On rate limit, overload, or transient timeout:<br><span class="hljs-bullet">-</span> inspect whether the query or action already completed;<br><span class="hljs-bullet">-</span> honor Retry-After;<br><span class="hljs-bullet">-</span> retry at most twice;<br><span class="hljs-bullet">-</span> stop if the error code changes.<br><br>Do not retry invalid trace IDs, unsupported formats, permission errors, or empty<br>results using the same unchanged request.<br></code></pre></td></tr></table></figure>
+
+<h3 id="25-3-Parser-Fallback"><a href="#25-3-Parser-Fallback" class="headerlink" title="25.3 Parser Fallback"></a>25.3 Parser Fallback</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Use <span class="hljs-code">`scripts/parse_trace.py`</span> as primary.<br><br>If it returns <span class="hljs-code">`UNSUPPORTED_TRACE_VERSION`</span>, use<br><span class="hljs-code">`scripts/parse_trace_generic.py`</span> only when the trace contains the documented<br>common event subset. Record omitted event types and reduce coverage confidence.<br></code></pre></td></tr></table></figure>
+
+<h3 id="25-4-Report-Fix-Loop"><a href="#25-4-Report-Fix-Loop" class="headerlink" title="25.4 Report Fix Loop"></a>25.4 Report Fix Loop</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs markdown">Run <span class="hljs-code">`scripts/validate_report.py`</span>.<br><br>If validation fails:<br><span class="hljs-bullet">1.</span> Fix only the reported violations.<br><span class="hljs-bullet">2.</span> Rerun the complete validator.<br><span class="hljs-bullet">3.</span> Stop after three failed validation rounds or when the same error repeats.<br><br>Never deliver a report labeled complete when mandatory validation still fails.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="26-可观测性"><a href="#26-可观测性" class="headerlink" title="26. 可观测性"></a>26. 可观测性</h2><p>每轮循环和重试应记录：</p>
+<ul>
+<li><code>run_id</code>；</li>
+<li>阶段；</li>
+<li>iteration &#x2F; attempt；</li>
+<li>输入摘要；</li>
+<li>错误码；</li>
+<li>进度指标；</li>
+<li>等待时间；</li>
+<li>剩余预算；</li>
+<li>Fallback 原因；</li>
+<li>副作用状态；</li>
+<li>退出原因。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;event&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;retry_scheduled&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;run_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;run_42&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;step&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;metric_query&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;attempt&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;error_code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;rate_limited&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;delay_seconds&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">30</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;remaining_attempts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;side_effect_status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;none&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>记录 request ID 便于定位持续性错误，但不要记录凭据和不必要的敏感数据。</p>
+<hr>
+<h2 id="27-如何测试循环"><a href="#27-如何测试循环" class="headerlink" title="27. 如何测试循环"></a>27. 如何测试循环</h2><h3 id="27-1-成功退出"><a href="#27-1-成功退出" class="headerlink" title="27.1 成功退出"></a>27.1 成功退出</h3><p>检查完成条件满足后是否立即退出，不再产生额外调用。</p>
+<h3 id="27-2-预算退出"><a href="#27-2-预算退出" class="headerlink" title="27.2 预算退出"></a>27.2 预算退出</h3><p>目标始终不能满足时，是否在最大轮数、时间或成本处停止。</p>
+<h3 id="27-3-无进展退出"><a href="#27-3-无进展退出" class="headerlink" title="27.3 无进展退出"></a>27.3 无进展退出</h3><p>连续返回重复结果时，是否检测到没有新信息。</p>
+<h3 id="27-4-状态前进"><a href="#27-4-状态前进" class="headerlink" title="27.4 状态前进"></a>27.4 状态前进</h3><p>分页 cursor、待处理集合和验证错误数量是否按预期变化。</p>
+<h3 id="27-5-恢复"><a href="#27-5-恢复" class="headerlink" title="27.5 恢复"></a>27.5 恢复</h3><p>在第 N 轮中断后，是否从检查点继续，而不是从头重复。</p>
+<h3 id="27-6-重复检测"><a href="#27-6-重复检测" class="headerlink" title="27.6 重复检测"></a>27.6 重复检测</h3><p>是否正确去重来源、对象和副作用。</p>
+<hr>
+<h2 id="28-如何测试-Retry-与-Fallback"><a href="#28-如何测试-Retry-与-Fallback" class="headerlink" title="28. 如何测试 Retry 与 Fallback"></a>28. 如何测试 Retry 与 Fallback</h2><h3 id="28-1-错误分类"><a href="#28-1-错误分类" class="headerlink" title="28.1 错误分类"></a>28.1 错误分类</h3><ul>
+<li>400 输入错误不应退避重试；</li>
+<li>401&#x2F;403 不应自动重试；</li>
+<li>临时 429 应遵守等待提示；</li>
+<li>额度型 429 不应持续重试；</li>
+<li>5xx 和超时进入有限重试；</li>
+<li>未知错误安全停止。</li>
+</ul>
+<h3 id="28-2-重试预算"><a href="#28-2-重试预算" class="headerlink" title="28.2 重试预算"></a>28.2 重试预算</h3><ul>
+<li>最大次数精确生效；</li>
+<li>总时长截止生效；</li>
+<li>错误变化立即停止；</li>
+<li>SDK 与 Skill 重试没有意外相乘。</li>
+</ul>
+<h3 id="28-3-副作用"><a href="#28-3-副作用" class="headerlink" title="28.3 副作用"></a>28.3 副作用</h3><ul>
+<li>服务端成功但响应丢失；</li>
+<li>回读显示已创建；</li>
+<li>同一幂等键重复调用；</li>
+<li>状态未知且操作非幂等。</li>
+</ul>
+<h3 id="28-4-Fallback"><a href="#28-4-Fallback" class="headerlink" title="28.4 Fallback"></a>28.4 Fallback</h3><ul>
+<li>主路径临时失败但重试后恢复，不应过早 Fallback；</li>
+<li>主路径确定性不支持，应直接走批准的 Fallback；</li>
+<li>Fallback 覆盖不足时应降级置信度；</li>
+<li>Fallback 失败时应停止；</li>
+<li>最终输出必须披露替代路径。</li>
+</ul>
+<h3 id="28-5-恢复后验证"><a href="#28-5-恢复后验证" class="headerlink" title="28.5 恢复后验证"></a>28.5 恢复后验证</h3><p>无论 Retry 或 Fallback 返回成功，都必须重新执行对应 Postcondition 和 Final Check。</p>
+<hr>
+<h2 id="29-常见错误"><a href="#29-常见错误" class="headerlink" title="29. 常见错误"></a>29. 常见错误</h2><h3 id="29-1-无限循环"><a href="#29-1-无限循环" class="headerlink" title="29.1 无限循环"></a>29.1 无限循环</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">repeat until successful<br></code></pre></td></tr></table></figure>
+
+<p>没有预算和停止条件。</p>
+<h3 id="29-2-目标条件主观"><a href="#29-2-目标条件主观" class="headerlink" title="29.2 目标条件主观"></a>29.2 目标条件主观</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">search until it looks complete<br></code></pre></td></tr></table></figure>
+
+<p>无法测试。</p>
+<h3 id="29-3-所有错误统一重试"><a href="#29-3-所有错误统一重试" class="headerlink" title="29.3 所有错误统一重试"></a>29.3 所有错误统一重试</h3><p>权限、输入和额度问题不会因等待自动消失。</p>
+<h3 id="29-4-超时后直接重做写操作"><a href="#29-4-超时后直接重做写操作" class="headerlink" title="29.4 超时后直接重做写操作"></a>29.4 超时后直接重做写操作</h3><p>可能制造重复副作用。</p>
+<h3 id="29-5-忽略-SDK-自带重试"><a href="#29-5-忽略-SDK-自带重试" class="headerlink" title="29.5 忽略 SDK 自带重试"></a>29.5 忽略 SDK 自带重试</h3><p>导致实际调用次数远高于 Skill 声明。</p>
+<h3 id="29-6-Fallback-没有明确触发条件"><a href="#29-6-Fallback-没有明确触发条件" class="headerlink" title="29.6 Fallback 没有明确触发条件"></a>29.6 Fallback 没有明确触发条件</h3><p>模型可能过早放弃主路径或随意换工具。</p>
+<h3 id="29-7-静默-Fallback"><a href="#29-7-静默-Fallback" class="headerlink" title="29.7 静默 Fallback"></a>29.7 静默 Fallback</h3><p>用户无法判断数据新鲜度、精度和来源变化。</p>
+<h3 id="29-8-Fallback-不做验证"><a href="#29-8-Fallback-不做验证" class="headerlink" title="29.8 Fallback 不做验证"></a>29.8 Fallback 不做验证</h3><p>备用路径也可能产生错误或不兼容结果。</p>
+<h3 id="29-9-恢复后重新执行已完成工作"><a href="#29-9-恢复后重新执行已完成工作" class="headerlink" title="29.9 恢复后重新执行已完成工作"></a>29.9 恢复后重新执行已完成工作</h3><p>浪费资源，并可能重复外部动作。</p>
+<h3 id="29-10-把部分成功压成成功或失败"><a href="#29-10-把部分成功压成成功或失败" class="headerlink" title="29.10 把部分成功压成成功或失败"></a>29.10 把部分成功压成成功或失败</h3><p>前者隐瞒缺口，后者丢弃已经验证的成果。</p>
+<h3 id="29-11-错误变化后仍沿用原重试循环"><a href="#29-11-错误变化后仍沿用原重试循环" class="headerlink" title="29.11 错误变化后仍沿用原重试循环"></a>29.11 错误变化后仍沿用原重试循环</h3><p>恢复策略已经失效，需要重新分类。</p>
+<h3 id="29-12-达到预算后强行给出确定结论"><a href="#29-12-达到预算后强行给出确定结论" class="headerlink" title="29.12 达到预算后强行给出确定结论"></a>29.12 达到预算后强行给出确定结论</h3><p>预算耗尽只说明必须停止，不代表证据已经充分。</p>
+<hr>
+<h2 id="30-博客总结"><a href="#30-博客总结" class="headerlink" title="30. 博客总结"></a>30. 博客总结</h2><p>Loop、Retry 和 Fallback 分别解决不同问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Loop<br>→ 多轮执行以达到完成条件<br><br>Retry<br>→ 临时失败后重试同一逻辑操作<br><br>Fallback<br>→ 主路径不可用时采用经过批准的替代路径<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI 官方错误恢复文档强调：重试临时失败前要检查保存状态和已完成副作用，遵守 <code>Retry-After</code>，并设置尝试次数或截止时间。Anthropic 官方文档则明确了工具 Agent Loop 的停止原因、结构化错误反馈、指数退避以及 SDK 已有重试行为。</p>
+<p>请记住：</p>
+<ul>
+<li>每个循环都有初始状态、进度指标、成功条件和终止条件；</li>
+<li>预算耗尽不等于成功；</li>
+<li>只有可能变化的错误才适合重试；</li>
+<li>重试前先检查副作用；</li>
+<li>非幂等写操作不能盲目重做；</li>
+<li>Fallback 是设计好的替代路径，不是随便换工具；</li>
+<li>Fallback 的质量损失必须透明；</li>
+<li>Resume 只继续未完成工作；</li>
+<li>Retry 或 Fallback 后必须重新验证。</li>
+</ul>
+<hr>
+<h2 id="31-学完检查题"><a href="#31-学完检查题" class="headerlink" title="31. 学完检查题"></a>31. 学完检查题</h2><ol>
+<li>Loop、Retry 和 Fallback 的区别是什么？</li>
+<li>Loop Contract 包含哪七个元素？</li>
+<li>目标、预算和无进展终止条件分别解决什么问题？</li>
+<li>为什么 <code>until good enough</code> 不是可靠终止条件？</li>
+<li>哪些错误通常可以重试？</li>
+<li>为什么 429 不能一律按短期限流处理？</li>
+<li>Retry Budget 至少包含哪些字段？</li>
+<li>为什么需要指数退避和 Jitter？</li>
+<li>超时后为什么不能直接重复写操作？</li>
+<li>Idempotency Key 应该在每次重试时变化吗？</li>
+<li>Fallback 与 Degradation 有何区别？</li>
+<li>Fallback Contract 应包含什么？</li>
+<li>Checkpoint 恢复前要重新检查什么？</li>
+<li>为什么恢复成功后仍要重新执行 Final Check？</li>
+</ol>
+<hr>
+<h2 id="32-Skill-专项复盘"><a href="#32-Skill-专项复盘" class="headerlink" title="32. Skill 专项复盘"></a>32. Skill 专项复盘</h2><h3 id="32-1-这个逻辑应该写在-SKILL-md-还是-reference？"><a href="#32-1-这个逻辑应该写在-SKILL-md-还是-reference？" class="headerlink" title="32.1 这个逻辑应该写在 SKILL.md 还是 reference？"></a>32.1 这个逻辑应该写在 SKILL.md 还是 reference？</h3><p>循环主干、停止条件、重试预算、Fallback 触发和失败出口写入 <code>SKILL.md</code>；平台错误码表和大型兼容矩阵可放 reference。</p>
+<h3 id="32-2-这个步骤应该交给-LLM-还是-script？"><a href="#32-2-这个步骤应该交给-LLM-还是-script？" class="headerlink" title="32.2 这个步骤应该交给 LLM 还是 script？"></a>32.2 这个步骤应该交给 LLM 还是 script？</h3><p>错误分类中的固定规则、预算计数、退避和去重应由代码保障；LLM 可以评估语义证据是否充分、生成修复方案和解释降级影响。</p>
+<h3 id="32-3-这个能力应该是-Skill-还是-Tool？"><a href="#32-3-这个能力应该是-Skill-还是-Tool？" class="headerlink" title="32.3 这个能力应该是 Skill 还是 Tool？"></a>32.3 这个能力应该是 Skill 还是 Tool？</h3><p>Retry 和 Fallback 的业务策略属于 Skill；Tool 应返回结构化错误、幂等能力和操作状态。不要让 Tool 隐藏无限重试。</p>
+<h3 id="32-4-什么条件下应该触发这个-Skill？"><a href="#32-4-什么条件下应该触发这个-Skill？" class="headerlink" title="32.4 什么条件下应该触发这个 Skill？"></a>32.4 什么条件下应该触发这个 Skill？</h3><p>Skill 仍由用户目标触发；Loop、Retry 和 Fallback 是 Skill 内部在执行状态、错误类别和证据缺口满足条件时启用的控制流。</p>
+<h3 id="32-5-如何证明这个-Skill-比没有-Skill-更好？"><a href="#32-5-如何证明这个-Skill-比没有-Skill-更好？" class="headerlink" title="32.5 如何证明这个 Skill 比没有 Skill 更好？"></a>32.5 如何证明这个 Skill 比没有 Skill 更好？</h3><p>测量完成率、平均尝试次数、无进展循环率、重复副作用率、Fallback 正确率、透明披露率、恢复成功率和成本上限遵从率。</p>
+<hr>
+<h2 id="33-本章实践"><a href="#33-本章实践" class="headerlink" title="33. 本章实践"></a>33. 本章实践</h2><p>为一个证据研究 Skill 设计：</p>
+<ol>
+<li>一个最多五轮的搜索循环；</li>
+<li>一个“两轮无新增证据”终止条件；</li>
+<li>一个按 URL 与 claim 去重的状态集合；</li>
+<li>一个 3 次尝试、90 秒截止的 Retry Budget；</li>
+<li>一组 retryable 与 non-retryable 错误；</li>
+<li>一个遵守 <code>Retry-After</code> 的指数退避策略；</li>
+<li>一个写操作超时后的状态确认路径；</li>
+<li>一个主搜索服务到可信缓存的 Fallback Contract；</li>
+<li>一个披露缓存时间和覆盖差异的输出模板；</li>
+<li>一套包含死循环、错误变化、重复副作用和 Fallback 失败的测试。</li>
+</ol>
+<p>下一章将严格按照大纲进入：</p>
+<blockquote>
+<p>第 18 章：多个 Skill 如何组合与调用。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agents-api/errors">OpenAI API — Errors and recovery</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI — Build skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/cookbook/examples/skills_in_api">OpenAI Cookbook — Skills in OpenAI API</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">Anthropic — How tool use works</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls">Anthropic — Handle tool calls</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/api/errors">Anthropic — Claude API errors</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+        <a href="/tags/Loop/" class="print-no-link">#Loop</a>
+      
+        <a href="/tags/Retry/" class="print-no-link">#Retry</a>
+      
+        <a href="/tags/Fallback/" class="print-no-link">#Fallback</a>
+      
+        <a href="/tags/Recovery/" class="print-no-link">#Recovery</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</div>
+      <div>https://cj0510.github.io/2026/10/07/AI/Skill/17-循环重试Fallback怎么设计/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/19-Skill%E4%B9%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%81%8C%E8%B4%A3%E9%87%8D%E5%8F%A0/" title="Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

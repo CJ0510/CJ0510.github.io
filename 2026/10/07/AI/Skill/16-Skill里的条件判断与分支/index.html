@@ -1,0 +1,1369 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支前面几章建立了 Skill 的结构、Workflow、Contract，以及 references&#x2F;、scripts&#x2F;、assets&#x2F;、Tool &#x2F; MCP &#x2F; API 的使用方式。 现实任务很少沿着一条固定直线执行。例如性能分析可能遇到： 12345678if trace contains sche">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支前面几章建立了 Skill 的结构、Workflow、Contract，以及 references&#x2F;、scripts&#x2F;、assets&#x2F;、Tool &#x2F; MCP &#x2F; API 的使用方式。 现实任务很少沿着一条固定直线执行。例如性能分析可能遇到： 12345678if trace contains sche">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-06T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-07T22:45:49.188Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Agent Skill">
+<meta property="article:tag" content="Branching">
+<meta property="article:tag" content="Conditional Logic">
+<meta property="article:tag" content="Decision Table">
+<meta property="article:tag" content="Workflow">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-07 00:00" pubdate>
+          2026-10-07
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          119 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支"><a href="#Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支" class="headerlink" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支"></a>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1><p>前面几章建立了 Skill 的结构、Workflow、Contract，以及 <code>references/</code>、<code>scripts/</code>、<code>assets/</code>、Tool &#x2F; MCP &#x2F; API 的使用方式。</p>
+<p>现实任务很少沿着一条固定直线执行。例如性能分析可能遇到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">if trace contains sched events:<br>    run scheduler analysis<br><br>if memory pressure exists:<br>    run memory analysis<br><br>if IO anomaly exists:<br>    run IO analysis<br></code></pre></td></tr></table></figure>
+
+<p>但真正可靠的分支远比几句 <code>if</code> 复杂。我们还必须回答：</p>
+<ul>
+<li>条件来自用户输入还是工具证据？</li>
+<li>多个条件同时成立时，执行一个还是多个分支？</li>
+<li>条件不明确时能否推断？</li>
+<li>分支是否有优先级？</li>
+<li>默认分支是什么？</li>
+<li>哪些条件必须停止或询问用户？</li>
+<li>每条路径怎样验证？</li>
+<li>怎样证明没有遗漏组合？</li>
+</ul>
+<p>本章的核心认知是：</p>
+<blockquote>
+<p>Skill 中的分支不是写作上的“视情况而定”，而是由可观察状态驱动、具有明确优先级和出口条件的控制流。</p>
+</blockquote>
+<hr>
+<h2 id="1-这一章要解决什么问题"><a href="#1-这一章要解决什么问题" class="headerlink" title="1. 这一章要解决什么问题"></a>1. 这一章要解决什么问题</h2><p>本章集中回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Skill 为什么需要条件判断？<br>一个可执行的分支条件应该包含什么？<br>if / else if / 多分支并行分别怎样使用？<br>怎样区分互斥分支和可组合分支？<br>多个条件同时命中时怎样确定优先级？<br>未知、缺失与 false 有什么区别？<br>如何设计默认分支和停止分支？<br>决策表、决策树和状态机分别适合什么场景？<br>怎样测试分支覆盖和边界条件？<br></code></pre></td></tr></table></figure>
+
+<p>目标是让 Agent 在不同输入、证据和执行状态下选择正确路径，而不是依赖临场发挥。</p>
+<hr>
+<h2 id="2-为什么-Skill-不能只有线性步骤"><a href="#2-为什么-Skill-不能只有线性步骤" class="headerlink" title="2. 为什么 Skill 不能只有线性步骤"></a>2. 为什么 Skill 不能只有线性步骤</h2><p>线性 Workflow 假设所有任务都具有相同输入、证据和成功路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Input<br>→ Analyze<br>→ Generate Report<br></code></pre></td></tr></table></figure>
+
+<p>真实任务却可能出现：</p>
+<ul>
+<li>输入格式不同；</li>
+<li>用户目标不同；</li>
+<li>可用工具不同；</li>
+<li>证据指向不同领域；</li>
+<li>有些步骤需要授权；</li>
+<li>有些结果不完整；</li>
+<li>有些任务只需分析，有些还要执行修改；</li>
+<li>某些场景必须停止。</li>
+</ul>
+<p>如果没有显式分支，Agent 可能：</p>
+<ul>
+<li>对所有输入执行全部步骤；</li>
+<li>调用无关工具；</li>
+<li>在证据不足时继续推断；</li>
+<li>把只读请求升级成写操作；</li>
+<li>缺少参数时自行猜测；</li>
+<li>跳过某些边界场景。</li>
+</ul>
+<p>OpenAI 官方 Cookbook 将“高度条件化、像复杂流程图一样分支”的工作流列为适合封装成 Skill 的典型场景。Skill 的价值不仅在于复用步骤，还在于复用决策逻辑。</p>
+<hr>
+<h2 id="3-整体架构：条件来自状态，分支改变状态"><a href="#3-整体架构：条件来自状态，分支改变状态" class="headerlink" title="3. 整体架构：条件来自状态，分支改变状态"></a>3. 整体架构：条件来自状态，分支改变状态</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs text">Current State<br>     │<br>     ├── User Intent<br>     ├── Validated Input<br>     ├── Tool Result<br>     ├── Environment<br>     ├── Permission<br>     └── Previous Step Status<br>     │<br>     ▼<br>Evaluate Condition<br>     │<br> ┌───┼───────────────┐<br> ▼   ▼               ▼<br>Path A Path B      Ask / Stop<br> │     │               │<br> ▼     ▼               ▼<br>Action + Validation + State Update<br>             │<br>             ▼<br>      Next Decision Point<br></code></pre></td></tr></table></figure>
+
+<p>这里有两个关键要求：</p>
+<ol>
+<li>条件必须基于已经观察或验证的状态；</li>
+<li>分支执行后必须更新状态并验证结果。</li>
+</ol>
+<p>因此，分支不是孤立的 <code>if</code>，而是状态机中的转移。</p>
+<hr>
+<h2 id="4-一个完整分支的六个组成部分"><a href="#4-一个完整分支的六个组成部分" class="headerlink" title="4. 一个完整分支的六个组成部分"></a>4. 一个完整分支的六个组成部分</h2><p>一条工程化分支至少应包含：</p>
+<h3 id="4-1-Condition：命中条件"><a href="#4-1-Condition：命中条件" class="headerlink" title="4.1 Condition：命中条件"></a>4.1 Condition：命中条件</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">检测到 block I/O latency 的 P99 超过阈值<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-2-Evidence-Source：条件来源"><a href="#4-2-Evidence-Source：条件来源" class="headerlink" title="4.2 Evidence Source：条件来源"></a>4.2 Evidence Source：条件来源</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">由 scripts/calc_io_metrics.py 的已验证输出提供<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-Action：执行动作"><a href="#4-3-Action：执行动作" class="headerlink" title="4.3 Action：执行动作"></a>4.3 Action：执行动作</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">读取 references/io-analysis.md，并运行 I/O 专项分析<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-4-Postcondition：分支完成标准"><a href="#4-4-Postcondition：分支完成标准" class="headerlink" title="4.4 Postcondition：分支完成标准"></a>4.4 Postcondition：分支完成标准</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">输出必须包含设备、队列延迟、服务时间和样本数<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-5-Exit-Next-State：后续去向"><a href="#4-5-Exit-Next-State：后续去向" class="headerlink" title="4.5 Exit &#x2F; Next State：后续去向"></a>4.5 Exit &#x2F; Next State：后续去向</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">进入 evidence-correlation 阶段<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-6-Failure-Behavior：条件无法评估或执行失败时怎么办"><a href="#4-6-Failure-Behavior：条件无法评估或执行失败时怎么办" class="headerlink" title="4.6 Failure Behavior：条件无法评估或执行失败时怎么办"></a>4.6 Failure Behavior：条件无法评估或执行失败时怎么办</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">如果单位不明，标记为 unknown，不得与阈值比较；先修复单位问题<br></code></pre></td></tr></table></figure>
+
+<p>可以写成：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">### I/O branch</span><br><br>Enter this branch only when validated I/O metrics show either:<br><span class="hljs-bullet">-</span> P99 queue latency above the configured threshold; or<br><span class="hljs-bullet">-</span> sustained queue depth above the device baseline.<br><br>Read <span class="hljs-code">`references/io-analysis.md`</span>, then run the I/O analysis workflow.<br><br>Postconditions:<br><span class="hljs-bullet">-</span> device identity, sample count, queue latency, and service time are present;<br><span class="hljs-bullet">-</span> each finding cites a metric or trace event;<br><span class="hljs-bullet">-</span> uncertainty is recorded when coverage is incomplete.<br><br>If units or device identity are unknown, do not enter this branch. Resolve the<br>missing state or report that I/O analysis cannot be completed.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-条件必须可观察、可判定"><a href="#5-条件必须可观察、可判定" class="headerlink" title="5. 条件必须可观察、可判定"></a>5. 条件必须可观察、可判定</h2><p>差的条件：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">If the result looks suspicious, investigate further.<br></code></pre></td></tr></table></figure>
+
+<p>问题在于：</p>
+<ul>
+<li>“可疑”没有定义；</li>
+<li>没有证据来源；</li>
+<li>不知道调查什么；</li>
+<li>无法编写测试。</li>
+</ul>
+<p>更好的条件：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">If at least 5% of requests exceed the service SLO in a validated five-minute<br>window, enter the latency-regression branch.<br></code></pre></td></tr></table></figure>
+
+<p>一个可判定条件通常需要：</p>
+<ul>
+<li>字段或信号；</li>
+<li>比较方式；</li>
+<li>阈值或枚举；</li>
+<li>时间范围；</li>
+<li>单位；</li>
+<li>数据完整性要求；</li>
+<li>unknown 的处理方式。</li>
+</ul>
+<hr>
+<h2 id="6-条件的六种常见来源"><a href="#6-条件的六种常见来源" class="headerlink" title="6. 条件的六种常见来源"></a>6. 条件的六种常见来源</h2><h3 id="6-1-用户意图"><a href="#6-1-用户意图" class="headerlink" title="6.1 用户意图"></a>6.1 用户意图</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">if user asks only for explanation:<br>    do not perform external writes<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-2-输入特征"><a href="#6-2-输入特征" class="headerlink" title="6.2 输入特征"></a>6.2 输入特征</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">if input is a PDF:<br>    use the PDF extraction path<br>elif input is DOCX:<br>    use the DOCX extraction path<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-3-工具或脚本结果"><a href="#6-3-工具或脚本结果" class="headerlink" title="6.3 工具或脚本结果"></a>6.3 工具或脚本结果</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">if parser.status == &quot;ok&quot; and event_count &gt; 0:<br>    continue<br>else:<br>    stop analysis<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-4-环境能力"><a href="#6-4-环境能力" class="headerlink" title="6.4 环境能力"></a>6.4 环境能力</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">if validator is available:<br>    run machine validation<br>else:<br>    use the documented fallback or report the limitation<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-5-权限与授权"><a href="#6-5-权限与授权" class="headerlink" title="6.5 权限与授权"></a>6.5 权限与授权</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">if user explicitly authorized publishing and permission check passed:<br>    publish<br>else:<br>    keep the artifact local<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-6-工作流状态"><a href="#6-6-工作流状态" class="headerlink" title="6.6 工作流状态"></a>6.6 工作流状态</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">if plan_validated:<br>    execute changes<br>else:<br>    remain in planning<br></code></pre></td></tr></table></figure>
+
+<p>不要把这些来源混成一句模糊的“如果合适”。</p>
+<hr>
+<h2 id="7-True、False、Unknown：不要把未知当成否"><a href="#7-True、False、Unknown：不要把未知当成否" class="headerlink" title="7. True、False、Unknown：不要把未知当成否"></a>7. True、False、Unknown：不要把未知当成否</h2><p>许多 Skill 实际需要三值逻辑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">TRUE<br>→ 有足够证据确认条件成立<br><br>FALSE<br>→ 有足够证据确认条件不成立<br><br>UNKNOWN<br>→ 数据缺失、无权限、解析失败或覆盖不足<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">“没有检测到 I/O 异常”<br></code></pre></td></tr></table></figure>
+
+<p>可能表示：</p>
+<ol>
+<li>I&#x2F;O 数据完整，指标正常：<code>FALSE</code>；</li>
+<li>没有采集 I&#x2F;O 数据：<code>UNKNOWN</code>；</li>
+<li>工具失败：<code>UNKNOWN</code>；</li>
+<li>查询了错误设备：结果无效。</li>
+</ol>
+<p>如果把 unknown 当成 false，Agent 会错误排除某个根因。</p>
+<p>推荐显式建模：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;io_anomaly&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;state&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;unknown&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;reason&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;No block events were captured in the requested range.&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="8-if-else-if：互斥分支"><a href="#8-if-else-if：互斥分支" class="headerlink" title="8. if &#x2F; else if：互斥分支"></a>8. if &#x2F; else if：互斥分支</h2><p>当同一任务只能选择一条路径时，使用互斥分支。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">if input_format == &quot;perfetto&quot;:<br>    use Perfetto parser<br>else if input_format == &quot;ftrace&quot;:<br>    use ftrace parser<br>else if input_format == &quot;perf&quot;:<br>    use perf parser<br>else:<br>    stop with unsupported format<br></code></pre></td></tr></table></figure>
+
+<h3 id="8-1-必须定义判定顺序"><a href="#8-1-必须定义判定顺序" class="headerlink" title="8.1 必须定义判定顺序"></a>8.1 必须定义判定顺序</h3><p>如果一个输入可能同时匹配多个条件，先后顺序会改变结果。</p>
+<h3 id="8-2-条件应互斥或显式说明优先级"><a href="#8-2-条件应互斥或显式说明优先级" class="headerlink" title="8.2 条件应互斥或显式说明优先级"></a>8.2 条件应互斥或显式说明优先级</h3><p>例如通过规范化步骤先得到唯一的 <code>input_format</code>，比多次模糊匹配扩展名更可靠。</p>
+<h3 id="8-3-必须有-else"><a href="#8-3-必须有-else" class="headerlink" title="8.3 必须有 else"></a>8.3 必须有 else</h3><p>没有默认出口时，未知格式可能意外落入某个分支。</p>
+<hr>
+<h2 id="9-多个独立-if：可组合分支"><a href="#9-多个独立-if：可组合分支" class="headerlink" title="9. 多个独立 if：可组合分支"></a>9. 多个独立 if：可组合分支</h2><p>性能问题可能同时涉及调度、内存和 I&#x2F;O，不能用 <code>else if</code> 强迫只选一个。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">if scheduler_signal:<br>    run scheduler analysis<br><br>if memory_signal:<br>    run memory analysis<br><br>if io_signal:<br>    run io analysis<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-1-可组合分支的特点"><a href="#9-1-可组合分支的特点" class="headerlink" title="9.1 可组合分支的特点"></a>9.1 可组合分支的特点</h3><ul>
+<li>多条路径可以同时执行；</li>
+<li>每条路径拥有独立证据；</li>
+<li>结果最后需要汇合；</li>
+<li>一个分支失败不一定阻止其他分支；</li>
+<li>汇合阶段要处理冲突和不完整结果。</li>
+</ul>
+<h3 id="9-2-汇合点不可缺失"><a href="#9-2-汇合点不可缺失" class="headerlink" title="9.2 汇合点不可缺失"></a>9.2 汇合点不可缺失</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Scheduler Findings ─┐<br>Memory Findings ────┼→ Evidence Correlation → Report<br>I/O Findings ───────┘<br></code></pre></td></tr></table></figure>
+
+<p>如果只有分叉没有汇合，最终报告可能只是几段互不关联的结果。</p>
+<hr>
+<h2 id="10-优先级：多个条件同时成立怎么办"><a href="#10-优先级：多个条件同时成立怎么办" class="headerlink" title="10. 优先级：多个条件同时成立怎么办"></a>10. 优先级：多个条件同时成立怎么办</h2><p>常见优先级规则：</p>
+<h3 id="10-1-安全优先"><a href="#10-1-安全优先" class="headerlink" title="10.1 安全优先"></a>10.1 安全优先</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">unsafe / unauthorized<br>→ 立即阻断其他执行分支<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-2-输入有效性优先"><a href="#10-2-输入有效性优先" class="headerlink" title="10.2 输入有效性优先"></a>10.2 输入有效性优先</h3><p>输入未验证时，不能进入分析分支。</p>
+<h3 id="10-3-用户明确意图优先"><a href="#10-3-用户明确意图优先" class="headerlink" title="10.3 用户明确意图优先"></a>10.3 用户明确意图优先</h3><p>用户明确要求只读分析时，即使写工具可用，也不能进入修改分支。</p>
+<h3 id="10-4-更具体条件优先"><a href="#10-4-更具体条件优先" class="headerlink" title="10.4 更具体条件优先"></a>10.4 更具体条件优先</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">if production + destructive change<br>→ 高风险审批分支<br><br>else if destructive change<br>→ 一般确认分支<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-5-阻断性条件优先"><a href="#10-5-阻断性条件优先" class="headerlink" title="10.5 阻断性条件优先"></a>10.5 阻断性条件优先</h3><p>权限缺失、目标不明确、关键单位未知等条件应在业务分支前检查。</p>
+<p>可以把顺序写成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">1. Safety gates<br>2. Input validity<br>3. Authorization and user intent<br>4. Specific task routes<br>5. Default route<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="11-Guard-Clause：尽早处理不能继续的情况"><a href="#11-Guard-Clause：尽早处理不能继续的情况" class="headerlink" title="11. Guard Clause：尽早处理不能继续的情况"></a>11. Guard Clause：尽早处理不能继续的情况</h2><p>与深层嵌套相比，Guard Clause 更清晰：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">if input missing:<br>    ask user<br><br>if input invalid:<br>    stop<br><br>if authorization missing:<br>    do not perform write<br><br>if evidence insufficient:<br>    report limitation<br><br>continue normal workflow<br></code></pre></td></tr></table></figure>
+
+<p>而不是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">if input exists:<br>    if input valid:<br>        if authorized:<br>            if evidence sufficient:<br>                ...<br></code></pre></td></tr></table></figure>
+
+<p>Guard Clause 能减少嵌套，也让阻断条件更醒目。</p>
+<hr>
+<h2 id="12-Default-Branch：默认路径必须安全"><a href="#12-Default-Branch：默认路径必须安全" class="headerlink" title="12. Default Branch：默认路径必须安全"></a>12. Default Branch：默认路径必须安全</h2><p>默认分支不是“什么都不知道时随便做一个最常见选择”。</p>
+<p>安全默认通常是：</p>
+<ul>
+<li>询问缺失信息；</li>
+<li>只执行只读操作；</li>
+<li>生成草稿而不发布；</li>
+<li>报告不确定性；</li>
+<li>停止高风险动作；</li>
+<li>选择覆盖更小的保守路径。</li>
+</ul>
+<p>不安全默认：</p>
+<ul>
+<li>默认 production；</li>
+<li>默认公开可见；</li>
+<li>默认覆盖现有文件；</li>
+<li>默认发送给所有联系人；</li>
+<li>默认把无数据视为正常。</li>
+</ul>
+<hr>
+<h2 id="13-Ask、Stop、Decline-也是合法分支"><a href="#13-Ask、Stop、Decline-也是合法分支" class="headerlink" title="13. Ask、Stop、Decline 也是合法分支"></a>13. Ask、Stop、Decline 也是合法分支</h2><p>OpenAI 官方 Skill 指南明确要求工作流说明何时询问、停止或拒绝。</p>
+<h3 id="13-1-Ask：需要用户补充或选择"><a href="#13-1-Ask：需要用户补充或选择" class="headerlink" title="13.1 Ask：需要用户补充或选择"></a>13.1 Ask：需要用户补充或选择</h3><p>适合：</p>
+<ul>
+<li>缺少只有用户知道的信息；</li>
+<li>多个候选目标；</li>
+<li>不同分支会产生不同业务后果；</li>
+<li>需要授权某个外部动作。</li>
+</ul>
+<h3 id="13-2-Stop：无法正确或安全继续"><a href="#13-2-Stop：无法正确或安全继续" class="headerlink" title="13.2 Stop：无法正确或安全继续"></a>13.2 Stop：无法正确或安全继续</h3><p>适合：</p>
+<ul>
+<li>输入损坏；</li>
+<li>Postcondition 失败；</li>
+<li>权限不足；</li>
+<li>必需工具不可用；</li>
+<li>状态未知且重做可能产生副作用。</li>
+</ul>
+<h3 id="13-3-Decline：请求本身不能执行"><a href="#13-3-Decline：请求本身不能执行" class="headerlink" title="13.3 Decline：请求本身不能执行"></a>13.3 Decline：请求本身不能执行</h3><p>适合违反安全、法律或平台规则的请求。</p>
+<p>不要为了让流程图看起来“总能到达成功”而删除这些出口。</p>
+<hr>
+<h2 id="14-Decision-Table：条件较多时不要继续堆-if"><a href="#14-Decision-Table：条件较多时不要继续堆-if" class="headerlink" title="14. Decision Table：条件较多时不要继续堆 if"></a>14. Decision Table：条件较多时不要继续堆 if</h2><p>假设是否运行某个深度分析分支取决于：</p>
+<ul>
+<li>输入有效；</li>
+<li>有相关信号；</li>
+<li>数据覆盖充分；</li>
+<li>工具可用。</li>
+</ul>
+<p>可以使用决策表：</p>
+<table>
+<thead>
+<tr>
+<th>输入有效</th>
+<th>相关信号</th>
+<th>覆盖充分</th>
+<th>工具可用</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>否</td>
+<td>*</td>
+<td>*</td>
+<td>*</td>
+<td>停止并报告输入错误</td>
+</tr>
+<tr>
+<td>是</td>
+<td>否</td>
+<td>*</td>
+<td>*</td>
+<td>跳过专项分析</td>
+</tr>
+<tr>
+<td>是</td>
+<td>是</td>
+<td>否</td>
+<td>*</td>
+<td>标记 unknown，说明覆盖限制</td>
+</tr>
+<tr>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+<td>否</td>
+<td>使用已批准的替代路径或停止</td>
+</tr>
+<tr>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+<td>执行专项分析</td>
+</tr>
+</tbody></table>
+<p><code>*</code> 表示该条件在当前规则下不影响结果。</p>
+<h3 id="14-1-决策表的优势"><a href="#14-1-决策表的优势" class="headerlink" title="14.1 决策表的优势"></a>14.1 决策表的优势</h3><ul>
+<li>发现遗漏组合；</li>
+<li>看清优先级；</li>
+<li>直接转成测试用例；</li>
+<li>避免分支文本互相冲突；</li>
+<li>便于团队评审。</li>
+</ul>
+<h3 id="14-2-决策表不一定放进主文件"><a href="#14-2-决策表不一定放进主文件" class="headerlink" title="14.2 决策表不一定放进主文件"></a>14.2 决策表不一定放进主文件</h3><p>小表可放 <code>SKILL.md</code>。复杂业务表可以放 <code>references/decision-table.md</code>，但主文件必须保留关键路由和阻断规则，并说明何时读取。</p>
+<hr>
+<h2 id="15-Decision-Tree：逐步缩小选择"><a href="#15-Decision-Tree：逐步缩小选择" class="headerlink" title="15. Decision Tree：逐步缩小选择"></a>15. Decision Tree：逐步缩小选择</h2><p>决策树适合问题具有天然问答顺序：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">Input readable?<br>├── no → ask / stop<br>└── yes<br>    ↓<br>Format supported?<br>├── no → unsupported-format branch<br>└── yes<br>    ↓<br>Write action requested?<br>├── no → read-only analysis<br>└── yes<br>    ↓<br>Explicitly authorized?<br>├── no → request confirmation<br>└── yes → execute validated change<br></code></pre></td></tr></table></figure>
+
+<p>每个节点应该只解决一个判定问题。不要在一个节点写：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">if input is valid and user wants modification and authorization is probably ok...<br></code></pre></td></tr></table></figure>
+
+<p>拆开后更容易验证 unknown 和错误来源。</p>
+<hr>
+<h2 id="16-State-Machine：分支依赖执行阶段时"><a href="#16-State-Machine：分支依赖执行阶段时" class="headerlink" title="16. State Machine：分支依赖执行阶段时"></a>16. State Machine：分支依赖执行阶段时</h2><p>状态机适合长工作流：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">START<br>  ↓<br>INPUT_READY?<br>  ├── no → WAITING_FOR_INPUT<br>  └── yes → VALIDATING<br>                  ↓<br>            VALIDATION_PASSED?<br>              ├── no → FAILED<br>              └── yes → ANALYZING<br>                           ↓<br>                     EVIDENCE_ENOUGH?<br>                       ├── no → COLLECTING<br>                       └── yes → REPORTING<br>                                      ↓<br>                                  VERIFIED<br>                                      ↓<br>                                    DONE<br></code></pre></td></tr></table></figure>
+
+<p>状态机比散落的 <code>if</code> 更适合表达：</p>
+<ul>
+<li>当前处于什么阶段；</li>
+<li>哪些转移合法；</li>
+<li>失败后可以回到哪里；</li>
+<li>哪些动作不能重复；</li>
+<li>哪个状态允许交付。</li>
+</ul>
+<hr>
+<h2 id="17-Branch-Contract：为每条路径定义输入和输出"><a href="#17-Branch-Contract：为每条路径定义输入和输出" class="headerlink" title="17. Branch Contract：为每条路径定义输入和输出"></a>17. Branch Contract：为每条路径定义输入和输出</h2><p>每个分支都可以视为一个局部 Contract。</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Scheduler analysis branch</span><br><br>Entry conditions:<br><span class="hljs-bullet">-</span> normalized scheduler events exist;<br><span class="hljs-bullet">-</span> event coverage overlaps the requested range;<br><span class="hljs-bullet">-</span> event count is greater than zero.<br><br>Inputs:<br><span class="hljs-bullet">-</span> event artifact path;<br><span class="hljs-bullet">-</span> service and host identity;<br><span class="hljs-bullet">-</span> time range and time unit.<br><br>Outputs:<br><span class="hljs-bullet">-</span> runnable latency;<br><span class="hljs-bullet">-</span> run-queue delay;<br><span class="hljs-bullet">-</span> wakeup-to-run evidence;<br><span class="hljs-bullet">-</span> scheduler findings and confidence.<br><br>Exit conditions:<br><span class="hljs-bullet">-</span> every finding references an event or computed metric;<br><span class="hljs-bullet">-</span> missing coverage is disclosed;<br><span class="hljs-bullet">-</span> results are ready for evidence correlation.<br></code></pre></td></tr></table></figure>
+
+<p>Branch Contract 可以阻止一个分支偷偷依赖未声明状态。</p>
+<hr>
+<h2 id="18-分支条件应该由-LLM-还是-Script-判断"><a href="#18-分支条件应该由-LLM-还是-Script-判断" class="headerlink" title="18. 分支条件应该由 LLM 还是 Script 判断"></a>18. 分支条件应该由 LLM 还是 Script 判断</h2><h3 id="18-1-适合-Script-的条件"><a href="#18-1-适合-Script-的条件" class="headerlink" title="18.1 适合 Script 的条件"></a>18.1 适合 Script 的条件</h3><ul>
+<li>数值阈值；</li>
+<li>格式检测；</li>
+<li>Schema 校验；</li>
+<li>文件存在性；</li>
+<li>固定枚举；</li>
+<li>数据覆盖率；</li>
+<li>可重复的分类规则。</li>
+</ul>
+<h3 id="18-2-适合-LLM-的条件"><a href="#18-2-适合-LLM-的条件" class="headerlink" title="18.2 适合 LLM 的条件"></a>18.2 适合 LLM 的条件</h3><ul>
+<li>用户意图；</li>
+<li>语义相关性；</li>
+<li>多源证据解释；</li>
+<li>无法完全形式化的内容判断；</li>
+<li>输出风格与受众适配。</li>
+</ul>
+<h3 id="18-3-混合模式"><a href="#18-3-混合模式" class="headerlink" title="18.3 混合模式"></a>18.3 混合模式</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Script 计算信号和状态<br>→ LLM 根据已验证信号选择业务分支<br></code></pre></td></tr></table></figure>
+
+<p>例如脚本计算：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;scheduler_signal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;io_signal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;memory_signal&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;unknown&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>Skill 再决定：</p>
+<ul>
+<li>执行 scheduler 分支；</li>
+<li>跳过 I&#x2F;O 分支；</li>
+<li>对 memory 分支说明数据缺失，必要时请求补充数据。</li>
+</ul>
+<hr>
+<h2 id="19-分支与-Progressive-Disclosure"><a href="#19-分支与-Progressive-Disclosure" class="headerlink" title="19. 分支与 Progressive Disclosure"></a>19. 分支与 Progressive Disclosure</h2><p>分支不仅决定动作，也决定加载哪些 Supporting Files。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">if scheduler branch:<br>    read references/scheduler-analysis.md<br>    run scripts/calc_sched_metrics.py<br><br>if memory branch:<br>    read references/memory-analysis.md<br>    run scripts/calc_memory_metrics.py<br></code></pre></td></tr></table></figure>
+
+<p>这能避免每次加载所有领域知识和脚本说明。</p>
+<p>但必须保留两层信息：</p>
+<ul>
+<li><code>SKILL.md</code> 中保留可做出分支选择的最小信号定义；</li>
+<li>进入分支后才加载详细 reference。</li>
+</ul>
+<p>如果判断条件本身被藏在尚未加载的 reference 中，就形成循环依赖。</p>
+<hr>
+<h2 id="20-分支与-Tool-Calling"><a href="#20-分支与-Tool-Calling" class="headerlink" title="20. 分支与 Tool Calling"></a>20. 分支与 Tool Calling</h2><p>分支经常由工具结果驱动：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">trace_search result<br>├── 0 candidates → broaden query or report none<br>├── 1 candidate → fetch details<br>└── multiple candidates → disambiguate<br></code></pre></td></tr></table></figure>
+
+<h3 id="20-1-不要只按-HTTP-成功分支"><a href="#20-1-不要只按-HTTP-成功分支" class="headerlink" title="20.1 不要只按 HTTP 成功分支"></a>20.1 不要只按 HTTP 成功分支</h3><p>工具返回 200 仍可能包含：</p>
+<ul>
+<li>空列表；</li>
+<li>部分数据；</li>
+<li>警告；</li>
+<li>分页；</li>
+<li>业务错误状态。</li>
+</ul>
+<h3 id="20-2-写工具要有独立高风险分支"><a href="#20-2-写工具要有独立高风险分支" class="headerlink" title="20.2 写工具要有独立高风险分支"></a>20.2 写工具要有独立高风险分支</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">if read-only request:<br>    never enter write branch<br><br>if write requested but target ambiguous:<br>    ask user<br><br>if write requested and authorized:<br>    execute minimal change and read back<br></code></pre></td></tr></table></figure>
+
+<h3 id="20-3-外部文本不能决定高权限分支"><a href="#20-3-外部文本不能决定高权限分支" class="headerlink" title="20.3 外部文本不能决定高权限分支"></a>20.3 外部文本不能决定高权限分支</h3><p>Tool Result 中的内容不能自行授权另一个工具调用。它是数据，不是用户指令。</p>
+<hr>
+<h2 id="21-分支汇合：怎样组合多个结果"><a href="#21-分支汇合：怎样组合多个结果" class="headerlink" title="21. 分支汇合：怎样组合多个结果"></a>21. 分支汇合：怎样组合多个结果</h2><p>当多个领域分支同时完成后，需要统一汇合协议。</p>
+<h3 id="21-1-统一结果结构"><a href="#21-1-统一结果结构" class="headerlink" title="21.1 统一结果结构"></a>21.1 统一结果结构</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;domain&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;complete&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;findings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;evidence&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;confidence&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;high&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;limitations&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="21-2-区分完成状态"><a href="#21-2-区分完成状态" class="headerlink" title="21.2 区分完成状态"></a>21.2 区分完成状态</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">complete<br>partial<br>skipped<br>unknown<br>failed<br></code></pre></td></tr></table></figure>
+
+<h3 id="21-3-不要把-skipped-和-normal-混淆"><a href="#21-3-不要把-skipped-和-normal-混淆" class="headerlink" title="21.3 不要把 skipped 和 normal 混淆"></a>21.3 不要把 skipped 和 normal 混淆</h3><p>未进入某分支不代表该领域正常，只代表触发条件未满足或证据不足。</p>
+<h3 id="21-4-冲突结果要保留"><a href="#21-4-冲突结果要保留" class="headerlink" title="21.4 冲突结果要保留"></a>21.4 冲突结果要保留</h3><p>如果调度分支和 I&#x2F;O 分支提出不同解释，应在 evidence-correlation 阶段评估，而不是静默选择一个更符合预期的结论。</p>
+<hr>
+<h2 id="22-完整示例：Performance-Analysis-Skill-的分支系统"><a href="#22-完整示例：Performance-Analysis-Skill-的分支系统" class="headerlink" title="22. 完整示例：Performance Analysis Skill 的分支系统"></a>22. 完整示例：Performance Analysis Skill 的分支系统</h2><h3 id="22-1-初筛输出"><a href="#22-1-初筛输出" class="headerlink" title="22.1 初筛输出"></a>22.1 初筛输出</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;input_valid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;coverage&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0.94</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;signals&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;scheduler&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;memory&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;unknown&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;io&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;warnings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-string">&quot;Memory reclaim events are not available in this capture.&quot;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="22-2-分支规则"><a href="#22-2-分支规则" class="headerlink" title="22.2 分支规则"></a>22.2 分支规则</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Analysis routing</span><br><br><span class="hljs-bullet">1.</span> If <span class="hljs-code">`input_valid`</span> is not true, stop before domain analysis.<br><span class="hljs-bullet">2.</span> If coverage is below 0.80, label all absence-of-signal conclusions as<br>   unknown and disclose limited coverage.<br><span class="hljs-bullet">3.</span> For every domain whose signal is true, run its analysis branch.<br><span class="hljs-bullet">4.</span> For a false signal with sufficient coverage, skip the branch and record<br>   <span class="hljs-code">`skipped_no_signal`</span>.<br><span class="hljs-bullet">5.</span> For an unknown signal, do not claim the domain is normal. Record the reason<br>   and request additional data only when it is necessary to answer the user.<br><span class="hljs-bullet">6.</span> After all selected branches finish, run evidence correlation.<br></code></pre></td></tr></table></figure>
+
+<h3 id="22-3-路由结果"><a href="#22-3-路由结果" class="headerlink" title="22.3 路由结果"></a>22.3 路由结果</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">scheduler = true<br>→ 执行 scheduler branch<br><br>memory = unknown<br>→ 不执行深度分析；记录数据缺失<br><br>io = true<br>→ 执行 I/O branch<br></code></pre></td></tr></table></figure>
+
+<h3 id="22-4-汇合"><a href="#22-4-汇合" class="headerlink" title="22.4 汇合"></a>22.4 汇合</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Scheduler: high run-queue delay during 01:12–01:18<br>I/O: device queue latency normal until 01:17, then increases<br>Deployment: new worker count applied at 01:10<br><br>Correlation:<br>→ 调度拥塞先出现，I/O 延迟可能是后续影响<br>→ 内存分支 unknown，不能排除 reclaim 参与<br></code></pre></td></tr></table></figure>
+
+<p>最终结论保留证据顺序和未知项，而不是为了给出单一答案而忽略分支状态。</p>
+<hr>
+<h2 id="23-如何编写分支伪代码"><a href="#23-如何编写分支伪代码" class="headerlink" title="23. 如何编写分支伪代码"></a>23. 如何编写分支伪代码</h2><p>推荐风格：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs text">if blocking precondition fails:<br>    stop<br><br>if required user choice is missing:<br>    ask<br><br>selected_branches = []<br><br>if scheduler_signal == true:<br>    selected_branches += scheduler<br><br>if memory_signal == true:<br>    selected_branches += memory<br><br>if io_signal == true:<br>    selected_branches += io<br><br>if selected_branches is empty:<br>    if all signals == false and coverage sufficient:<br>        report no supported anomaly in observed domains<br>    else:<br>        report insufficient evidence<br><br>run selected branches<br>validate each branch result<br>correlate results<br></code></pre></td></tr></table></figure>
+
+<p>它显式处理：</p>
+<ul>
+<li>阻断条件；</li>
+<li>用户输入；</li>
+<li>多分支；</li>
+<li>空分支集合；</li>
+<li>false 与 unknown；</li>
+<li>汇合与验证。</li>
+</ul>
+<hr>
+<h2 id="24-如何测试分支"><a href="#24-如何测试分支" class="headerlink" title="24. 如何测试分支"></a>24. 如何测试分支</h2><h3 id="24-1-Branch-Coverage"><a href="#24-1-Branch-Coverage" class="headerlink" title="24.1 Branch Coverage"></a>24.1 Branch Coverage</h3><p>每条分支至少有一个测试用例：</p>
+<ul>
+<li>true；</li>
+<li>false；</li>
+<li>unknown；</li>
+<li>error；</li>
+<li>default。</li>
+</ul>
+<h3 id="24-2-Boundary-Testing"><a href="#24-2-Boundary-Testing" class="headerlink" title="24.2 Boundary Testing"></a>24.2 Boundary Testing</h3><p>例如阈值为 200 ms：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">199.9<br>200.0<br>200.1<br></code></pre></td></tr></table></figure>
+
+<p>明确是 <code>&gt;</code> 还是 <code>&gt;=</code>。</p>
+<h3 id="24-3-Combination-Testing"><a href="#24-3-Combination-Testing" class="headerlink" title="24.3 Combination Testing"></a>24.3 Combination Testing</h3><p>三个布尔信号有八种组合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">000 001 010 011 100 101 110 111<br></code></pre></td></tr></table></figure>
+
+<p>如果再加入 unknown，组合更多。可以使用 pairwise 测试、决策表和风险优先方法，避免只测最常见路径。</p>
+<h3 id="24-4-Priority-Testing"><a href="#24-4-Priority-Testing" class="headerlink" title="24.4 Priority Testing"></a>24.4 Priority Testing</h3><p>构造多个条件同时成立的案例，检查是否执行正确优先级。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">输入有效 + 用户请求发布 + 权限不足<br>→ 必须走权限阻断分支，而不是发布分支<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-5-Negative-Testing"><a href="#24-5-Negative-Testing" class="headerlink" title="24.5 Negative Testing"></a>24.5 Negative Testing</h3><ul>
+<li>不应进入的分支是否保持关闭；</li>
+<li>只读请求是否避免写工具；</li>
+<li>unknown 是否没有被当成 false；</li>
+<li>无授权是否不执行副作用。</li>
+</ul>
+<h3 id="24-6-Path-Testing"><a href="#24-6-Path-Testing" class="headerlink" title="24.6 Path Testing"></a>24.6 Path Testing</h3><p>不仅测试单个条件，还要测试从开始到结束的完整路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">input → validation → routing → domain branch → correlation → report<br></code></pre></td></tr></table></figure>
+
+<h3 id="24-7-Mutation-Testing-思路"><a href="#24-7-Mutation-Testing-思路" class="headerlink" title="24.7 Mutation Testing 思路"></a>24.7 Mutation Testing 思路</h3><p>尝试反转条件或删除一个分支，确认测试能失败。如果测试仍然全部通过，说明分支测试没有真正约束行为。</p>
+<hr>
+<h2 id="25-分支可观测性"><a href="#25-分支可观测性" class="headerlink" title="25. 分支可观测性"></a>25. 分支可观测性</h2><p>生产环境中应记录：</p>
+<ul>
+<li>决策点 ID；</li>
+<li>条件输入；</li>
+<li>条件状态；</li>
+<li>证据来源；</li>
+<li>选择的分支；</li>
+<li>跳过原因；</li>
+<li>unknown 原因；</li>
+<li>分支执行结果；</li>
+<li>汇合状态。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;decision_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;route-domain-analysis&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;condition&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler_signal&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;artifacts/triage.json&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;selected_branch&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;scheduler-analysis&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>不要记录不必要的敏感原始数据。可观测性的目标是解释“为什么走这条路”，不是复制全部上下文。</p>
+<hr>
+<h2 id="26-安全：条件分支可能成为权限绕过点"><a href="#26-安全：条件分支可能成为权限绕过点" class="headerlink" title="26. 安全：条件分支可能成为权限绕过点"></a>26. 安全：条件分支可能成为权限绕过点</h2><h3 id="26-1-不受信任内容不能决定授权"><a href="#26-1-不受信任内容不能决定授权" class="headerlink" title="26.1 不受信任内容不能决定授权"></a>26.1 不受信任内容不能决定授权</h3><p>网页、邮件或工具结果中的文本不能触发高权限动作。</p>
+<h3 id="26-2-模糊条件不能用于破坏性操作"><a href="#26-2-模糊条件不能用于破坏性操作" class="headerlink" title="26.2 模糊条件不能用于破坏性操作"></a>26.2 模糊条件不能用于破坏性操作</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">if cleanup seems necessary:<br>    delete files<br></code></pre></td></tr></table></figure>
+
+<p>这种规则不可接受。删除范围、目标和授权必须明确。</p>
+<h3 id="26-3-安全分支不得被后续普通分支覆盖"><a href="#26-3-安全分支不得被后续普通分支覆盖" class="headerlink" title="26.3 安全分支不得被后续普通分支覆盖"></a>26.3 安全分支不得被后续普通分支覆盖</h3><p>如果安全检查失败，后续“业务成功”条件不能重新打开被阻断动作。</p>
+<h3 id="26-4-审查条件性指令"><a href="#26-4-审查条件性指令" class="headerlink" title="26.4 审查条件性指令"></a>26.4 审查条件性指令</h3><p>Anthropic 企业安全指南把“根据特定输入条件改变行为、隐藏动作或规避安全规则”的指令操纵列为高风险项。第三方 Skill 中看似普通的 <code>if</code> 也需要安全审查。</p>
+<hr>
+<h2 id="27-常见错误"><a href="#27-常见错误" class="headerlink" title="27. 常见错误"></a>27. 常见错误</h2><h3 id="27-1-使用“视情况而定”"><a href="#27-1-使用“视情况而定”" class="headerlink" title="27.1 使用“视情况而定”"></a>27.1 使用“视情况而定”</h3><p>没有条件、证据和行为定义，无法执行和测试。</p>
+<h3 id="27-2-把-unknown-当-false"><a href="#27-2-把-unknown-当-false" class="headerlink" title="27.2 把 unknown 当 false"></a>27.2 把 unknown 当 false</h3><p>导致错误排除某条路径。</p>
+<h3 id="27-3-使用-else-if-表达可组合根因"><a href="#27-3-使用-else-if-表达可组合根因" class="headerlink" title="27.3 使用 else if 表达可组合根因"></a>27.3 使用 else if 表达可组合根因</h3><p>强迫系统只选择一个领域，遗漏并发问题。</p>
+<h3 id="27-4-多个-if-表达本应互斥的格式选择"><a href="#27-4-多个-if-表达本应互斥的格式选择" class="headerlink" title="27.4 多个 if 表达本应互斥的格式选择"></a>27.4 多个 if 表达本应互斥的格式选择</h3><p>同一输入可能被多个解析器重复处理。</p>
+<h3 id="27-5-没有默认分支"><a href="#27-5-没有默认分支" class="headerlink" title="27.5 没有默认分支"></a>27.5 没有默认分支</h3><p>未知输入可能落入不安全路径或让 Workflow 中断。</p>
+<h3 id="27-6-默认分支过于激进"><a href="#27-6-默认分支过于激进" class="headerlink" title="27.6 默认分支过于激进"></a>27.6 默认分支过于激进</h3><p>把不确定状态默认成 production、公开、覆盖或发送。</p>
+<h3 id="27-7-条件依赖未验证的工具结果"><a href="#27-7-条件依赖未验证的工具结果" class="headerlink" title="27.7 条件依赖未验证的工具结果"></a>27.7 条件依赖未验证的工具结果</h3><p>工具成功返回不代表字段完整或语义正确。</p>
+<h3 id="27-8-分支有入口，没有出口标准"><a href="#27-8-分支有入口，没有出口标准" class="headerlink" title="27.8 分支有入口，没有出口标准"></a>27.8 分支有入口，没有出口标准</h3><p>无法判断何时汇合或交付。</p>
+<h3 id="27-9-只测试-Happy-Path"><a href="#27-9-只测试-Happy-Path" class="headerlink" title="27.9 只测试 Happy Path"></a>27.9 只测试 Happy Path</h3><p>未覆盖 false、unknown、多条件同时成立和阻断分支。</p>
+<h3 id="27-10-分支嵌套过深"><a href="#27-10-分支嵌套过深" class="headerlink" title="27.10 分支嵌套过深"></a>27.10 分支嵌套过深</h3><p>难以理解、维护和验证，应该使用 Guard Clause、决策表或状态机。</p>
+<h3 id="27-11-条件分散在多个文件且相互冲突"><a href="#27-11-条件分散在多个文件且相互冲突" class="headerlink" title="27.11 条件分散在多个文件且相互冲突"></a>27.11 条件分散在多个文件且相互冲突</h3><p>路由主干应有单一权威位置。</p>
+<h3 id="27-12-用分支隐藏范围扩张"><a href="#27-12-用分支隐藏范围扩张" class="headerlink" title="27.12 用分支隐藏范围扩张"></a>27.12 用分支隐藏范围扩张</h3><p>Skill 不能因为某个工具可用，就在没有用户授权时进入额外副作用分支。</p>
+<hr>
+<h2 id="28-一份可复用模板"><a href="#28-一份可复用模板" class="headerlink" title="28. 一份可复用模板"></a>28. 一份可复用模板</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section">## Decision point: [name]</span><br><br><span class="hljs-section">### Inputs</span><br><span class="hljs-bullet">-</span> [validated state or field]<br><span class="hljs-bullet">-</span> [evidence source]<br><br><span class="hljs-section">### Priority</span><br><span class="hljs-bullet">1.</span> Safety and authorization gates<br><span class="hljs-bullet">2.</span> Input validity<br><span class="hljs-bullet">3.</span> User intent<br><span class="hljs-bullet">4.</span> Task-specific branches<br><span class="hljs-bullet">5.</span> Safe default<br><br><span class="hljs-section">### Rules</span><br><br><span class="hljs-bullet">-</span> If [blocking condition]: stop and report [reason].<br><span class="hljs-bullet">-</span> If [missing user choice]: ask [specific question].<br><span class="hljs-bullet">-</span> If [condition A is true]: enter [branch A].<br><span class="hljs-bullet">-</span> If [condition B is true]: enter [branch B].<br><span class="hljs-bullet">-</span> If [condition is false]: record [skip state].<br><span class="hljs-bullet">-</span> If [condition is unknown]: do not treat it as false; record [reason].<br><br><span class="hljs-section">### Branch contract</span><br><br>For each selected branch:<br><span class="hljs-bullet">-</span> required inputs: [...]<br><span class="hljs-bullet">-</span> action: [...]<br><span class="hljs-bullet">-</span> postconditions: [...]<br><span class="hljs-bullet">-</span> output status: complete / partial / skipped / unknown / failed<br><br><span class="hljs-section">### Merge</span><br><br><span class="hljs-bullet">-</span> Normalize branch outputs to [schema].<br><span class="hljs-bullet">-</span> Preserve conflicting findings.<br><span class="hljs-bullet">-</span> Distinguish skipped, unknown, and failed branches.<br><span class="hljs-bullet">-</span> Run [correlation/final validation] before delivery.<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="29-博客总结"><a href="#29-博客总结" class="headerlink" title="29. 博客总结"></a>29. 博客总结</h2><p>条件判断与分支把 Skill 从固定步骤列表提升为真正的 Workflow。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Input / Evidence / State<br>        ↓<br>Explicit Condition<br>        ↓<br>Selected Branch<br>        ↓<br>Action + Postcondition<br>        ↓<br>Merge or Exit<br></code></pre></td></tr></table></figure>
+
+<p>OpenAI 官方资料指出，Skill 特别适合高度条件化的可复用过程，并要求作者明确何时询问、停止或拒绝，以及怎样处理缺失和歧义结果。Anthropic 的企业实践强调对触发、指令遵从、边界案例和条件性安全行为进行系统评估。</p>
+<p>最重要的设计原则是：</p>
+<ul>
+<li>条件来自可观察状态；</li>
+<li>unknown 不等于 false；</li>
+<li>互斥分支与可组合分支要区分；</li>
+<li>安全、输入有效性和授权拥有更高优先级；</li>
+<li>默认分支必须保守；</li>
+<li>Ask、Stop、Decline 都是合法出口；</li>
+<li>每条分支都有 Contract 和 Postcondition；</li>
+<li>分叉之后必须定义汇合；</li>
+<li>分支逻辑必须能被测试覆盖。</li>
+</ul>
+<hr>
+<h2 id="30-学完检查题"><a href="#30-学完检查题" class="headerlink" title="30. 学完检查题"></a>30. 学完检查题</h2><ol>
+<li>一个完整分支包含哪六个组成部分？</li>
+<li>为什么“如果结果可疑”不是可执行条件？</li>
+<li>true、false 和 unknown 应怎样区分？</li>
+<li>什么场景使用 <code>else if</code>，什么场景使用多个独立 <code>if</code>？</li>
+<li>多个条件同时成立时，常见优先级是什么？</li>
+<li>Guard Clause 有什么优势？</li>
+<li>为什么默认分支应保守？</li>
+<li>Ask、Stop、Decline 分别适用于什么情况？</li>
+<li>决策表、决策树和状态机分别适合什么问题？</li>
+<li>为什么分支判断条件不能全部放在尚未加载的 reference 中？</li>
+<li>可组合分支为什么需要统一汇合协议？</li>
+<li>怎样验证一套分支测试真正有效？</li>
+</ol>
+<hr>
+<h2 id="31-Skill-专项复盘"><a href="#31-Skill-专项复盘" class="headerlink" title="31. Skill 专项复盘"></a>31. Skill 专项复盘</h2><h3 id="31-1-这个逻辑应该写在-SKILL-md-还是-reference？"><a href="#31-1-这个逻辑应该写在-SKILL-md-还是-reference？" class="headerlink" title="31.1 这个逻辑应该写在 SKILL.md 还是 reference？"></a>31.1 这个逻辑应该写在 SKILL.md 还是 reference？</h3><p>主路由、优先级、阻断条件和默认分支写在 <code>SKILL.md</code>；大型决策表和详细领域判断规则可放 reference，但主文件必须说明何时加载。</p>
+<h3 id="31-2-这个步骤应该交给-LLM-还是-script？"><a href="#31-2-这个步骤应该交给-LLM-还是-script？" class="headerlink" title="31.2 这个步骤应该交给 LLM 还是 script？"></a>31.2 这个步骤应该交给 LLM 还是 script？</h3><p>数值阈值、格式和 Schema 条件优先由 script 判断；用户意图、语义相关性和证据解释可以由 LLM 判断；高风险分支需要额外的机器约束或服务端授权。</p>
+<h3 id="31-3-这个能力应该是-Skill-还是-Tool？"><a href="#31-3-这个能力应该是-Skill-还是-Tool？" class="headerlink" title="31.3 这个能力应该是 Skill 还是 Tool？"></a>31.3 这个能力应该是 Skill 还是 Tool？</h3><p>分支属于 Skill 的 Workflow；Tool 只提供原子能力和状态。不要把整个业务决策树塞进一个万能 Tool。</p>
+<h3 id="31-4-什么条件下应该触发这个-Skill？"><a href="#31-4-什么条件下应该触发这个-Skill？" class="headerlink" title="31.4 什么条件下应该触发这个 Skill？"></a>31.4 什么条件下应该触发这个 Skill？</h3><p>Skill 的全局触发由 metadata 决定；本章分支发生在 Skill 已经加载之后，根据输入、证据、权限和工作流状态选择内部路径。</p>
+<h3 id="31-5-如何证明这个-Skill-比没有-Skill-更好？"><a href="#31-5-如何证明这个-Skill-比没有-Skill-更好？" class="headerlink" title="31.5 如何证明这个 Skill 比没有 Skill 更好？"></a>31.5 如何证明这个 Skill 比没有 Skill 更好？</h3><p>测量分支选择准确率、无关分支执行率、unknown 误判率、阻断规则遵从率、路径完成率和分支覆盖率。</p>
+<hr>
+<h2 id="32-本章实践"><a href="#32-本章实践" class="headerlink" title="32. 本章实践"></a>32. 本章实践</h2><p>为 Performance Analysis Skill 设计一个三领域分支系统：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">scheduler-analysis<br>memory-analysis<br>io-analysis<br></code></pre></td></tr></table></figure>
+
+<p>要求：</p>
+<ol>
+<li>为每个信号定义 true、false 和 unknown；</li>
+<li>指定信号来源、单位、阈值和数据覆盖要求；</li>
+<li>使用 Guard Clause 处理输入失败、权限和工具不可用；</li>
+<li>明确三个分支可以组合，而不是互斥；</li>
+<li>为每个分支写 Entry、Output 和 Exit Contract；</li>
+<li>设计统一汇合 Schema；</li>
+<li>构造三个信号同时成立的测试；</li>
+<li>构造一个分支 unknown、另两个分支完成的测试；</li>
+<li>构造安全条件与业务条件同时成立的优先级测试；</li>
+<li>使用决策表列出至少八个关键组合。</li>
+</ol>
+<p>下一章将严格按照大纲进入：</p>
+<blockquote>
+<p>第 17 章：循环、重试、Fallback 怎么设计。</p>
+</blockquote>
+<hr>
+<h2 id="官方参考资料"><a href="#官方参考资料" class="headerlink" title="官方参考资料"></a>官方参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/build/skills">OpenAI — Build skills</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/cookbook/examples/skills_in_api">OpenAI Cookbook — Skills in OpenAI API</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.openai.com/plugins/concepts/skills">OpenAI — Skills concepts</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices">Anthropic — Skill authoring best practices</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise">Anthropic — Skills for enterprise</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/AI/" class="category-chain-item">AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Agent-Skill/" class="print-no-link">#Agent Skill</a>
+      
+        <a href="/tags/Conditional-Logic/" class="print-no-link">#Conditional Logic</a>
+      
+        <a href="/tags/Branching/" class="print-no-link">#Branching</a>
+      
+        <a href="/tags/Decision-Table/" class="print-no-link">#Decision Table</a>
+      
+        <a href="/tags/Workflow/" class="print-no-link">#Workflow</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</div>
+      <div>https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill里的条件判断与分支/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/" title="Linux内存管理子系统源码分析：Buddy System整体设计">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux内存管理子系统源码分析：Buddy System整体设计</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用">
+                        <span class="hidden-mobile">Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
