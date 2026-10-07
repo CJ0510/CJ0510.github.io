@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-07T04:46:52.982Z</updated>
+  <updated>2026-10-07T08:08:39.112Z</updated>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -29,7 +29,7 @@
       <![CDATA[<h1 id="第8章：alloc-pages-——一个物理页到底是怎么从Linux中分配出来的？"><a href="#第8章：alloc-pages-——一个物理页到底是怎么从Linux中分配出来的？" class="headerlink" title="第8章：alloc_pages()——一个物理页到底是怎么从Linux中分配出来的？"></a>第8章：<code>alloc_pages()</code>——一个物理页到底是怎么从Linux中分配出来的？</h1><p>上一章建立了Buddy]]>
     </summary>
     <title>Linux内存管理子系统源码分析：alloc_pages物理页分配</title>
-    <updated>2026-10-07T04:46:52.982Z</updated>
+    <updated>2026-10-07T08:08:39.112Z</updated>
   </entry>
   <entry>
     <author>
