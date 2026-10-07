@@ -1,0 +1,1472 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第7章：Buddy System整体设计——Linux到底怎么管理空闲物理页？前面几章已经把Linux物理内存的基本组织关系建立起来了： 1234567System  ↓Node（pg_data_t）  ↓Zone（struct zone）  ↓Page Frame（struct page）  但知道系统中有哪些物理页，还不等于知道如何分配物理页。内核还必须持续回答下面几个问题： 12345哪些物">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内存管理子系统源码分析：Buddy System整体设计">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第7章：Buddy System整体设计——Linux到底怎么管理空闲物理页？前面几章已经把Linux物理内存的基本组织关系建立起来了： 1234567System  ↓Node（pg_data_t）  ↓Zone（struct zone）  ↓Page Frame（struct page）  但知道系统中有哪些物理页，还不等于知道如何分配物理页。内核还必须持续回答下面几个问题： 12345哪些物">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-07T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-07T02:57:22.014Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Buddy System">
+<meta property="article:tag" content="Linux Memory">
+<meta property="article:tag" content="Memory Management">
+<meta property="article:tag" content="Page Allocator">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Linux内存管理子系统源码分析：Buddy System整体设计 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux内存管理子系统源码分析：Buddy System整体设计</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-07 20:00" pubdate>
+          2026-10-07
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          18k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          149 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux内存管理子系统源码分析：Buddy System整体设计</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第7章：Buddy-System整体设计——Linux到底怎么管理空闲物理页？"><a href="#第7章：Buddy-System整体设计——Linux到底怎么管理空闲物理页？" class="headerlink" title="第7章：Buddy System整体设计——Linux到底怎么管理空闲物理页？"></a>第7章：Buddy System整体设计——Linux到底怎么管理空闲物理页？</h1><p>前面几章已经把Linux物理内存的基本组织关系建立起来了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">System<br>  ↓<br>Node（pg_data_t）<br>  ↓<br>Zone（struct zone）<br>  ↓<br>Page Frame（struct page）<br></code></pre></td></tr></table></figure>
+
+<p>但知道系统中有哪些物理页，还不等于知道如何分配物理页。内核还必须持续回答下面几个问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">哪些物理页当前空闲？<br>这些空闲页能组成多大的连续物理块？<br>申请小块时，怎样从大块中拆出来？<br>释放小块时，怎样重新恢复成大块？<br>为什么总空闲内存很多，高阶分配仍可能失败？<br></code></pre></td></tr></table></figure>
+
+<p>解决这些问题的核心机制，就是Buddy System（伙伴系统）。</p>
+<blockquote>
+<p>Buddy System把连续物理页按<code>2^order</code>的大小组织起来。分配时可以把较大的空闲块逐级拆分，释放时可以把互为伙伴的空闲块逐级合并。</p>
+</blockquote>
+<p>本章先建立算法模型、数据结构和设计边界。下一章再沿着<code>alloc_pages()</code>进入真实的Linux物理页分配主链。</p>
+<h2 id="0-源码基线与阅读边界"><a href="#0-源码基线与阅读边界" class="headerlink" title="0. 源码基线与阅读边界"></a>0. 源码基线与阅读边界</h2><p>本文以Linux v6.1正式版本为基线：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">source:</span><br>  <span class="hljs-attr">repository:</span> <span class="hljs-string">https://github.com/torvalds/linux</span><br>  <span class="hljs-attr">tag:</span> <span class="hljs-string">v6.1</span><br>  <span class="hljs-attr">commit:</span> <span class="hljs-string">830b3c68c1fb1e9176028d02ef86f3cf76aa2476</span><br>  <span class="hljs-attr">architecture:</span> <span class="hljs-string">generic</span> <span class="hljs-string">MM，示例默认4KiB</span> <span class="hljs-string">PAGE_SIZE</span><br>  <span class="hljs-attr">config:</span> <span class="hljs-string">未绑定单一defconfig；涉及条件编译处单独说明</span><br></code></pre></td></tr></table></figure>
+
+<p>主要源码位置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">include/linux/mmzone.h<br>    struct zone<br>    struct free_area<br>    MAX_ORDER<br>    enum migratetype<br><br>include/linux/page-flags.h<br>    PageBuddy相关操作<br><br>mm/page_alloc.c<br>    空闲链表维护<br>    split<br>    Buddy分配<br>    Buddy释放与merge<br>    PCP与Buddy之间的批量转移<br></code></pre></td></tr></table></figure>
+
+<p>本文只回答Buddy System本身怎样组织连续空闲物理页。下面这些内容不在本章展开：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">GFP如何确定目标Zone<br>Zonelist如何回退<br>Watermark完整判断过程<br>直接回收与OOM完整路径<br>Compaction的逐函数实现<br>alloc_pages()的完整慢速路径<br></code></pre></td></tr></table></figure>
+
+<p>这些机制会在后续章节单独分析。</p>
+<p>本文使用三种提示：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">【源码事实】目标v6.1源码可以直接确认的实现。<br>【简化模型】为了先建立心智模型而省略部分分支。<br>【工程提醒】调试、性能或稳定性中容易踩坑的地方。<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-1-为什么不能只维护一个空闲页链表"><a href="#7-1-为什么不能只维护一个空闲页链表" class="headerlink" title="7.1 为什么不能只维护一个空闲页链表"></a>7.1 为什么不能只维护一个空闲页链表</h1><p>先从最简单的方案开始。假设一个Zone中的所有空闲页都挂在同一条链表上：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">free_pages<br>    │<br>    ▼<br>page → page → page → page → page → ...<br></code></pre></td></tr></table></figure>
+
+<p>如果只申请一页，这个模型非常简单：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">取出链表头<br>    ↓<br>返回一个struct page<br></code></pre></td></tr></table></figure>
+
+<p>但内核不只需要单页，还可能需要多个<strong>物理地址连续</strong>的页面。例如申请8个连续页，需要找到类似下面的PFN区间：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">PFN 100<br>PFN 101<br>PFN 102<br>PFN 103<br>PFN 104<br>PFN 105<br>PFN 106<br>PFN 107<br></code></pre></td></tr></table></figure>
+
+<p>“找到8个空闲页”和“找到8个连续空闲页”是两个完全不同的问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">场景A：F F F F F F F F<br>       可以组成8页连续块<br><br>场景B：F U F U F U F U F U F U F U F U<br>       空闲页数量同样是8，但连2页连续块都没有<br></code></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">F = Free<br>U = Used<br></code></pre></td></tr></table></figure>
+
+<p>即使把单链表按PFN排序，申请大块时仍然需要扫描链表、计算连续长度；释放时为了保持顺序，也要寻找插入位置。Zone包含数百万个页面时，这种处理并不理想。</p>
+<p>内核真正需要的数据结构应该能够直接回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">现在有没有1页连续块？<br>有没有2页连续块？<br>有没有4页连续块？<br>有没有8页连续块？<br></code></pre></td></tr></table></figure>
+
+<p>Buddy System就是按这个思路组织空闲页的。</p>
+<blockquote>
+<p>单一空闲页链表主要描述“哪些页空闲”；Buddy System进一步描述“这些空闲页组成了哪些大小的连续物理块”。</p>
+</blockquote>
+<hr>
+<h1 id="7-2-Buddy-System的核心思想"><a href="#7-2-Buddy-System的核心思想" class="headerlink" title="7.2 Buddy System的核心思想"></a>7.2 Buddy System的核心思想</h1><p>Buddy System只管理大小为2的幂次方的连续页块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">1 page<br>2 pages<br>4 pages<br>8 pages<br>16 pages<br>...<br></code></pre></td></tr></table></figure>
+
+<p>这样，一个大块总能平均拆成两个同样大小的小块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">           8 pages<br>          /       \<br>      4 pages    4 pages<br>      /   \       /   \<br>  2 pages 2 pages 2 pages 2 pages<br>   /  \<br>1 page 1 page<br></code></pre></td></tr></table></figure>
+
+<p>同一个父块拆出来的两个子块互为伙伴，也就是Buddy。</p>
+<p>Buddy System包含两个方向相反的操作：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">分配：大块 → split → 小块<br><br>释放：小块 + buddy → merge → 大块<br></code></pre></td></tr></table></figure>
+
+<p>假设最初有8个连续空闲页：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[0 1 2 3 4 5 6 7]<br></code></pre></td></tr></table></figure>
+
+<p>它可以作为一个8页空闲块管理。申请2页时，先拆成两个4页块，再把其中一个4页块拆成两个2页块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">         [0........7]<br>               │ split<br>      ┌────────┴────────┐<br>      ▼                 ▼<br>   [0..3]             [4..7]<br>      │ split<br>  ┌───┴───┐<br>  ▼       ▼<br>[0,1]   [2,3]<br>  │<br>return<br></code></pre></td></tr></table></figure>
+
+<p>最终状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">allocated:<br>    [0,1]<br><br>free:<br>    [2,3]   2页块<br>    [4..7]  4页块<br></code></pre></td></tr></table></figure>
+
+<p>当<code>[0,1]</code>被释放后，它与<code>[2,3]</code>重新合并成<code>[0..3]</code>；如果<code>[4..7]</code>仍然空闲，还能继续合并为<code>[0..7]</code>。</p>
+<p>这就是Buddy System最核心的循环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">allocate<br>   ↓<br>寻找最小但足够大的块<br>   ↓<br>必要时split<br><br>free<br>   ↓<br>检查唯一的buddy<br>   ↓<br>必要时merge并继续向上<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-3-order到底是什么"><a href="#7-3-order到底是什么" class="headerlink" title="7.3 order到底是什么"></a>7.3 order到底是什么</h1><p>Buddy使用<code>order</code>表示块的阶数：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">pages = 2^order<br>bytes = 2^order × PAGE_SIZE<br></code></pre></td></tr></table></figure>
+
+<p>假设<code>PAGE_SIZE = 4KiB</code>：</p>
+<table>
+<thead>
+<tr>
+<th align="right">order</th>
+<th align="right">连续页数</th>
+<th align="right">连续物理内存大小</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4KiB</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">8KiB</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">4</td>
+<td align="right">16KiB</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">8</td>
+<td align="right">32KiB</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">16</td>
+<td align="right">64KiB</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">32</td>
+<td align="right">128KiB</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td align="right">256</td>
+<td align="right">1MiB</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td align="right">1024</td>
+<td align="right">4MiB</td>
+</tr>
+</tbody></table>
+<p>所以：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">order 3 ≠ 3 pages<br>order 3 = 2³ pages = 8 pages<br></code></pre></td></tr></table></figure>
+
+<p>调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">page</span> *<span class="hljs-title">page</span>;</span><br><br>page = alloc_pages(GFP_KERNEL, <span class="hljs-number">3</span>);<br></code></pre></td></tr></table></figure>
+
+<p>语义是申请8个连续物理页，返回值指向整个块的第一个<code>struct page</code>。</p>
+<h2 id="MAX-ORDER的边界"><a href="#MAX-ORDER的边界" class="headerlink" title="MAX_ORDER的边界"></a>MAX_ORDER的边界</h2><p>Linux v6.1的<code>include/linux/mmzone.h</code>中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> CONFIG_ARCH_FORCE_MAX_ORDER</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_ORDER 11</span><br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_ORDER CONFIG_ARCH_FORCE_MAX_ORDER</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_ORDER_NR_PAGES (1 &lt;&lt; (MAX_ORDER - 1))</span><br></code></pre></td></tr></table></figure>
+
+<p>要注意：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[]有效下标：0 ... MAX_ORDER - 1<br>最大块order：MAX_ORDER - 1<br></code></pre></td></tr></table></figure>
+
+<p>默认<code>MAX_ORDER=11</code>时，最大order为10，对应1024页；4KiB页面下就是4MiB连续物理内存。但架构可以通过<code>CONFIG_ARCH_FORCE_MAX_ORDER</code>改变它，因此不要死记所有平台最大块都是4MiB。</p>
+<p>v6.1还定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> PAGE_ALLOC_COSTLY_ORDER 3</span><br></code></pre></td></tr></table></figure>
+
+<p>它表示从更高order开始，分配被认为成本和失败风险明显增加。它不是Buddy能够管理的最大order。</p>
+<hr>
+<h1 id="7-4-free-area-是什么"><a href="#7-4-free-area-是什么" class="headerlink" title="7.4 free_area[]是什么"></a>7.4 free_area[]是什么</h1><p>Linux的Buddy不是整个系统共享一套全局链表，而是每个Zone拥有自己的Buddy状态。</p>
+<p><code>struct zone</code>中的核心字段是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">zone</span> &#123;</span><br>    ...<br><br>    <span class="hljs-comment">/* free areas of different sizes */</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">free_area</span> <span class="hljs-title">free_area</span>[<span class="hljs-title">MAX_ORDER</span>];</span><br><br>    <span class="hljs-comment">/* Primarily protects free_area */</span><br>    <span class="hljs-type">spinlock_t</span> lock;<br><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>每个数组下标对应一个order：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">zone-&gt;free_area[0]  → 1页块<br>zone-&gt;free_area[1]  → 2页块<br>zone-&gt;free_area[2]  → 4页块<br>zone-&gt;free_area[3]  → 8页块<br>...<br></code></pre></td></tr></table></figure>
+
+<p><code>struct free_area</code>定义为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">free_area</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">free_list</span>[<span class="hljs-title">MIGRATE_TYPES</span>];</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> nr_free;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>它包含两类状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">free_list[]<br>    该order下按migratetype分类的空闲块链表<br><br>nr_free<br>    该order下的空闲块数量，不是空闲页数量<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[3].nr_free = 10<br></code></pre></td></tr></table></figure>
+
+<p>表示有10个order-3空闲块。每个块8页，因此共代表：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">10 × 2³ = 80 pages<br></code></pre></td></tr></table></figure>
+
+<p>4KiB页面下为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">80 × 4KiB = 320KiB<br></code></pre></td></tr></table></figure>
+
+<p>整体数据结构如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">struct zone<br>   │<br>   └── free_area[MAX_ORDER]<br>          │<br>          ├── free_area[0]<br>          │      ├── free_list[UNMOVABLE]<br>          │      ├── free_list[MOVABLE]<br>          │      └── free_list[RECLAIMABLE]<br>          │<br>          ├── free_area[1]<br>          │      ├── free_list[UNMOVABLE]<br>          │      ├── free_list[MOVABLE]<br>          │      └── free_list[RECLAIMABLE]<br>          │<br>          └── ...<br></code></pre></td></tr></table></figure>
+
+<h2 id="为什么Buddy是per-Zone的"><a href="#为什么Buddy是per-Zone的" class="headerlink" title="为什么Buddy是per-Zone的"></a>为什么Buddy是per-Zone的</h2><p>不同Zone中的物理页具有不同使用限制。即使<code>ZONE_DMA32</code>的最后一块与<code>ZONE_NORMAL</code>的第一块在物理地址上连续，它们也不能合并：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">ZONE_DMA32                     ZONE_NORMAL<br>[最后一个空闲块] [第一个空闲块]<br>                  ▲<br>                  │ Zone边界，禁止合并<br></code></pre></td></tr></table></figure>
+
+<p>否则一个块会同时跨越两种分配能力，Zone的水位、回退和DMA约束都无法继续正确表达。</p>
+<hr>
+<h1 id="7-5-order-0到高阶内存块如何组织"><a href="#7-5-order-0到高阶内存块如何组织" class="headerlink" title="7.5 order-0到高阶内存块如何组织"></a>7.5 order-0到高阶内存块如何组织</h1><p>假设一个Zone中的PFN 0～15全部空闲，并且这些PFN满足一个order-4块的对齐和边界条件。</p>
+<p>最紧凑的表示不是16个order-0块，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[4]<br>    └── [PFN 0................................15]<br></code></pre></td></tr></table></figure>
+
+<p>同一组页面不会同时以多种order重复挂链。例如它作为一个order-4块挂入链表后，不会再把其中每个页面同时挂到<code>free_area[0]</code>。</p>
+<p>当order-4块被拆分时，较小的剩余伙伴才会进入较低order链表：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">分配order-2：<br><br>order 4: [0................15]<br>                   │ split<br>order 3: [0......7] [8.....15]<br>             │ split<br>order 2: [0..3] [4..7]<br>          │<br>        return<br><br>剩余：<br>free_area[2] → [4..7]<br>free_area[3] → [8..15]<br></code></pre></td></tr></table></figure>
+
+<p>此时：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[4]中不再有原来的[0..15]<br></code></pre></td></tr></table></figure>
+
+<p>因为这个大块已经被拆开，不能再作为完整order-4空闲块分配。</p>
+<hr>
+<h1 id="7-6-分配时为什么要split"><a href="#7-6-分配时为什么要split" class="headerlink" title="7.6 分配时为什么要split"></a>7.6 分配时为什么要split</h1><p>申请order-N时，Buddy先检查目标order。如果没有，就从目标order向上寻找第一个可用块。</p>
+<p>【简化模型】</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">for current_order = requested_order ... MAX_ORDER-1<br>    if free_area[current_order]有块<br>        取出<br>        拆到requested_order<br>        返回<br></code></pre></td></tr></table></figure>
+
+<p>Linux v6.1中的核心函数是<code>__rmqueue_smallest()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> __always_inline<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">page</span> *__<span class="hljs-title">rmqueue_smallest</span>(<span class="hljs-keyword">struct</span> <span class="hljs-title">zone</span> *<span class="hljs-title">zone</span>,</span><br><span class="hljs-class">                                <span class="hljs-title">unsigned</span> <span class="hljs-title">int</span> <span class="hljs-title">order</span>,</span><br><span class="hljs-class">                                <span class="hljs-title">int</span> <span class="hljs-title">migratetype</span>)</span><br><span class="hljs-class">&#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> current_order;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">free_area</span> *<span class="hljs-title">area</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">page</span> *<span class="hljs-title">page</span>;</span><br><br>    <span class="hljs-keyword">for</span> (current_order = order;<br>         current_order &lt; MAX_ORDER;<br>         ++current_order) &#123;<br><br>        area = &amp;zone-&gt;free_area[current_order];<br>        page = get_page_from_free_area(area, migratetype);<br>        <span class="hljs-keyword">if</span> (!page)<br>            <span class="hljs-keyword">continue</span>;<br><br>        del_page_from_free_list(page, zone, current_order);<br>        expand(zone, page, order, current_order, migratetype);<br>        ...<br>        <span class="hljs-keyword">return</span> page;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这段代码解决两个问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">1. 从requested order向上找，而不是直接拿最大块<br>2. 找到更大块后调用expand()逐级拆分<br></code></pre></td></tr></table></figure>
+
+<p>为什么不直接从最大块开始？因为申请一页时如果总去拆最大的块，会造成不必要的拆分，过早破坏高阶连续内存。</p>
+<h2 id="expand-做了什么"><a href="#expand-做了什么" class="headerlink" title="expand()做了什么"></a>expand()做了什么</h2><p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">low  = 1，需要order-1<br>high = 3，找到order-3<br></code></pre></td></tr></table></figure>
+
+<p><code>expand()</code>逐级执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">order 3 → order 2<br>order 2 → order 1<br></code></pre></td></tr></table></figure>
+
+<p>每次把一半留给后续拆分，另一半标记为空闲伙伴并放回对应的<code>free_area[]</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">8 pages<br>   ├── 4 pages继续拆<br>   └── 4 pages放入free_area[2]<br><br>4 pages<br>   ├── 2 pages返回<br>   └── 2 pages放入free_area[1]<br></code></pre></td></tr></table></figure>
+
+<p>因此split不会丢失页面，它只是改变空闲页的组织阶数。</p>
+<hr>
+<h1 id="7-7-释放时为什么能merge"><a href="#7-7-释放时为什么能merge" class="headerlink" title="7.7 释放时为什么能merge"></a>7.7 释放时为什么能merge</h1><p>释放一个块时，如果它的伙伴块满足合并条件，就能合成高一阶的块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">order-N + order-N<br>        ↓<br>    order-(N+1)<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">[0,1] + [2,3]<br>       ↓<br>     [0..3]<br></code></pre></td></tr></table></figure>
+
+<p>然后继续检查<code>[0..3]</code>的order-2伙伴：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">[0..3] + [4..7]<br>          ↓<br>        [0..7]<br></code></pre></td></tr></table></figure>
+
+<p>Linux v6.1的核心合并函数是<code>__free_one_page()</code>。它的主干可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">当前page、pfn、order、zone、migratetype<br>        ↓<br>检查起始PFN对齐和Zone边界<br>        ↓<br>find_buddy_page_pfn()<br>        ↓<br>没有可合并buddy？──是──→ 停止合并<br>        │<br>        否<br>        ↓<br>从当前order空闲链表移除buddy<br>        ↓<br>计算合并块的较低起始PFN<br>        ↓<br>order++<br>        ↓<br>继续尝试更高阶合并<br>        ↓<br>将最终块加入free_area[order]<br></code></pre></td></tr></table></figure>
+
+<p>能够合并通常至少要求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">地址上是真正的伙伴<br>buddy当前在Buddy中空闲<br>buddy记录的order相同<br>没有跨越Zone边界<br>页面状态允许合并<br>pageblock/migratetype规则允许合并<br></code></pre></td></tr></table></figure>
+
+<p>所以“两个块物理相邻”并不自动等于“可以合并”。</p>
+<hr>
+<h1 id="7-8-buddy到底怎么计算"><a href="#7-8-buddy到底怎么计算" class="headerlink" title="7.8 buddy到底怎么计算"></a>7.8 buddy到底怎么计算</h1><p>对一个order-N块来说：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">block_size = 1 &lt;&lt; order    // 单位：page<br></code></pre></td></tr></table></figure>
+
+<p>它的伙伴起始PFN可以用下面的数学模型理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">buddy_pfn = pfn ^ (1 &lt;&lt; order)<br></code></pre></td></tr></table></figure>
+
+<h2 id="例1：PFN-8，order-2"><a href="#例1：PFN-8，order-2" class="headerlink" title="例1：PFN 8，order 2"></a>例1：PFN 8，order 2</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">block_size = 1 &lt;&lt; 2 = 4 pages<br>buddy_pfn  = 8 ^ 4 = 12<br></code></pre></td></tr></table></figure>
+
+<p>所以：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">当前块：[8..11]<br>伙伴块：[12..15]<br>合并后：[8..15]，成为order-3<br></code></pre></td></tr></table></figure>
+
+<h2 id="例2：PFN-12，order-2"><a href="#例2：PFN-12，order-2" class="headerlink" title="例2：PFN 12，order 2"></a>例2：PFN 12，order 2</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">buddy_pfn = 12 ^ 4 = 8<br></code></pre></td></tr></table></figure>
+
+<p>又回到PFN 8，因此伙伴关系是对称的。</p>
+<h2 id="为什么异或有效"><a href="#为什么异或有效" class="headerlink" title="为什么异或有效"></a>为什么异或有效</h2><p>一个order-N块的伙伴，只需要翻转起始PFN中代表该块大小的那一位：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">order 2 → 翻转数值4对应的bit<br></code></pre></td></tr></table></figure>
+
+<p>低于这一位的bit必须为0，这正是块对齐条件。高位决定当前父区域，翻转这一位就在父区域的左右两半之间切换。</p>
+<hr>
+<h1 id="7-9-为什么块大小必须是2的幂"><a href="#7-9-为什么块大小必须是2的幂" class="headerlink" title="7.9 为什么块大小必须是2的幂"></a>7.9 为什么块大小必须是2的幂</h1><p>2的幂使Buddy具有三个关键性质。</p>
+<h2 id="只有一种等分方式"><a href="#只有一种等分方式" class="headerlink" title="只有一种等分方式"></a>只有一种等分方式</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">8 → 4 + 4<br>4 → 2 + 2<br>2 → 1 + 1<br></code></pre></td></tr></table></figure>
+
+<p>如果允许任意大小，例如10页，拆分可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">10 = 1 + 9<br>10 = 2 + 8<br>10 = 3 + 7<br>10 = 4 + 6<br>10 = 5 + 5<br></code></pre></td></tr></table></figure>
+
+<p>拆分和合并策略会复杂很多。</p>
+<h2 id="每个块只有一个伙伴"><a href="#每个块只有一个伙伴" class="headerlink" title="每个块只有一个伙伴"></a>每个块只有一个伙伴</h2><p>在给定order下，一个块只有唯一伙伴可以与它组成高一阶块，所以查找不需要遍历所有相邻空闲块。</p>
+<h2 id="对齐关系简单"><a href="#对齐关系简单" class="headerlink" title="对齐关系简单"></a>对齐关系简单</h2><p>order-N块起始PFN必须满足：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">pfn % (1 &lt;&lt; order) == 0<br></code></pre></td></tr></table></figure>
+
+<p>等价位运算检查：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">pfn &amp; ((<span class="hljs-number">1</span> &lt;&lt; order) - <span class="hljs-number">1</span>)<br></code></pre></td></tr></table></figure>
+
+<p>在v6.1的<code>__free_one_page()</code>中可以看到对应的调试断言：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">VM_BUG_ON_PAGE(pfn &amp; ((<span class="hljs-number">1</span> &lt;&lt; order) - <span class="hljs-number">1</span>), page);<br></code></pre></td></tr></table></figure>
+
+<p>如果order-2块从PFN 6开始，范围将是<code>[6..9]</code>，它跨过了标准4页边界，伙伴层次无法稳定建立。因此合法起点是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">0、4、8、12、16……<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-10-struct-page在Buddy中承担什么角色"><a href="#7-10-struct-page在Buddy中承担什么角色" class="headerlink" title="7.10 struct page在Buddy中承担什么角色"></a>7.10 struct page在Buddy中承担什么角色</h1><p>Buddy管理的是一整块连续物理页，但不需要把块中的每个<code>struct page</code>都挂入空闲链表。</p>
+<p>例如order-3块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">PFN 100 101 102 103 104 105 106 107<br>     ▲<br>     │<br>块首页struct page代表整个8页空闲块<br></code></pre></td></tr></table></figure>
+
+<p>空闲链表中挂的是块首页：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[3].free_list[migratetype]<br>       │<br>       ▼<br>struct page(PFN 100)<br>       │<br>       └── 代表PFN 100～107<br></code></pre></td></tr></table></figure>
+
+<p>Linux v6.1中，加入空闲链表的核心动作类似：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">list_add(&amp;page-&gt;buddy_list,<br>         &amp;area-&gt;free_list[migratetype]);<br>area-&gt;nr_free++;<br></code></pre></td></tr></table></figure>
+
+<p>这里的<code>page</code>是空闲块首页，<code>buddy_list</code>用于把这个块连接到对应order、对应migratetype的链表。</p>
+<p>因此需要区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Zone管理这段范围内的所有页面<br><br>free_area[]只组织当前空闲块的首页<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-11-PageBuddy、private与order"><a href="#7-11-PageBuddy、private与order" class="headerlink" title="7.11 PageBuddy、private与order"></a>7.11 PageBuddy、private与order</h1><p>Linux需要从块首页判断：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">它是否真的位于Buddy空闲链表？<br>它当前代表哪个order的块？<br></code></pre></td></tr></table></figure>
+
+<p>Linux v6.1使用<code>PageBuddy(page)</code>表示该页是Buddy空闲块的代表页。<code>include/linux/page-flags.h</code>中的注释明确说明：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">PageBuddy() indicates that the page is free and in the buddy system<br></code></pre></td></tr></table></figure>
+
+<p>设置空闲块状态的代码为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">void</span> <span class="hljs-title function_">set_buddy_order</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> page *page,</span><br><span class="hljs-params">                                   <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> order)</span><br>&#123;<br>    set_page_private(page, order);<br>    __SetPageBuddy(page);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>所以在v6.1中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">PageBuddy(page)<br>    表示page是Buddy空闲块的首页<br><br>page_private(page)<br>    保存该空闲块的order<br><br>page-&gt;buddy_list<br>    把空闲块首页挂入free_area[order]链表<br></code></pre></td></tr></table></figure>
+
+<p>从空闲链表取出块时，会反向清理这些状态：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">list_del(&amp;page-&gt;buddy_list);<br>__ClearPageBuddy(page);<br>set_page_private(page, <span class="hljs-number">0</span>);<br>zone-&gt;free_area[order].nr_free--;<br></code></pre></td></tr></table></figure>
+
+<p>【工程提醒】</p>
+<p>这里的<code>page_private()</code>是<code>struct page</code>字段在“Buddy空闲块首页”这一生命周期阶段的复用。它不意味着所有已分配页面的<code>private</code>字段始终表示Buddy order。</p>
+<p>同样需要区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Buddy空闲块的order<br></code></pre></td></tr></table></figure>
+
+<p>与：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">已分配compound page记录的compound_order<br></code></pre></td></tr></table></figure>
+
+<p>二者处于不同状态和用途，不能混为一谈。</p>
+<hr>
+<h1 id="7-12-Migratetype为什么存在"><a href="#7-12-Migratetype为什么存在" class="headerlink" title="7.12 Migratetype为什么存在"></a>7.12 Migratetype为什么存在</h1><p>如果Buddy只按order管理，系统长期运行后容易产生外部碎片。</p>
+<p>假设不同可迁移属性的页面交叉分配：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">U M U M U M U M<br></code></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">U = Unmovable，不容易迁移<br>M = Movable，可以迁移<br></code></pre></td></tr></table></figure>
+
+<p>以后即使把所有M迁走：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">U _ U _ U _ U _<br></code></pre></td></tr></table></figure>
+
+<p>仍然无法形成大的连续空闲区，因为不可移动页面像钉子一样散布在中间。</p>
+<p>如果一开始尽量分类放置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">U U U U | M M M M<br></code></pre></td></tr></table></figure>
+
+<p>迁移M以后：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">U U U U | _ _ _ _<br></code></pre></td></tr></table></figure>
+
+<p>右侧更容易恢复为高阶Buddy块。</p>
+<p>因此migratetype的目标是：</p>
+<blockquote>
+<p>尽量让迁移属性相似的分配集中在相同pageblock中，降低不可移动页面长期切碎大块连续空间的概率。</p>
+</blockquote>
+<p>Linux v6.1中的主要类型包括：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">enum</span> <span class="hljs-title">migratetype</span> &#123;</span><br>    MIGRATE_UNMOVABLE,<br>    MIGRATE_MOVABLE,<br>    MIGRATE_RECLAIMABLE,<br>    MIGRATE_PCPTYPES,<br>    MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_CMA</span><br>    MIGRATE_CMA,<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_MEMORY_ISOLATION</span><br>    MIGRATE_ISOLATE,<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>    MIGRATE_TYPES<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>基础心智模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">MIGRATE_UNMOVABLE<br>    难以迁移的内核分配<br><br>MIGRATE_MOVABLE<br>    可以通过页面迁移改变物理位置的页面<br><br>MIGRATE_RECLAIMABLE<br>    在内存压力下可回收的一类内核分配<br><br>MIGRATE_HIGHATOMIC<br>    为高阶原子分配保留的页面块<br><br>MIGRATE_CMA<br>    CONFIG_CMA下供连续内存分配机制使用<br><br>MIGRATE_ISOLATE<br>    CONFIG_MEMORY_ISOLATION下隔离页面块，不参与普通分配<br></code></pre></td></tr></table></figure>
+
+<p>【简化模型】</p>
+<p>第一次学习先重点区分<code>UNMOVABLE / MOVABLE / RECLAIMABLE</code>。其他类型涉及高阶原子储备、CMA和内存隔离策略。</p>
+<hr>
+<h1 id="7-13-free-list-MIGRATE-TYPES-的意义"><a href="#7-13-free-list-MIGRATE-TYPES-的意义" class="headerlink" title="7.13 free_list[MIGRATE_TYPES]的意义"></a>7.13 free_list[MIGRATE_TYPES]的意义</h1><p><code>free_area[order]</code>不是只有一条链表，而是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">free_list</span>[<span class="hljs-title">MIGRATE_TYPES</span>];</span><br></code></pre></td></tr></table></figure>
+
+<p>所以Buddy的分类是二维的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">第一维：order<br>第二维：migratetype<br></code></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">free_area[2]<br>   ├── free_list[MIGRATE_UNMOVABLE]<br>   ├── free_list[MIGRATE_MOVABLE]<br>   ├── free_list[MIGRATE_RECLAIMABLE]<br>   ├── free_list[MIGRATE_HIGHATOMIC]<br>   └── 条件类型...<br></code></pre></td></tr></table></figure>
+
+<p>这些链表中的块大小完全相同，都是4页；差别在于它们所在pageblock的迁移属性和分配策略。</p>
+<p>请求先尝试期望的migratetype。如果目标链表耗尽，分配器还可能按照fallback规则从其他可兼容类型取块。v6.1中基础fallback顺序类似：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> fallbacks[MIGRATE_TYPES][<span class="hljs-number">3</span>] = &#123;<br>    [MIGRATE_UNMOVABLE] = &#123;<br>        MIGRATE_RECLAIMABLE,<br>        MIGRATE_MOVABLE,<br>        MIGRATE_TYPES<br>    &#125;,<br>    [MIGRATE_MOVABLE] = &#123;<br>        MIGRATE_RECLAIMABLE,<br>        MIGRATE_UNMOVABLE,<br>        MIGRATE_TYPES<br>    &#125;,<br>    [MIGRATE_RECLAIMABLE] = &#123;<br>        MIGRATE_UNMOVABLE,<br>        MIGRATE_MOVABLE,<br>        MIGRATE_TYPES<br>    &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>fallback提升了当前分配成功率，但也可能污染其他迁移类型的pageblock、增加未来碎片风险。这里体现了典型的权衡：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">当前分配成功率<br>        vs<br>长期连续内存质量<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-14-外部碎片是什么"><a href="#7-14-外部碎片是什么" class="headerlink" title="7.14 外部碎片是什么"></a>7.14 外部碎片是什么</h1><p>外部碎片是指：</p>
+<blockquote>
+<p>空闲空间总量可能足够，但它被已使用页面分割成许多小块，无法满足所需的连续分配。</p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">F U F U F U F U<br></code></pre></td></tr></table></figure>
+
+<p>这里有4个空闲页，但没有2个连续空闲页。因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">order-0申请：可能成功<br>order-1申请：失败<br></code></pre></td></tr></table></figure>
+
+<p>外部碎片与内部碎片不同：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">外部碎片<br>    空闲空间分散，连续性不足<br><br>内部碎片<br>    分配块大于实际需求，块内部存在浪费<br></code></pre></td></tr></table></figure>
+
+<p>例如需要5页，但Buddy只能申请8页的order-3块，多出来的3页属于内部浪费。Linux也提供<code>alloc_pages_exact()</code>等接口，在部分场景下申请较大块后释放尾部多余页面，但底层仍然绕不开Buddy的2次幂组织。</p>
+<hr>
+<h1 id="7-15-为什么还有很多free-memory却申请不到高阶页"><a href="#7-15-为什么还有很多free-memory却申请不到高阶页" class="headerlink" title="7.15 为什么还有很多free memory却申请不到高阶页"></a>7.15 为什么还有很多free memory却申请不到高阶页</h1><p>假设系统还有500MiB空闲内存，但这些内存主要由大量4KiB和8KiB小块组成。现在申请：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">order 8<br>= 256 pages<br>= 1MiB连续物理内存（PAGE_SIZE=4KiB）<br></code></pre></td></tr></table></figure>
+
+<p>如果没有任何一个1MiB连续空闲区，申请仍然会失败。</p>
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">总free memory充足<br>        ≠<br>目标Zone中有足够内存<br>        ≠<br>存在目标order连续块<br></code></pre></td></tr></table></figure>
+
+<p>排查高阶分配失败时，不能只看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">free -h<br></code></pre></td></tr></table></figure>
+
+<p>还应观察：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/zoneinfo<br><span class="hljs-built_in">cat</span> /proc/buddyinfo<br></code></pre></td></tr></table></figure>
+
+<p>分别判断：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Zone水位是否不足？<br>正确Zone是否还有可用页？<br>高阶空闲块是否已经耗尽？<br>是否只是大量低阶块仍然存在？<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-16-Compaction和Buddy的关系"><a href="#7-16-Compaction和Buddy的关系" class="headerlink" title="7.16 Compaction和Buddy的关系"></a>7.16 Compaction和Buddy的关系</h1><p>Buddy能够合并的前提是伙伴都已经空闲。如果连续范围中夹着正在使用的可移动页面，Buddy不能直接越过它进行合并。</p>
+<p>Compaction（内存规整）尝试迁移可移动页面，把分散的空闲页集中起来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Before:<br><br>F M F M F M F M<br><br>        ↓ migrate<br><br>After:<br><br>M M M M F F F F<br></code></pre></td></tr></table></figure>
+
+<p>右侧连续空闲页被释放回Buddy后，就可能逐级合并成更高order。</p>
+<p>必须区分Reclaim和Compaction：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Reclaim<br>    将可回收页面变为空闲页<br>    主要解决“空闲页数量够不够”<br><br>Compaction<br>    搬迁可移动页面，集中空闲空间<br>    主要解决“空闲页连续不连续”<br></code></pre></td></tr></table></figure>
+
+<p>二者可能协同工作，但不是同一种机制。</p>
+<p>Buddy与Compaction的关系是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Compaction创造连续空闲条件<br>        ↓<br>页面释放回Buddy<br>        ↓<br>Buddy重新merge成高阶块<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-17-PCP与Buddy的关系"><a href="#7-17-PCP与Buddy的关系" class="headerlink" title="7.17 PCP与Buddy的关系"></a>7.17 PCP与Buddy的关系</h1><p>如果每次小页分配都直接修改<code>zone-&gt;free_area[]</code>，多个CPU会频繁竞争<code>zone-&gt;lock</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">CPU0 ─┐<br>CPU1 ─┼──→ zone-&gt;lock → free_area[]<br>CPU2 ─┤<br>CPU3 ─┘<br></code></pre></td></tr></table></figure>
+
+<p>Linux在Buddy前面增加了Per-CPU Pageset（PCP）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">CPU本地小页分配<br>       ↓<br>      PCP<br>       ↓ 不足时批量补充<br>Zone Buddy free_area[]<br></code></pre></td></tr></table></figure>
+
+<p>释放小页时也可以先进入本CPU的PCP，积累到一定程度再批量归还Buddy。这样把许多单次操作聚合成少量批量操作，降低Zone共享锁竞争。</p>
+<p>【简化模型】</p>
+<p>常见介绍会说“order-0优先走PCP”。这有助于理解PCP的主要用途，但Linux v6.1真实实现更宽一些：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> <span class="hljs-type">bool</span> <span class="hljs-title function_">pcp_allowed_order</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> order)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (order &lt;= PAGE_ALLOC_COSTLY_ORDER)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_TRANSPARENT_HUGEPAGE</span><br>    <span class="hljs-keyword">if</span> (order == pageblock_order)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>默认<code>PAGE_ALLOC_COSTLY_ORDER=3</code>，所以符合条件的低阶请求不只order-0能经过PCP；特定THP配置还有额外条件路径。</p>
+<p>PCP并没有取代Buddy：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">PCP<br>    每CPU快速缓存，优化高频路径<br><br>Buddy<br>    Zone级连续空闲页主仓库<br></code></pre></td></tr></table></figure>
+
+<p>PCP页面暂时离开Buddy链表，因此阅读<code>/proc/buddyinfo</code>时也要意识到，它展示的是Buddy各阶空闲块，不等价于系统所有可快速使用页面的完整视图。</p>
+<hr>
+<h1 id="7-18-Buddy分配的大体源码主链"><a href="#7-18-Buddy分配的大体源码主链" class="headerlink" title="7.18 Buddy分配的大体源码主链"></a>7.18 Buddy分配的大体源码主链</h1><p>本章只建立Buddy相关主干，完整<code>alloc_pages()</code>调用链留到下一章。</p>
+<p>Linux v6.1中可以先记住：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs text">alloc_pages()<br>    ↓<br>__alloc_pages()<br>    ↓<br>get_page_from_freelist()<br>    ↓<br>rmqueue()<br>    ├── rmqueue_pcplist()<br>    │      └── PCP快速路径<br>    │<br>    └── rmqueue_buddy()<br>           ↓<br>         __rmqueue()<br>           ↓<br>     __rmqueue_smallest()<br>           ↓<br> zone-&gt;free_area[current_order]<br>           ↓<br>        expand()<br></code></pre></td></tr></table></figure>
+
+<p>其中真正体现基础Buddy算法的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">__rmqueue_smallest()<br>    从requested order向上找第一个可用块<br><br>expand()<br>    将较大块逐级拆到目标order<br></code></pre></td></tr></table></figure>
+
+<p>真实代码还要处理：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">migratetype fallback<br>MIGRATE_HIGHATOMIC<br>CMA约束<br>页面状态检查<br>统计与tracepoint<br>Zone锁<br></code></pre></td></tr></table></figure>
+
+<p>第一遍不要把这些分支与Buddy基本算法混在一起。先抓住主状态变化：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">空闲块从高阶链表删除<br>        ↓<br>拆出的伙伴加入低阶链表<br>        ↓<br>目标块离开Buddy并返回<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-19-Buddy释放的大体源码主链"><a href="#7-19-Buddy释放的大体源码主链" class="headerlink" title="7.19 Buddy释放的大体源码主链"></a>7.19 Buddy释放的大体源码主链</h1><p>释放路径需要区分“先进入PCP”和“最终归还Buddy”。概念主线如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs text">__free_pages()<br>    ↓<br>free_the_page()<br>    ├── 符合PCP条件<br>    │      ↓<br>    │  free_unref_page()<br>    │      ↓<br>    │  进入PCP<br>    │      ↓ 达到批量归还条件<br>    │  free_pcppages_bulk()<br>    │<br>    └── 不走PCP<br>           ↓<br>     __free_pages_ok()<br></code></pre></td></tr></table></figure>
+
+<p>最终回到Zone Buddy时会进入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">free_one_page()<br>    ↓ 获取zone-&gt;lock<br>__free_one_page()<br>    ↓<br>find_buddy_page_pfn()<br>    ↓<br>merge loop<br>    ↓<br>add_to_free_list()<br></code></pre></td></tr></table></figure>
+
+<p><code>__free_one_page()</code>才是最纯粹的Buddy合并核心。其源码注释明确说明：每一阶链表保存连续<code>1 &lt;&lt; order</code>页块的首页，首页设置<code>PageBuddy</code>，order记录在<code>page_private(page)</code>中。</p>
+<p>释放时最关键的状态变化：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">当前块变为空闲候选<br>        ↓<br>查找同阶空闲buddy<br>        ↓<br>从free list删除buddy<br>        ↓<br>清理buddy的PageBuddy/order元数据<br>        ↓<br>选择较低PFN作为新块首页<br>        ↓<br>order++继续<br>        ↓<br>最终首页设置PageBuddy/order并挂回free list<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-20-proc-buddyinfo如何读"><a href="#7-20-proc-buddyinfo如何读" class="headerlink" title="7.20 &#x2F;proc&#x2F;buddyinfo如何读"></a>7.20 &#x2F;proc&#x2F;buddyinfo如何读</h1><p>运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/buddyinfo<br></code></pre></td></tr></table></figure>
+
+<p>可能得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Node 0, zone      DMA      3      2      1      0      0 ...<br>Node 0, zone   Normal   1024    512    128     64     10 ...<br></code></pre></td></tr></table></figure>
+
+<p>一行对应：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">一个Node中的一个Zone<br></code></pre></td></tr></table></figure>
+
+<p>数字列从左到右依次对应：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">order 0<br>order 1<br>order 2<br>order 3<br>...<br></code></pre></td></tr></table></figure>
+
+<p>数字表示该order有多少个空闲块，而不是多少个空闲页。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Node 0, zone Normal  10 4 2 1<br></code></pre></td></tr></table></figure>
+
+<p>代表：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">order 0：10个块，每块1页  → 10页<br>order 1： 4个块，每块2页  →  8页<br>order 2： 2个块，每块4页  →  8页<br>order 3： 1个块，每块8页  →  8页<br></code></pre></td></tr></table></figure>
+
+<p>总计：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">10 + 8 + 8 + 8 = 34 pages<br></code></pre></td></tr></table></figure>
+
+<p>4KiB页面下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">34 × 4KiB = 136KiB<br></code></pre></td></tr></table></figure>
+
+<p>通用公式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">FreePages<br>= Σ nr_free(order) × 2^order<br><br>FreeBytes<br>= Σ nr_free(order) × 2^order × PAGE_SIZE<br></code></pre></td></tr></table></figure>
+
+<h2 id="怎样观察碎片趋势"><a href="#怎样观察碎片趋势" class="headerlink" title="怎样观察碎片趋势"></a>怎样观察碎片趋势</h2><p>如果看到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">低order列仍然很多<br>高order列长期为0或非常少<br></code></pre></td></tr></table></figure>
+
+<p>说明这个Zone仍有空闲页，但大块连续物理内存比较稀缺。这是碎片风险的重要信号，但不能仅凭一次快照断言所有高阶分配必然失败，因为分配器还可能进行回收、规整或从其他Zone回退。</p>
+<hr>
+<h1 id="7-21-实验：手工模拟split与merge"><a href="#7-21-实验：手工模拟split与merge" class="headerlink" title="7.21 实验：手工模拟split与merge"></a>7.21 实验：手工模拟split与merge</h1><p>这一章最有效的实验不是背函数，而是自己模拟一次状态变化。</p>
+<h2 id="实验问题"><a href="#实验问题" class="headerlink" title="实验问题"></a>实验问题</h2><p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">PAGE_SIZE = 4KiB<br>总页数 = 16<br>初始PFN = 0～15全部空闲<br>最大块 = order 4<br></code></pre></td></tr></table></figure>
+
+<p>依次执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">1. alloc(order 2)<br>2. alloc(order 1)<br>3. free(PFN 4, order 1)<br>4. free(PFN 0, order 2)<br></code></pre></td></tr></table></figure>
+
+<p>预测每一步的<code>free_area[]</code>。</p>
+<h2 id="初始状态"><a href="#初始状态" class="headerlink" title="初始状态"></a>初始状态</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">order 0:<br>order 1:<br>order 2:<br>order 3:<br>order 4: [0..15]<br></code></pre></td></tr></table></figure>
+
+<h2 id="第一步：alloc-order-2"><a href="#第一步：alloc-order-2" class="headerlink" title="第一步：alloc(order 2)"></a>第一步：alloc(order 2)</h2><p>拆分过程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">[0..15]<br>   ↓<br>[0..7] [8..15]<br>   ↓<br>[0..3] [4..7]<br></code></pre></td></tr></table></figure>
+
+<p>返回<code>[0..3]</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">allocated: [0..3]<br><br>order 2: [4..7]<br>order 3: [8..15]<br></code></pre></td></tr></table></figure>
+
+<h2 id="第二步：alloc-order-1"><a href="#第二步：alloc-order-1" class="headerlink" title="第二步：alloc(order 1)"></a>第二步：alloc(order 1)</h2><p>从<code>[4..7]</code>拆分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">[4..7]<br>   ↓<br>[4,5] [6,7]<br></code></pre></td></tr></table></figure>
+
+<p>返回<code>[4,5]</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">allocated: [0..3] [4,5]<br><br>order 1: [6,7]<br>order 3: [8..15]<br></code></pre></td></tr></table></figure>
+
+<h2 id="第三步：free-PFN-4-order-1"><a href="#第三步：free-PFN-4-order-1" class="headerlink" title="第三步：free(PFN 4, order 1)"></a>第三步：free(PFN 4, order 1)</h2><p>PFN 4对应块<code>[4,5]</code>，它的同阶伙伴是<code>[6,7]</code>，两者合并：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[4,5] + [6,7] → [4..7]<br></code></pre></td></tr></table></figure>
+
+<p>状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">allocated: [0..3]<br><br>order 2: [4..7]<br>order 3: [8..15]<br></code></pre></td></tr></table></figure>
+
+<h2 id="第四步：free-PFN-0-order-2"><a href="#第四步：free-PFN-0-order-2" class="headerlink" title="第四步：free(PFN 0, order 2)"></a>第四步：free(PFN 0, order 2)</h2><p>先合并：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[0..3] + [4..7] → [0..7]<br></code></pre></td></tr></table></figure>
+
+<p>再合并：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[0..7] + [8..15] → [0..15]<br></code></pre></td></tr></table></figure>
+
+<p>最终恢复初始状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">order 4: [0..15]<br></code></pre></td></tr></table></figure>
+
+<h2 id="可选：观察真实系统"><a href="#可选：观察真实系统" class="headerlink" title="可选：观察真实系统"></a>可选：观察真实系统</h2><p>先保存快照：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/buddyinfo &gt; /tmp/buddy.before<br><span class="hljs-built_in">cat</span> /proc/zoneinfo  &gt; /tmp/zone.before<br></code></pre></td></tr></table></figure>
+
+<p>运行自己的正常工作负载后再次保存：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/buddyinfo &gt; /tmp/buddy.after<br><span class="hljs-built_in">cat</span> /proc/zoneinfo  &gt; /tmp/zone.after<br><br>diff -u /tmp/buddy.before /tmp/buddy.after<br></code></pre></td></tr></table></figure>
+
+<p>预测：Buddy各阶数量会随系统活动发生变化；单次快照只是瞬时状态。</p>
+<p>如果要用内核模块直接测试<code>alloc_pages(GFP_KERNEL, order)</code>，应只在可重启的开发环境中进行，并保证每个成功分配都按原order释放。不要在生产设备上盲目发起大量高阶分配。</p>
+<hr>
+<h1 id="7-22-常见误区"><a href="#7-22-常见误区" class="headerlink" title="7.22 常见误区"></a>7.22 常见误区</h1><h2 id="误区1：order-3表示3个页面"><a href="#误区1：order-3表示3个页面" class="headerlink" title="误区1：order 3表示3个页面"></a>误区1：order 3表示3个页面</h2><p>错误：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">order 3 = 2³ = 8 pages<br></code></pre></td></tr></table></figure>
+
+<h2 id="误区2：整个系统只有一个Buddy"><a href="#误区2：整个系统只有一个Buddy" class="headerlink" title="误区2：整个系统只有一个Buddy"></a>误区2：整个系统只有一个Buddy</h2><p>错误。核心空闲链表位于<code>struct zone</code>中，因此是per-Zone Buddy：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Node 0 / ZONE_DMA32  → 一套free_area[]<br>Node 0 / ZONE_NORMAL → 另一套free_area[]<br>Node 1 / ZONE_NORMAL → 又一套free_area[]<br></code></pre></td></tr></table></figure>
+
+<h2 id="误区3：每个空闲页都单独挂在对应链表"><a href="#误区3：每个空闲页都单独挂在对应链表" class="headerlink" title="误区3：每个空闲页都单独挂在对应链表"></a>误区3：每个空闲页都单独挂在对应链表</h2><p>错误。一个高阶空闲块通常由首页<code>struct page</code>代表并挂链。</p>
+<h2 id="误区4：两个相邻空闲块一定能merge"><a href="#误区4：两个相邻空闲块一定能merge" class="headerlink" title="误区4：两个相邻空闲块一定能merge"></a>误区4：两个相邻空闲块一定能merge</h2><p>错误。它们必须是同阶的真正伙伴，并满足Zone、pageblock和页面状态等约束。</p>
+<h2 id="误区5：free-memory多，高阶分配一定成功"><a href="#误区5：free-memory多，高阶分配一定成功" class="headerlink" title="误区5：free memory多，高阶分配一定成功"></a>误区5：free memory多，高阶分配一定成功</h2><p>错误。高阶分配要求目标Zone中存在足够大的连续块。</p>
+<h2 id="误区6：Reclaim可以解决所有高阶失败"><a href="#误区6：Reclaim可以解决所有高阶失败" class="headerlink" title="误区6：Reclaim可以解决所有高阶失败"></a>误区6：Reclaim可以解决所有高阶失败</h2><p>错误。Reclaim增加空闲页数量，但新空闲页仍可能分散。连续性问题通常还需要Compaction和页面迁移配合。</p>
+<h2 id="误区7：Compaction会凭空增加空闲内存"><a href="#误区7：Compaction会凭空增加空闲内存" class="headerlink" title="误区7：Compaction会凭空增加空闲内存"></a>误区7：Compaction会凭空增加空闲内存</h2><p>错误。Compaction主要搬移可迁移页面、集中空闲空间，不等价于释放更多页面。</p>
+<h2 id="误区8：PCP就是Buddy的一条普通链表"><a href="#误区8：PCP就是Buddy的一条普通链表" class="headerlink" title="误区8：PCP就是Buddy的一条普通链表"></a>误区8：PCP就是Buddy的一条普通链表</h2><p>不准确。PCP是每CPU快速缓存，页面会在PCP和Zone Buddy之间批量转移，两者的锁、组织和作用范围不同。</p>
+<h2 id="误区9：page-private-永远保存Buddy-order"><a href="#误区9：page-private-永远保存Buddy-order" class="headerlink" title="误区9：page_private()永远保存Buddy order"></a>误区9：<code>page_private()</code>永远保存Buddy order</h2><p>错误。<code>struct page</code>字段会在不同生命周期和不同页面用途下复用；只有Buddy空闲块首页这一语境下，才能按本节方式解释。</p>
+<hr>
+<h1 id="7-23-性能与工程意义"><a href="#7-23-性能与工程意义" class="headerlink" title="7.23 性能与工程意义"></a>7.23 性能与工程意义</h1><h2 id="高阶分配的成本增长"><a href="#高阶分配的成本增长" class="headerlink" title="高阶分配的成本增长"></a>高阶分配的成本增长</h2><p>order越高：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">要求连续页越多<br>      ↓<br>越容易受到外部碎片影响<br>      ↓<br>更可能触发migratetype fallback<br>      ↓<br>更可能触发Compaction或Reclaim<br>      ↓<br>延迟和失败概率上升<br></code></pre></td></tr></table></figure>
+
+<p>所以工程中应谨慎引入长期、频繁的高阶物理页申请。如果硬件和接口允许，可以考虑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">scatter-gather<br>DMA SG<br>vmalloc（虚拟连续而非物理连续）<br>分段缓冲区<br>CMA（确实需要大块DMA连续内存时）<br></code></pre></td></tr></table></figure>
+
+<p>具体选择取决于设备DMA能力、映射接口、访问性能和生命周期，不能简单认为哪种方案永远最好。</p>
+<h2 id="排查page-allocation-failure"><a href="#排查page-allocation-failure" class="headerlink" title="排查page allocation failure"></a>排查page allocation failure</h2><p>遇到类似：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">page allocation failure: order:N<br></code></pre></td></tr></table></figure>
+
+<p>至少应同时考虑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">请求order多大？<br>GFP标志允许做什么？<br>目标Node/Zone是什么？<br>Zone水位是否满足？<br>/proc/buddyinfo中对应高阶块是否存在？<br>是否在不可睡眠或原子上下文？<br>是否允许Reclaim和Compaction？<br>是否长期存在不可移动页造成的碎片？<br></code></pre></td></tr></table></figure>
+
+<p><code>free -h</code>只能回答系统容量的一部分问题，不能直接回答目标Zone中是否存在连续高阶块。</p>
+<h2 id="并发与扩展性"><a href="#并发与扩展性" class="headerlink" title="并发与扩展性"></a>并发与扩展性</h2><p><code>zone-&gt;lock</code>主要保护<code>free_area[]</code>。如果所有CPU每次分配一页都直接操作Buddy，锁竞争会非常严重。PCP通过批量补充和批量归还，把大量高频小分配挡在Zone共享锁之外。</p>
+<p>所以Buddy与PCP体现了分层设计：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">PCP：优化常见、高频、本CPU路径<br>Buddy：维护全局于Zone的连续物理页结构<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-24-本章总结"><a href="#7-24-本章总结" class="headerlink" title="7.24 本章总结"></a>7.24 本章总结</h1><p>Buddy System是Linux物理页分配器中管理连续空闲物理页的核心机制。</p>
+<p>每个Zone维护：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">free_area</span> <span class="hljs-title">free_area</span>[<span class="hljs-title">MAX_ORDER</span>];</span><br></code></pre></td></tr></table></figure>
+
+<p><code>free_area[order]</code>管理大小为<code>2^order</code>页的连续空闲块，并通过：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">free_list[MIGRATE_TYPES]<br></code></pre></td></tr></table></figure>
+
+<p>按迁移类型进一步分类。</p>
+<p>分配时：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">requested order<br>       ↓<br>从当前order向上查找<br>       ↓<br>找到最小可用高阶块<br>       ↓<br>expand()逐级split<br>       ↓<br>返回目标块<br></code></pre></td></tr></table></figure>
+
+<p>释放时：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">释放块<br>   ↓<br>寻找同阶buddy<br>   ↓<br>buddy可合并？<br>   ├── 否：挂入当前order<br>   └── 是：merge、order++、继续<br></code></pre></td></tr></table></figure>
+
+<p>空闲块通常由首页<code>struct page</code>代表：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">PageBuddy(page)   → 它是Buddy空闲块首页<br>page_private(page)→ v6.1中记录Buddy order<br>page-&gt;buddy_list  → 挂入对应free list<br></code></pre></td></tr></table></figure>
+
+<p>Buddy擅长快速分配、拆分和合并<code>2^order</code>大小的连续物理块，但不能彻底消除长期外部碎片。因此Linux还需要：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Migratetype<br>Page Migration<br>Compaction<br>Reclaim<br>PCP<br></code></pre></td></tr></table></figure>
+
+<p>分别改善长期布局、连续性、容量和并发性能。</p>
+<p>一句话总结：</p>
+<blockquote>
+<p>Buddy System关注的不只是“还剩多少空闲页”，更关注“这些空闲页当前能组成哪些大小的连续物理块”。</p>
+</blockquote>
+<hr>
+<h1 id="7-25-学完检查题"><a href="#7-25-学完检查题" class="headerlink" title="7.25 学完检查题"></a>7.25 学完检查题</h1><p>不要只判断“看懂了没有”，尽量不看正文完成下面的解释、推演和调试题。</p>
+<h2 id="概念解释"><a href="#概念解释" class="headerlink" title="概念解释"></a>概念解释</h2><ol>
+<li>为什么只维护一个空闲页链表无法高效支持连续页分配？</li>
+<li><code>order</code>是什么？order 3表示多少页？</li>
+<li><code>free_area[]</code>位于什么结构中？为什么Buddy必须是per-Zone？</li>
+<li><code>free_area[3].nr_free = 10</code>表示多少个空闲页？</li>
+<li>为什么块大小选择2的幂？</li>
+<li>为什么两个物理相邻的空闲块不一定是buddy？</li>
+<li><code>PageBuddy</code>、<code>page_private()</code>和<code>buddy_list</code>分别承担什么角色？</li>
+</ol>
+<h2 id="手工推演"><a href="#手工推演" class="headerlink" title="手工推演"></a>手工推演</h2><ol start="8">
+<li>只有一个order-3空闲块时，申请order-1会发生哪些split？每个剩余伙伴进入哪个<code>free_area[]</code>？</li>
+<li>PFN 8、order 2的伙伴起始PFN是多少？</li>
+<li>PFN 12、order 2的伙伴起始PFN是多少？</li>
+<li>为什么PFN 6不能作为标准order-2块的起点？</li>
+<li>16个空闲页最初组成order-4块，先申请order-2，再申请order-1，画出剩余链表状态。</li>
+</ol>
+<h2 id="设计原因"><a href="#设计原因" class="headerlink" title="设计原因"></a>设计原因</h2><ol start="13">
+<li>migratetype为什么能降低长期外部碎片？</li>
+<li>fallback为什么既能提高当前分配成功率，又可能伤害长期连续性？</li>
+<li>Reclaim与Compaction分别解决什么问题？</li>
+<li>PCP为什么能够降低<code>zone-&gt;lock</code>竞争？</li>
+<li>为什么说PCP没有取代Buddy？</li>
+</ol>
+<h2 id="调试与预测"><a href="#调试与预测" class="headerlink" title="调试与预测"></a>调试与预测</h2><ol start="18">
+<li><code>/proc/buddyinfo</code>低阶列很多、高阶列全为0，说明什么？</li>
+<li>系统还有500MiB free，order-8申请为什么仍可能失败？</li>
+<li>order 5有3个block、PAGE_SIZE&#x3D;4KiB，一共代表多少内存？</li>
+<li>日志出现<code>page allocation failure: order:5</code>时，你会先收集哪些证据？</li>
+<li>如果一个工作负载持续消耗高阶块，却释放成大量分散小块，你预测<code>/proc/buddyinfo</code>会怎样变化？</li>
+</ol>
+<p>第20题答案用于自检：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">3 × 2⁵ × 4KiB<br>= 3 × 32 × 4KiB<br>= 384KiB<br></code></pre></td></tr></table></figure>
+
+<p>如果能够不看正文独立画出下面两条路径，就说明本章的整体模型已经建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Zone<br>  ↓<br>free_area[order]<br>  ↓<br>higher-order block<br>  ↓ split<br>target block<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">free block<br>  ↓<br>find buddy<br>  ↓ merge<br>higher-order block<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="下一章：alloc-pages-分配主链"><a href="#下一章：alloc-pages-分配主链" class="headerlink" title="下一章：alloc_pages()分配主链"></a>下一章：alloc_pages()分配主链</h1><p>下一章开始追踪Linux v6.1真实的物理页分配路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">alloc_pages()<br>    ↓<br>__alloc_pages()<br>    ↓<br>prepare_alloc_pages()<br>    ↓<br>get_page_from_freelist()<br>    ↓<br>rmqueue()<br>    ├── rmqueue_pcplist()<br>    └── rmqueue_buddy()<br>            ↓<br>      __rmqueue_smallest()<br>    ↓<br>struct page *<br></code></pre></td></tr></table></figure>
+
+<p>届时会把前面学过的概念真正串成一次分配：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">GFP<br> ↓<br>Zonelist<br> ↓<br>Watermark<br> ↓<br>PCP / Buddy<br> ↓<br>struct page<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="参考源码与文档"><a href="#参考源码与文档" class="headerlink" title="参考源码与文档"></a>参考源码与文档</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/commit/830b3c68c1fb1e9176028d02ef86f3cf76aa2476">Linux v6.1发布提交</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v6.1/include/linux/mmzone.h">Linux v6.1：include&#x2F;linux&#x2F;mmzone.h</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v6.1/include/linux/page-flags.h">Linux v6.1：include&#x2F;linux&#x2F;page-flags.h</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/v6.1/mm/page_alloc.c">Linux v6.1：mm&#x2F;page_alloc.c</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/6.1/mm/physical_memory.html">Linux v6.1官方文档：Physical Memory</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Memory-Management/" class="category-chain-item">Memory Management</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-Memory/" class="print-no-link">#Linux Memory</a>
+      
+        <a href="/tags/Memory-Management/" class="print-no-link">#Memory Management</a>
+      
+        <a href="/tags/Buddy-System/" class="print-no-link">#Buddy System</a>
+      
+        <a href="/tags/Page-Allocator/" class="print-no-link">#Page Allocator</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux内存管理子系统源码分析：Buddy System整体设计</div>
+      <div>https://cj0510.github.io/2026/10/07/Linux Kernel/Memory Management/Linux内存管理子系统源码分析-第7章-Buddy-System整体设计/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/05/Linux%20Kernel/Perfermance/perf-ninja/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
