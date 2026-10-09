@@ -614,23 +614,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="schedule() 主流程源码分析">
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="task_struct 中的调度信息">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
-          schedule() 主流程源码分析
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+          task_struct 中的调度信息
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
         <div>
-          scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk = current; //保存当前任务    sched_submit_work(tsk);    do &#123;
+          1 task_struct调度信息上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。完整的 task_struct非常庞大，包含一个 task 的各类内核信息。比如身份信息，内存信息，调度信息等。 调度器拿到一个task后需要根据携带的调度信息进行判断。其中携带的核心调度信息如下 123456789101112131415161718192
         </div>
       </a>
 
@@ -688,23 +688,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="task_struct 中的调度信息">
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="schedule() 主流程源码分析">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
-          task_struct 中的调度信息
+        <a href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
+          schedule() 主流程源码分析
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/" target="_self">
+      <a class="index-excerpt " href="/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
         <div>
-          1 task_struct调度信息上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。完整的 task_struct非常庞大，包含一个 task 的各类内核信息。比如身份信息，内存信息，调度信息等。 调度器拿到一个task后需要根据携带的调度信息进行判断。其中携带的核心调度信息如下 123456789101112131415161718192
+          scheduletask被调度的原因主要分为一下几类  我们看函数的部分 123456789101112131415asmlinkage __visible void __sched schedule(void)&#123;    struct task_struct *tsk = current; //保存当前任务    sched_submit_work(tsk);    do &#123;
         </div>
       </a>
 
