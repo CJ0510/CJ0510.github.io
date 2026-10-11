@@ -10,7 +10,88 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-09T13:08:15.285Z</updated>
+  <updated>2026-10-11T10:12:32.991Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="Root Cause" scheme="https://cj0510.github.io/tags/Root-Cause/"/>
+    <category term="Dependency Chain" scheme="https://cj0510.github.io/tags/Dependency-Chain/"/>
+    <category term="Case Study" scheme="https://cj0510.github.io/tags/Case-Study/"/>
+    <id>https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-%E7%9C%9F%E5%AE%9ECase-Study/</id>
+    <link href="https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-%E7%9C%9F%E5%AE%9ECase-Study/"/>
+    <published>2026-10-11T05:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第8章：真实Case-Study——从一条hung-task日志到Root-Cause"><a href="#第8章：真实Case-Study——从一条hung-task日志到Root-Cause" class="headerlink" title="第8章：真实Case Study——从一条hung_task日志到Root Cause"></a>第8章：真实Case Study——从一条hung_task日志到Root Cause</h1><h2 id="0-Case边界、版本基线与证据声明"><a href="#0-Case边界、版本基线与证据声明"]]>
+    </summary>
+    <title>Linux hung_task故障分析：从真实日志到Root Cause的Case Study</title>
+    <updated>2026-10-11T10:12:32.991Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="ftrace" scheme="https://cj0510.github.io/tags/ftrace/"/>
+    <category term="trace-cmd" scheme="https://cj0510.github.io/tags/trace-cmd/"/>
+    <category term="Flight Recorder" scheme="https://cj0510.github.io/tags/Flight-Recorder/"/>
+    <id>https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Flight-Recorder-ftrace-trace-cmd/</id>
+    <link href="https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Flight-Recorder-ftrace-trace-cmd/"/>
+    <published>2026-10-11T04:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第7章：hung-task-Flight-Recorder——用ftrace与trace-cmd自动保留异常现场"><a href="#第7章：hung-task-Flight-Recorder——用ftrace与trace-cmd自动保留异常现场" class="headerlink" title="第7章：hung_task Flight Recorder——用ftrace与trace-cmd自动保留异常现场"></a>第7章：hung_task Flight Recorder——用ftrace与trace-cmd自动保留异常现场</h1><h2]]>
+    </summary>
+    <title>Linux hung_task故障分析：用ftrace与trace-cmd构建Flight Recorder</title>
+    <updated>2026-10-11T09:54:22.227Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="Root Cause" scheme="https://cj0510.github.io/tags/Root-Cause/"/>
+    <category term="Dependency Chain" scheme="https://cj0510.github.io/tags/Dependency-Chain/"/>
+    <id>https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC6%E7%AB%A0-%E5%AE%9E%E6%88%98%E6%8E%92%E6%9F%A5%E6%96%B9%E6%B3%95-Dependency-Chain/</id>
+    <link href="https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC6%E7%AB%A0-%E5%AE%9E%E6%88%98%E6%8E%92%E6%9F%A5%E6%96%B9%E6%B3%95-Dependency-Chain/"/>
+    <published>2026-10-11T03:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第6章：hung-task实战排查方法——Waiter到Owner再到Dependency-Chain"><a href="#第6章：hung-task实战排查方法——Waiter到Owner再到Dependency-Chain" class="headerlink" title="第6章：hung_task实战排查方法——Waiter到Owner再到Dependency Chain"></a>第6章：hung_task实战排查方法——Waiter到Owner再到Dependency Chain</h1><h2 id="0-源码基线与本章边界"><a]]>
+    </summary>
+    <title>Linux hung_task故障分析：实战排查方法与Dependency Chain</title>
+    <updated>2026-10-11T09:35:57.875Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="Root Cause" scheme="https://cj0510.github.io/tags/Root-Cause/"/>
+    <category term="deadlock" scheme="https://cj0510.github.io/tags/deadlock/"/>
+    <category term="IO" scheme="https://cj0510.github.io/tags/IO/"/>
+    <category term="memory reclaim" scheme="https://cj0510.github.io/tags/memory-reclaim/"/>
+    <id>https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC5%E7%AB%A0-Root-Cause%E5%88%86%E7%B1%BB/</id>
+    <link href="https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC5%E7%AB%A0-Root-Cause%E5%88%86%E7%B1%BB/"/>
+    <published>2026-10-11T02:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第5章：hung-task-Root-Cause分类——Lock、Completion、IO、Driver、Memory与Dependency-Cycle"><a href="#第5章：hung-task-Root-Cause分类——Lock、Completion、IO、Driver、Memory与Dependency-Cycle" class="headerlink" title="第5章：hung_task Root Cause分类——Lock、Completion、IO、Driver、Memory与Dependency Cycle"></a>第5章：hung_task]]>
+    </summary>
+    <title>Linux hung_task故障分析：Root Cause分类</title>
+    <updated>2026-10-11T09:33:06.934Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -91,7 +172,7 @@
 <figure class="highlight]]>
     </summary>
     <title>Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</title>
-    <updated>2026-10-09T12:21:36.109Z</updated>
+    <updated>2026-10-11T10:51:51.874Z</updated>
   </entry>
   <entry>
     <author>
@@ -202,6 +283,26 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
+    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
+    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
+    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
+    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
+    <published>2026-10-06T16:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
+    </summary>
+    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
+    <updated>2026-10-07T22:45:58.329Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
     <category term="Loop" scheme="https://cj0510.github.io/tags/Loop/"/>
     <category term="Retry" scheme="https://cj0510.github.io/tags/Retry/"/>
     <category term="Fallback" scheme="https://cj0510.github.io/tags/Fallback/"/>
@@ -234,26 +335,6 @@
     </summary>
     <title>Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠</title>
     <updated>2026-10-07T22:46:02.522Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
-    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
-    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
-    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
-    <published>2026-10-06T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
-    <updated>2026-10-07T22:45:58.329Z</updated>
   </entry>
   <entry>
     <author>
@@ -325,73 +406,5 @@
     </summary>
     <title>perf初探</title>
     <updated>2026-08-30T13:34:01.395Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
-    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
-    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/</id>
-    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/task_struct%20%E4%B8%AD%E7%9A%84%E8%B0%83%E5%BA%A6%E4%BF%A1%E6%81%AF/"/>
-    <published>2026-08-23T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="1-task-struct调度信息"><a href="#1-task-struct调度信息" class="headerlink" title="1 task_struct调度信息"></a>1 task_struct调度信息</h2><p>上一节我们说了，task_struct是内核真正的调度对象，代表一个可以被独立执行、阻塞、唤醒和调度的任务。<br>完整的 task_struct非常庞大，包含一个 task]]>
-    </summary>
-    <title>task_struct 中的调度信息</title>
-    <updated>2026-08-30T13:36:37.495Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
-    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
-    <id>https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/23/Linux%20Kernel/Scheduling/%E8%B0%83%E5%BA%A6%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-23T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="schedule"><a href="#schedule" class="headerlink" title="schedule"></a>schedule</h2><p>task被调度的原因主要分为一下几类</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.7axwp5bq7m.webp"></p>
-<p>我们看函数的部分</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
-    </summary>
-    <title>schedule() 主流程源码分析</title>
-    <updated>2026-09-12T09:38:41.777Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Scheduling" scheme="https://cj0510.github.io/categories/Linux-Kernel/Scheduling/"/>
-    <category term="Linux Scheduling" scheme="https://cj0510.github.io/tags/Linux-Scheduling/"/>
-    <id>https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
-    <link href="https://cj0510.github.io/2026/08/22/Linux%20Kernel/Scheduling/Linux%E8%B0%83%E5%BA%A6%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
-    <published>2026-08-22T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="1-为什么需要进程调度"><a href="#1-为什么需要进程调度" class="headerlink" title="1 为什么需要进程调度"></a>1]]>
-    </summary>
-    <title>Linux调度子系统整体架构</title>
-    <updated>2026-08-30T13:36:36.112Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/</id>
-    <link href="https://cj0510.github.io/2026/08/18/Linux%20Kernel/Logging%20subsystem/ring%20buffer/"/>
-    <published>2026-08-18T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么-printk-需要-Ring-Buffer"><a href="#1-为什么-printk-需要-Ring-Buffer" class="headerlink" title="1 为什么 printk 需要 Ring Buffer"></a>1 为什么 printk 需要 Ring Buffer</h1><p>有没有想过一个问题：为什么 printk() 不直接把字符串输出到串口，而是需要一个 ring buffer？</p>
-<p>因为串口、console 等输出设备非常慢，CPU 执行代码的速度远远快于串口发送数据的速度。CPU 时钟大约是 GHz]]>
-    </summary>
-    <title>Kernel Log Buffer源码分析</title>
-    <updated>2026-08-22T12:18:17.560Z</updated>
   </entry>
 </feed>

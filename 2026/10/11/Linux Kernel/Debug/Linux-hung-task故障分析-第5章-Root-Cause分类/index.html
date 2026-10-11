@@ -1,0 +1,1103 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第5章：hung_task Root Cause分类——Lock、Completion、IO、Driver、Memory与Dependency Cycle0. 源码基线与分类边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。本章主要使用以下源码坐标建立分类：  kernel&#x2F;locking&#x2F;mutex.c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux hung_task故障分析：Root Cause分类">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC5%E7%AB%A0-Root-Cause%E5%88%86%E7%B1%BB/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第5章：hung_task Root Cause分类——Lock、Completion、IO、Driver、Memory与Dependency Cycle0. 源码基线与分类边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。本章主要使用以下源码坐标建立分类：  kernel&#x2F;locking&#x2F;mutex.c">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-11T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-11T09:33:06.934Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="IO">
+<meta property="article:tag" content="Linux Kernel">
+<meta property="article:tag" content="Root Cause">
+<meta property="article:tag" content="deadlock">
+<meta property="article:tag" content="hung task">
+<meta property="article:tag" content="memory reclaim">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Linux hung_task故障分析：Root Cause分类 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux hung_task故障分析：Root Cause分类</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-11 10:00" pubdate>
+          2026-10-11
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          88 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux hung_task故障分析：Root Cause分类</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第5章：hung-task-Root-Cause分类——Lock、Completion、IO、Driver、Memory与Dependency-Cycle"><a href="#第5章：hung-task-Root-Cause分类——Lock、Completion、IO、Driver、Memory与Dependency-Cycle" class="headerlink" title="第5章：hung_task Root Cause分类——Lock、Completion、IO、Driver、Memory与Dependency Cycle"></a>第5章：hung_task Root Cause分类——Lock、Completion、IO、Driver、Memory与Dependency Cycle</h1><h2 id="0-源码基线与分类边界"><a href="#0-源码基线与分类边界" class="headerlink" title="0. 源码基线与分类边界"></a>0. 源码基线与分类边界</h2><p>本文以 <strong>Linux v6.1</strong> 为源码基线，对应上游标签提交<code>830b3c68c1fb1e9176028d02ef86f3cf76aa2476</code>。本章主要使用以下源码坐标建立分类：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/locking/mutex.c"><code>kernel/locking/mutex.c</code></a>与<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/locking/rwsem.c"><code>kernel/locking/rwsem.c</code></a>：睡眠锁等待；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/sched/completion.c"><code>kernel/sched/completion.c</code></a>与<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/sched/wait.c"><code>kernel/sched/wait.c</code></a>：Completion和等待队列；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/block"><code>block/</code></a>与<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/include/trace/events/block.h"><code>include/trace/events/block.h</code></a>：块I&#x2F;O请求生命周期；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/mm/vmscan.c"><code>mm/vmscan.c</code></a>、<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/mm/page-writeback.c"><code>mm/page-writeback.c</code></a>与<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/mm/filemap.c"><code>mm/filemap.c</code></a>：回收、回写与folio等待；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/hung_task.c"><code>kernel/hung_task.c</code></a>：hung任务检测与现场输出。</li>
+</ul>
+<p>分类只负责选择下一步调查路线，不替代证据。真实故障可能跨越多个类别：表面是mutex，下一层是Completion，最终却是设备固件没有响应。</p>
+<h1 id="5-1-为什么要做Root-Cause分类"><a href="#5-1-为什么要做Root-Cause分类" class="headerlink" title="5.1 为什么要做Root Cause分类"></a>5.1 为什么要做Root Cause分类</h1><p>没有分类时，调查很容易变成“看到函数名、搜索源码、凭经验猜测”。分类把开放式搜索变成有限决策：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Wait Object<br>  -&gt; 判断依赖类型<br>  -&gt; 选择应该寻找的Owner或Producer<br>  -&gt; 选择匹配的运行时证据<br>  -&gt; 验证依赖链是否推进<br></code></pre></td></tr></table></figure>
+
+<p>这样可以减少无关trace和无目标源码阅读。</p>
+<h1 id="5-2-分类不是为了贴标签"><a href="#5-2-分类不是为了贴标签" class="headerlink" title="5.2 分类不是为了贴标签"></a>5.2 分类不是为了贴标签</h1><p>说“这是I&#x2F;O类hung”并没有完成诊断。分类真正决定下一步动作：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">Lock          -&gt; 找Owner与释放路径<br>Completion    -&gt; 找Producer与complete路径<br>Condition     -&gt; 找condition writer与wake路径<br>Block I/O     -&gt; 找request生命周期与完成事件<br>NFS/RPC       -&gt; 找网络与远端响应<br>Memory        -&gt; 找reclaim/writeback下游依赖<br>Cycle         -&gt; 证明依赖图闭环<br></code></pre></td></tr></table></figure>
+
+<p>类别必须随依赖链向下更新，不能被第一层栈永久锁定。</p>
+<h1 id="5-3-Lock类hung-task"><a href="#5-3-Lock类hung-task" class="headerlink" title="5.3 Lock类hung_task"></a>5.3 Lock类hung_task</h1><p>典型形态包含<code>mutex_lock()</code>、<code>__mutex_lock_common()</code>、<code>down_read()</code>、<code>down_write()</code>或rwsem slowpath。模型是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter -&gt; Lock Object -&gt; Owner/Holders<br></code></pre></td></tr></table></figure>
+
+<p>第一层事实只是Waiter没有获得锁。需要证明具体锁实例、当前持有者、持有者栈和未释放原因。</p>
+<h1 id="5-4-Mutex类问题"><a href="#5-4-Mutex类问题" class="headerlink" title="5.4 Mutex类问题"></a>5.4 Mutex类问题</h1><p>mutex通常有单一Owner。常见故障模式包括：</p>
+<ul>
+<li>Owner自身等待另一把锁、Completion或I&#x2F;O；</li>
+<li>异常&#x2F;早退路径遗漏<code>mutex_unlock()</code>；</li>
+<li>持锁期间执行不可控的慢操作；</li>
+<li>Owner不再得到调度或陷入其他故障；</li>
+<li>锁顺序冲突形成环。</li>
+</ul>
+<p>mutex竞争本身可能只是负载现象；只有长时间无进展并影响关键路径时才构成hung问题。</p>
+<h1 id="5-5-RWSEM类问题"><a href="#5-5-RWSEM类问题" class="headerlink" title="5.5 RWSEM类问题"></a>5.5 RWSEM类问题</h1><p>rwsem允许多个Reader或一个Writer，因此“Owner”可能是Reader集合或单个Writer。一个长期Writer能阻塞大量Reader；长期Reader也可能使Writer持续等待，具体公平和唤醒行为应以v6.1实现及现场为准。</p>
+<p>多个任务停在同一<code>rwsem_down_*_slowpath()</code>时，应优先确认是否共享同一个<code>struct rw_semaphore</code>，再找持有路径。</p>
+<h1 id="5-6-锁Owner不推进"><a href="#5-6-锁Owner不推进" class="headerlink" title="5.6 锁Owner不推进"></a>5.6 锁Owner不推进</h1><p>Owner不推进通常有三类原因：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Owner正在运行但临界区极慢<br>Owner可运行但长期得不到CPU<br>Owner也在睡眠，依赖另一个对象<br></code></pre></td></tr></table></figure>
+
+<p>因此要查看Owner的task state、stack、调度轨迹和下一层Wait Object。只看Waiter栈无法区分这三种情况。</p>
+<h1 id="5-7-Lock-Ordering与Deadlock"><a href="#5-7-Lock-Ordering与Deadlock" class="headerlink" title="5.7 Lock Ordering与Deadlock"></a>5.7 Lock Ordering与Deadlock</h1><p>如果两个路径以不同顺序获得相同锁集合，可能形成AB-BA：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A：lock(M1) -&gt; wait M2<br>Task B：lock(M2) -&gt; wait M1<br></code></pre></td></tr></table></figure>
+
+<p>lockdep能够发现许多潜在和实际锁依赖问题，但受配置、注解和运行覆盖影响。没有lockdep输出不等于排除死锁，仍需用现场依赖图证明或否定闭环。</p>
+<h1 id="5-8-Completion与Wait类hung-task"><a href="#5-8-Completion与Wait类hung-task" class="headerlink" title="5.8 Completion与Wait类hung_task"></a>5.8 Completion与Wait类hung_task</h1><p>典型Wait Primitive是<code>wait_for_completion*()</code>、子系统条件等待helper或<code>wait_event*()</code>。模型是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter -&gt; Completion/Condition -&gt; Producer<br></code></pre></td></tr></table></figure>
+
+<p>这类对象通常没有传统锁Owner。关键是找谁应该改变<code>done</code>或condition，谁负责执行<code>complete()</code>或<code>wake_up()</code>。</p>
+<h1 id="5-9-Missing-Complete"><a href="#5-9-Missing-Complete" class="headerlink" title="5.9 Missing Complete"></a>5.9 Missing Complete</h1><p>正常链路：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">submit request -&gt; Producer处理 -&gt; complete(&amp;req-&gt;done) -&gt; Waiter继续<br></code></pre></td></tr></table></figure>
+
+<p>Missing Complete常发生在错误、取消、复位、设备移除或罕见竞态分支：状态已经终止，但没有通知Waiter。静态审查应覆盖Producer的所有出口，运行时应同时验证请求状态和<code>complete()</code>是否发生。</p>
+<h1 id="5-10-Lost-Wakeup"><a href="#5-10-Lost-Wakeup" class="headerlink" title="5.10 Lost Wakeup"></a>5.10 Lost Wakeup</h1><p>Lost Wakeup是等待登记、条件检查和唤醒之间的竞态：事件发生并唤醒时Waiter尚未正确登记，随后Waiter又进入睡眠，且再无新事件。</p>
+<p>标准<code>wait_event*()</code>封装了必要的状态设置、队列操作和复查。风险常见于手写等待协议、错误的锁&#x2F;屏障配对或对象生命周期混乱；不能仅凭“没有醒来”就断言Lost Wakeup。</p>
+<h1 id="5-11-Condition-Never-True"><a href="#5-11-Condition-Never-True" class="headerlink" title="5.11 Condition Never True"></a>5.11 Condition Never True</h1><p>Producer可能确实调用了<code>wake_up()</code>，但condition始终为false：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">wake -&gt; Waiter重新运行 -&gt; condition=false -&gt; 再次睡眠<br></code></pre></td></tr></table></figure>
+
+<p>调查时必须同时追踪condition的所有写入点、状态机合法迁移、对象实例和wake顺序。只记录wake事件不足以证明等待应该结束。</p>
+<h1 id="5-12-Timeout-Missing"><a href="#5-12-Timeout-Missing" class="headerlink" title="5.12 Timeout Missing"></a>5.12 Timeout Missing</h1><p>对可能永久失败的外部依赖使用无限等待，会把设备或远端故障放大为永久D状态。改用带超时等待、取消和恢复路径可限制故障影响。</p>
+<p>但必须区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Timeout/Reset = Fault Containment与恢复机制<br>硬件为何不完成 = Root Cause问题<br></code></pre></td></tr></table></figure>
+
+<p>盲目加超时还可能引入对象释放、迟到Completion和重复完成等新竞态。</p>
+<h1 id="5-13-IO类hung-task"><a href="#5-13-IO类hung-task" class="headerlink" title="5.13 IO类hung_task"></a>5.13 IO类hung_task</h1><p>I&#x2F;O类的共同模型是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Task -&gt; I/O Object -&gt; Subsystem Queue -&gt; Driver/Network -&gt; Device/Server<br>     &lt;- completion一路返回<br></code></pre></td></tr></table></figure>
+
+<p>需要定位请求在哪一层停止：尚未提交、已经排队、已经dispatch、设备处理中，还是已经完成但上层未被通知。</p>
+<h1 id="5-14-Block-IO"><a href="#5-14-Block-IO" class="headerlink" title="5.14 Block IO"></a>5.14 Block IO</h1><p>块I&#x2F;O典型路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Filesystem -&gt; bio -&gt; request/blk-mq -&gt; host driver -&gt; storage<br>           &lt;- end_io/complete request &lt;- IRQ/polling<br></code></pre></td></tr></table></figure>
+
+<p>关键证据包括request issue&#x2F;complete配对、队列freeze&#x2F;quiesce、超时与reset、设备错误和中断变化。相同<code>io_schedule()</code>栈可以对应完全不同的磁盘和request，必须确认实例。</p>
+<h1 id="5-15-Filesystem"><a href="#5-15-Filesystem" class="headerlink" title="5.15 Filesystem"></a>5.15 Filesystem</h1><p>文件系统任务可能等待inode锁、journal事务、页&#x2F;folio解锁、writeback或块I&#x2F;O。文件系统函数位于栈上只说明请求经过该层，不证明根因就在文件系统。</p>
+<p>应把Wait Object继续映射到journal、folio、writeback control或bio，确定下游是否推进。</p>
+<h1 id="5-16-NFS与RPC"><a href="#5-16-NFS与RPC" class="headerlink" title="5.16 NFS与RPC"></a>5.16 NFS与RPC</h1><p>NFS等待链跨越本机内核、网络和远端服务器：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Task -&gt; NFS -&gt; RPC task -&gt; socket/network -&gt; remote service/storage<br></code></pre></td></tr></table></figure>
+
+<p>需要检查RPC状态和重传、挂载策略、网络收发、服务端响应及远端存储。硬挂载的长期等待可能符合配置语义，但仍需判断是否超过业务可接受范围。</p>
+<h1 id="5-17-Device-IO"><a href="#5-17-Device-IO" class="headerlink" title="5.17 Device IO"></a>5.17 Device IO</h1><p>SPI、USB、eMMC、摄像头和加速器等设备I&#x2F;O通常表现为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">submit -&gt; wait -&gt; IRQ/poll/worker -&gt; completion<br></code></pre></td></tr></table></figure>
+
+<p>它位于I&#x2F;O类和Driver类的交界处。先确认请求对象及生命周期，再进入寄存器、DMA、IRQ、firmware等设备专属证据。</p>
+<h1 id="5-18-Driver、Firmware与Hardware类hung-task"><a href="#5-18-Driver、Firmware与Hardware类hung-task" class="headerlink" title="5.18 Driver、Firmware与Hardware类hung_task"></a>5.18 Driver、Firmware与Hardware类hung_task</h1><p>嵌入式设备常见完整链路：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Task -&gt; Kernel Driver -&gt; command/ring/mailbox<br>     -&gt; Firmware -&gt; Hardware<br>     -&gt; IRQ/doorbell -&gt; Driver completion -&gt; Task<br></code></pre></td></tr></table></figure>
+
+<p>任意一段停止都可能让最上层Waiter进入D状态。调查必须检查请求和完成两个方向，不能只看提交成功日志。</p>
+<h1 id="5-19-IRQ-Missing"><a href="#5-19-IRQ-Missing" class="headerlink" title="5.19 IRQ Missing"></a>5.19 IRQ Missing</h1><p>“没有看到IRQ增长”只是现象，可能原因包括：</p>
+<ul>
+<li>硬件操作根本没有完成；</li>
+<li>中断未使能或被mask；</li>
+<li>路由、触发类型或亲和性配置错误；</li>
+<li>设备、控制器或firmware未发出中断；</li>
+<li>ISR进入但未识别正确状态位；</li>
+<li>日志&#x2F;采样窗口遗漏。</li>
+</ul>
+<p>应联合设备状态寄存器、<code>/proc/interrupts</code>和IRQ trace验证。</p>
+<h1 id="5-20-DMA-Never-Complete"><a href="#5-20-DMA-Never-Complete" class="headerlink" title="5.20 DMA Never Complete"></a>5.20 DMA Never Complete</h1><p>DMA不完成可能来自descriptor、长度、地址、IOMMU映射、缓存一致性、engine状态、通道复位或完成中断问题。证据链至少应包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">描述符已提交<br>DMA engine已启动<br>地址映射有效<br>状态寄存器/错误位<br>IRQ或poll完成路径<br>上层complete/end_io<br></code></pre></td></tr></table></figure>
+
+<p>不要仅靠Waiter栈区分这些原因。</p>
+<h1 id="5-21-Firmware-Hang"><a href="#5-21-Firmware-Hang" class="headerlink" title="5.21 Firmware Hang"></a>5.21 Firmware Hang</h1><p>Firmware可能停止心跳、不再消费ring、卡在状态机或等待另一个硬件单元。内核通常只看到命令长期未完成。</p>
+<p>需要把host侧队列读写指针、mailbox&#x2F;doorbell、firmware日志、心跳和reset结果按时间对齐，确认命令是否到达以及响应停在哪一步。</p>
+<h1 id="5-22-Hardware-No-Response"><a href="#5-22-Hardware-No-Response" class="headerlink" title="5.22 Hardware No Response"></a>5.22 Hardware No Response</h1><p>硬件无响应调查通常涉及电源域、时钟、复位、总线错误、寄存器状态和设备内部队列。若设备处于错误电源状态，即使驱动逻辑正确也不会产生Completion。</p>
+<p>“Hardware No Response”仍是中间结论；高质量根因还要说明为何无响应，例如时钟未开启、非法descriptor或firmware异常。</p>
+<h1 id="5-23-Memory类hung-task"><a href="#5-23-Memory类hung-task" class="headerlink" title="5.23 Memory类hung_task"></a>5.23 Memory类hung_task</h1><p>内存压力路径常出现<code>try_to_free_pages()</code>、direct reclaim、dirty throttling、writeback和folio wait。这里最容易犯的错误是把栈中<code>mm/</code>函数直接定性为内存管理Bug。</p>
+<p>内存回收可能同步依赖文件系统和存储，因此需要继续沿回写&#x2F;I&#x2F;O链向下追。</p>
+<h1 id="5-24-Direct-Reclaim"><a href="#5-24-Direct-Reclaim" class="headerlink" title="5.24 Direct Reclaim"></a>5.24 Direct Reclaim</h1><p>进程分配内存时若无法从快速路径获得页面，可能直接参与回收：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Allocation -&gt; Direct Reclaim -&gt; 扫描/回收<br>                          -&gt; 脏页处理/文件系统/I/O<br></code></pre></td></tr></table></figure>
+
+<p>需要检查内存水位、分配order和GFP约束、可回收页面、slab、回收效率以及是否被下游writeback拖住。</p>
+<h1 id="5-25-Writeback"><a href="#5-25-Writeback" class="headerlink" title="5.25 Writeback"></a>5.25 Writeback</h1><p>大量dirty pages可能触发节流，任务等待回写取得进展。若存储设备慢、队列冻结或完成中断丢失，writeback无法降低脏页压力，上游分配和写入任务会成批阻塞。</p>
+<p>应结合dirty&#x2F;writeback计数、writeback trace、块I&#x2F;O issue&#x2F;complete和设备错误判断瓶颈层。</p>
+<h1 id="5-26-Page-Lock与Folio-Wait"><a href="#5-26-Page-Lock与Folio-Wait" class="headerlink" title="5.26 Page Lock与Folio Wait"></a>5.26 Page Lock与Folio Wait</h1><p>v6.1许多页缓存路径已经使用folio抽象。等待函数可能在等folio解锁、writeback位清除或I&#x2F;O完成。下一步要找谁设置该状态、谁应该清除，以及对应end_io或unlock路径是否运行。</p>
+<p><code>folio_wait*()</code>只是等待原语，具体folio和mapping才是Wait Object上下文。</p>
+<h1 id="5-27-Allocation-Dependency"><a href="#5-27-Allocation-Dependency" class="headerlink" title="5.27 Allocation Dependency"></a>5.27 Allocation Dependency</h1><p>表面上的内存分配hung可能形成长链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Task -&gt; allocation -&gt; reclaim -&gt; filesystem -&gt; writeback<br>     -&gt; block request -&gt; driver -&gt; device<br></code></pre></td></tr></table></figure>
+
+<p>若设备不完成，最终报告栈可能停在reclaim。分类必须沿依赖链动态从Memory转向I&#x2F;O再转向Driver&#x2F;Hardware。</p>
+<h1 id="5-28-Dependency-Cycle"><a href="#5-28-Dependency-Cycle" class="headerlink" title="5.28 Dependency Cycle"></a>5.28 Dependency Cycle</h1><p>Dependency Cycle表示依赖图存在有向闭环：每个节点都等待下一个节点，而最后一个又依赖前面的节点。闭环中没有外部事件能自然打破等待时，系统形成死锁。</p>
+<p>长期线性等待不是Cycle：例如Task一直等待已经失效的硬件，也会hung，但依赖链不回到自身。</p>
+<h1 id="5-29-AB-BA-Deadlock"><a href="#5-29-AB-BA-Deadlock" class="headerlink" title="5.29 AB-BA Deadlock"></a>5.29 AB-BA Deadlock</h1><p>最小锁环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A owns M1, waits M2<br>Task B owns M2, waits M1<br></code></pre></td></tr></table></figure>
+
+<p>证明AB-BA需要确认相同锁实例和同时成立的持有&#x2F;等待关系。仅从静态源码看到两种锁顺序，说明存在潜在风险，不等于现场已经形成该环。</p>
+<h1 id="5-30-多级Dependency-Chain"><a href="#5-30-多级Dependency-Chain" class="headerlink" title="5.30 多级Dependency Chain"></a>5.30 多级Dependency Chain</h1><p>真实环可能跨越同步原语与执行上下文：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A -&gt; Mutex M1 -&gt; Task B<br>Task B -&gt; Completion C -&gt; Worker W<br>Worker W -&gt; Mutex M2 -&gt; Task A<br></code></pre></td></tr></table></figure>
+
+<p>必须逐边记录对象、Owner&#x2F;Producer和证据。只要其中一条边是假设，Cycle结论就仍需验证。</p>
+<h1 id="5-31-多个hung-task如何聚类"><a href="#5-31-多个hung-task如何聚类" class="headerlink" title="5.31 多个hung_task如何聚类"></a>5.31 多个hung_task如何聚类</h1><p>为每个Waiter建立最小记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Task/PID | Wait Primitive | Business Point | Object | Subsystem<br></code></pre></td></tr></table></figure>
+
+<p>先按Wait Primitive和业务路径粗分，再用对象地址、设备、挂载点、队列或Owner细分。相同栈不保证相同对象，不同栈也可能汇聚到同一个下游设备。</p>
+<h1 id="5-32-Common-Dependency分析"><a href="#5-32-Common-Dependency分析" class="headerlink" title="5.32 Common Dependency分析"></a>5.32 Common Dependency分析</h1><p>将每组任务画成有向边：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">A/B/C -&gt; Mutex M -&gt; Owner X<br>D/E   -&gt; RPC requests -&gt; Server S<br>F/G   -&gt; writeback -&gt; Block Queue Q -&gt; Device Z<br></code></pre></td></tr></table></figure>
+
+<p>入边最多、同时又不推进的Owner、Producer、队列、设备或远端服务，是优先验证的Common Dependency。</p>
+<h1 id="5-33-Decision-Tree"><a href="#5-33-Decision-Tree" class="headerlink" title="5.33 Decision Tree"></a>5.33 Decision Tree</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">hung_task<br>  |<br>  +-- mutex/rwsem? --------&gt; 定位Lock实例 -&gt; Owner/Holders -&gt; Owner下一依赖<br>  |<br>  +-- completion/event? ---&gt; 定位对象/condition -&gt; Producer -&gt; 完成或唤醒发生？<br>  |<br>  +-- I/O/filesystem? -----&gt; 定位page/bio/request/RPC -&gt; pipeline停在哪层？<br>  |<br>  +-- reclaim/writeback? --&gt; 检查压力与进展 -&gt; 是否阻塞在FS/I/O？<br>  |<br>  +-- driver helper? ------&gt; command -&gt; DMA/FW/HW -&gt; IRQ -&gt; completion<br>  |<br>  `-- 依赖回到旧节点？ ----&gt; 验证Cycle；否则继续线性下钻<br></code></pre></td></tr></table></figure>
+
+<p>Decision Tree的输出不是“答案”，而是下一批最小证据。</p>
+<h1 id="5-34-每类问题需要补什么证据"><a href="#5-34-每类问题需要补什么证据" class="headerlink" title="5.34 每类问题需要补什么证据"></a>5.34 每类问题需要补什么证据</h1><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>首要对象</th>
+<th>关键补充证据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mutex&#x2F;RWSEM</td>
+<td>锁实例</td>
+<td>Owner&#x2F;Holders、Owner栈、获取释放路径、lockdep</td>
+</tr>
+<tr>
+<td>Completion</td>
+<td>completion实例</td>
+<td><code>complete()</code>路径、IRQ&#x2F;worker、对象状态与生命周期</td>
+</tr>
+<tr>
+<td>Wait Event</td>
+<td>queue + condition</td>
+<td>condition写入、wake调用、同步与顺序</td>
+</tr>
+<tr>
+<td>Block I&#x2F;O</td>
+<td>bio&#x2F;request&#x2F;queue</td>
+<td>issue&#x2F;complete、timeout&#x2F;reset、设备和IRQ日志</td>
+</tr>
+<tr>
+<td>NFS&#x2F;RPC</td>
+<td>RPC request&#x2F;server</td>
+<td>重传、网络、挂载策略、服务端状态</td>
+</tr>
+<tr>
+<td>Driver</td>
+<td>command&#x2F;DMA对象</td>
+<td>ring、descriptor、firmware、寄存器、IRQ</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>allocation&#x2F;folio&#x2F;writeback</td>
+<td>meminfo、vmstat、vmscan、writeback、下游I&#x2F;O</td>
+</tr>
+<tr>
+<td>Cycle</td>
+<td>图中所有节点</td>
+<td>每条持有&#x2F;等待边的同时态证据</td>
+</tr>
+</tbody></table>
+<h1 id="5-35-每类问题适合什么Tracing"><a href="#5-35-每类问题适合什么Tracing" class="headerlink" title="5.35 每类问题适合什么Tracing"></a>5.35 每类问题适合什么Tracing</h1><p>可按类别选择最小trace集合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Lock       : sched_switch/sched_wakeup + 可用的锁事件或自定义tracepoint<br>Completion : sched + irq + Producer附近自定义事件/kprobe<br>Block I/O  : block:block_rq_issue、block:block_rq_complete等实际可用事件<br>Driver     : irq:irq_handler_entry/exit + 驱动tracepoint<br>NFS/RPC    : nfs/rpc相关可用tracepoint + 网络证据<br>Memory     : vmscan、writeback、block事件<br></code></pre></td></tr></table></figure>
+
+<p>事件名称和字段受内核配置影响，先检查<code>/sys/kernel/tracing/available_events</code>，不要假设目标系统全部提供。</p>
+<h1 id="5-36-本章实验"><a href="#5-36-本章实验" class="headerlink" title="5.36 本章实验"></a>5.36 本章实验</h1><h2 id="5-36-1-历史日志分类"><a href="#5-36-1-历史日志分类" class="headerlink" title="5.36.1 历史日志分类"></a>5.36.1 历史日志分类</h2><p>选取若干真实日志，只填写Wait Object、第一层类别、下一步证据，不急于写根因。随后检查第一层类别是否沿依赖链发生变化。</p>
+<h2 id="5-36-2-Completion缺失"><a href="#5-36-2-Completion缺失" class="headerlink" title="5.36.2 Completion缺失"></a>5.36.2 Completion缺失</h2><p>在可恢复测试环境中，让内核线程等待Completion而Producer故意不调用<code>complete()</code>。预测栈、D状态和hung告警，再加入超时&#x2F;取消路径比较故障影响。模块必须设计安全退出，不能在生产机实验。</p>
+<h2 id="5-36-3-锁Owner"><a href="#5-36-3-锁Owner" class="headerlink" title="5.36.3 锁Owner"></a>5.36.3 锁Owner</h2><p>让Task A持有mutex后阻塞在可控事件上，Task B等待该mutex。不要只观察B，必须记录A的栈并画出<code>B -&gt; M -&gt; A -&gt; Event</code>。</p>
+<h2 id="5-36-4-多Waiter聚类"><a href="#5-36-4-多Waiter聚类" class="headerlink" title="5.36.4 多Waiter聚类"></a>5.36.4 多Waiter聚类</h2><p>让多个任务等待同一mutex或Completion，比较“按栈分类”与“按对象分类”的结果，验证为什么对象实例比函数名更接近Common Dependency。</p>
+<h2 id="5-36-5-有选择地跟踪"><a href="#5-36-5-有选择地跟踪" class="headerlink" title="5.36.5 有选择地跟踪"></a>5.36.5 有选择地跟踪</h2><p>先预测所需事件，再查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /sys/kernel/tracing/available_events<br></code></pre></td></tr></table></figure>
+
+<p>只启用能验证当前依赖边的sched、irq、block、vmscan或writeback事件，记录观测问题、预期、结果与解释。</p>
+<h1 id="5-37-工程意义"><a href="#5-37-工程意义" class="headerlink" title="5.37 工程意义"></a>5.37 工程意义</h1><p>分类把排障从“全系统撒网”变成“围绕Wait Object验证最小依赖链”。它降低trace数据量和观测扰动，也让团队在Bug单中共享统一语言。</p>
+<p>修复也应分层：先用timeout、reset或降级限制故障传播，再修复未释放、未完成、状态机或硬件配置等根因，最后做异常注入与回归验证。</p>
+<h1 id="5-38-常见误区"><a href="#5-38-常见误区" class="headerlink" title="5.38 常见误区"></a>5.38 常见误区</h1><h2 id="误区1：一个hung-task只能属于一个类别"><a href="#误区1：一个hung-task只能属于一个类别" class="headerlink" title="误区1：一个hung_task只能属于一个类别"></a>误区1：一个hung_task只能属于一个类别</h2><p>类别会沿依赖链变化，第一层不等于最终根因。</p>
+<h2 id="误区2：mutex栈证明Lock实现有Bug"><a href="#误区2：mutex栈证明Lock实现有Bug" class="headerlink" title="误区2：mutex栈证明Lock实现有Bug"></a>误区2：mutex栈证明Lock实现有Bug</h2><p>它只证明Waiter在等锁，Owner可能卡在完全不同的子系统。</p>
+<h2 id="误区3：wait-for-completion-证明Driver有Bug"><a href="#误区3：wait-for-completion-证明Driver有Bug" class="headerlink" title="误区3：wait_for_completion()证明Driver有Bug"></a>误区3：<code>wait_for_completion()</code>证明Driver有Bug</h2><p>Producer也可能是worker、网络或其他任务；必须确认具体对象与Producer。</p>
+<h2 id="误区4：io-schedule-证明Block-Layer有Bug"><a href="#误区4：io-schedule-证明Block-Layer有Bug" class="headerlink" title="误区4：io_schedule()证明Block Layer有Bug"></a>误区4：<code>io_schedule()</code>证明Block Layer有Bug</h2><p>故障可能位于设备、driver、filesystem或远端。</p>
+<h2 id="误区5：reclaim栈证明内存管理有Bug"><a href="#误区5：reclaim栈证明内存管理有Bug" class="headerlink" title="误区5：reclaim栈证明内存管理有Bug"></a>误区5：reclaim栈证明内存管理有Bug</h2><p>reclaim可能被writeback和存储完成链拖住。</p>
+<h2 id="误区6：多个hung任务代表多个独立Bug"><a href="#误区6：多个hung任务代表多个独立Bug" class="headerlink" title="误区6：多个hung任务代表多个独立Bug"></a>误区6：多个hung任务代表多个独立Bug</h2><p>它们可能共享同一个Owner、队列、设备或服务端。</p>
+<h2 id="误区7：加timeout就是完成修复"><a href="#误区7：加timeout就是完成修复" class="headerlink" title="误区7：加timeout就是完成修复"></a>误区7：加timeout就是完成修复</h2><p>timeout主要限制影响，还必须处理取消、迟到完成和真正根因。</p>
+<h2 id="误区8：长期等待就是Deadlock"><a href="#误区8：长期等待就是Deadlock" class="headerlink" title="误区8：长期等待就是Deadlock"></a>误区8：长期等待就是Deadlock</h2><p>只有证据证明依赖图闭环，才能得出Cycle结论。</p>
+<h2 id="误区9：一开始打开所有trace最保险"><a href="#误区9：一开始打开所有trace最保险" class="headerlink" title="误区9：一开始打开所有trace最保险"></a>误区9：一开始打开所有trace最保险</h2><p>数据洪流会增加开销并淹没因果关系，应先分类再选事件。</p>
+<h1 id="5-39-博客总结"><a href="#5-39-博客总结" class="headerlink" title="5.39 博客总结"></a>5.39 博客总结</h1><p>hung_task Root Cause分类的价值在于选择下一步证据，而不是给日志贴标签。Lock类问题沿锁实例寻找Owner及其下一层依赖；Completion与条件等待寻找Producer、状态写入和通知路径；I&#x2F;O类沿page、bio、request或RPC定位pipeline停止位置；Driver类检查command、DMA、firmware、hardware、IRQ与Completion；Memory类必须确认reclaim和writeback是否被文件系统及存储拖住；只有依赖图回到已有节点并且每条边都有同时态证据时，才能确认Dependency Cycle。</p>
+<p>真实问题常跨越多类：表面<code>mutex_lock()</code>，Owner等待Completion，Producer依赖设备IRQ，最终根因是firmware或hardware。多个hung任务应按Wait Object和下游依赖聚类，寻找Common Dependency。最终分析过程应始终遵循：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">症状模式 -&gt; 初始分类 -&gt; 补充证据 -&gt; 更新分类<br>         -&gt; 建立依赖图 -&gt; 验证停止点 -&gt; Root Cause<br></code></pre></td></tr></table></figure>
+
+<h1 id="5-40-学完检查题"><a href="#5-40-学完检查题" class="headerlink" title="5.40 学完检查题"></a>5.40 学完检查题</h1><ol>
+<li>Root Cause分类真正要解决什么问题？</li>
+<li>为什么第一层分类不是最终结论？</li>
+<li>Lock类问题的首要运行时对象是什么？</li>
+<li>如何区分Owner正在运行、Runnable和Sleeping？</li>
+<li>mutex遗漏unlock与Owner下游阻塞需要哪些不同证据？</li>
+<li>rwsem为什么可能有多个Holders？</li>
+<li>静态锁顺序能否单独证明现场AB-BA？</li>
+<li>Completion类为什么通常寻找Producer而非Owner？</li>
+<li>Missing Complete最容易遗漏哪些控制流？</li>
+<li>证明Lost Wakeup需要观察哪些顺序关系？</li>
+<li>为什么记录到<code>wake_up()</code>仍不能证明condition成立？</li>
+<li>Timeout Missing属于根因还是鲁棒性问题？</li>
+<li>加超时为什么可能引入迟到Completion竞态？</li>
+<li>块I&#x2F;O请求生命周期有哪些关键阶段？</li>
+<li>为什么文件系统栈可能只是中间层？</li>
+<li>NFS类需要补充哪些远端证据？</li>
+<li>Device I&#x2F;O为何横跨I&#x2F;O类和Driver类？</li>
+<li>调查IRQ Missing时为什么要同时看硬件状态？</li>
+<li>DMA Never Complete至少需要哪些证据？</li>
+<li>如何证明firmware已经收到命令？</li>
+<li>“Hardware No Response”为什么仍可能不是最终根因？</li>
+<li>Direct Reclaim如何依赖存储I&#x2F;O？</li>
+<li>Writeback停滞会怎样向上游传播？</li>
+<li>Folio Wait的真正Wait Object上下文是什么？</li>
+<li>Allocation Dependency为何会使Memory分类转向Driver分类？</li>
+<li>线性长期等待与Dependency Cycle的区别是什么？</li>
+<li>证明AB-BA需要哪些同时态关系？</li>
+<li>多级Cycle为什么必须逐边验证？</li>
+<li>多个hung任务应按哪些字段聚类？</li>
+<li>相同栈是否说明同一对象？</li>
+<li>如何识别Common Dependency？</li>
+<li>Decision Tree的输出应该是什么？</li>
+<li>Lock、Completion、I&#x2F;O和Memory分别需要补什么核心证据？</li>
+<li>为什么应先检查<code>available_events</code>？</li>
+<li>哪些trace可验证块请求issue&#x2F;complete？</li>
+<li>为什么不要一开始全开trace？</li>
+<li>Fault Containment与Root Cause Fix有什么区别？</li>
+<li>请画出“Memory reclaim -&gt; writeback -&gt; block I&#x2F;O -&gt; driver -&gt; device”的依赖链。</li>
+<li>请把“Task A等mutex，Owner B等Completion，firmware未响应”分成表面、中间和最终类别。</li>
+<li>你能否不看本文画出完整Root Cause Decision Tree，并为每个分支写出下一条必须收集的证据？</li>
+</ol>
+<p>下一章将把分类方法收敛为一套可直接执行的实战流程：从Waiter定位Owner&#x2F;Producer，递归追踪下一层依赖，为每条边补证据，最终形成可以写入Bug单的Root Cause结论与回归方案。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-Kernel/" class="print-no-link">#Linux Kernel</a>
+      
+        <a href="/tags/hung-task/" class="print-no-link">#hung task</a>
+      
+        <a href="/tags/Root-Cause/" class="print-no-link">#Root Cause</a>
+      
+        <a href="/tags/deadlock/" class="print-no-link">#deadlock</a>
+      
+        <a href="/tags/IO/" class="print-no-link">#IO</a>
+      
+        <a href="/tags/memory-reclaim/" class="print-no-link">#memory reclaim</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux hung_task故障分析：Root Cause分类</div>
+      <div>https://cj0510.github.io/2026/10/11/Linux Kernel/Debug/Linux-hung-task故障分析-第5章-Root-Cause分类/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC6%E7%AB%A0-%E5%AE%9E%E6%88%98%E6%8E%92%E6%9F%A5%E6%96%B9%E6%B3%95-Dependency-Chain/" title="Linux hung_task故障分析：实战排查方法与Dependency Chain">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux hung_task故障分析：实战排查方法与Dependency Chain</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/" title="Linux hung_task故障分析：如何读一条hung_task日志">
+                        <span class="hidden-mobile">Linux hung_task故障分析：如何读一条hung_task日志</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -28,8 +28,9 @@
 <meta property="og:site_name" content="CJ&#39;s Tech Notes">
 <meta property="og:description" content="第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”： 1INFO: task xxx:1234 blocked for more than 120 seconds.  但hung task通常不是CPU忙循环，而是一个Task长时间睡在不可中断等待路径中。真正要追踪的是：它在等什么、谁应该让条件成立、">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5c1roezi98.webp">
 <meta property="article:published_time" content="2026-10-09T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-10-09T12:21:36.109Z">
+<meta property="article:modified_time" content="2026-10-11T10:51:51.874Z">
 <meta property="article:author" content="CJ1018">
 <meta property="article:tag" content="D State">
 <meta property="article:tag" content="Debug">
@@ -37,6 +38,7 @@
 <meta property="article:tag" content="TASK_UNINTERRUPTIBLE">
 <meta property="article:tag" content="hung task">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5c1roezi98.webp">
   
   
   
@@ -574,6 +576,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">include/linux/sched.h<br>  TASK_*与set_current_state<br><br>include/linux/wait.h<br>  wait_event*宏和wait queue对象<br><br>include/linux/completion.h<br>kernel/sched/completion.c<br>  wait_for_completion/complete<br><br>kernel/sched/core.c<br>  schedule与try_to_wake_up坐标<br><br>kernel/hung_task.c<br>  下一章再深入<br></code></pre></td></tr></table></figure>
 
 <p>每次只回答：谁设置状态、谁调用schedule、等待对象是谁、谁执行wake。</p>
+<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.5c1roezi98.webp" srcset="/img/loading.svg" lazyload></p>
 <h1 id="1-32-本章实验"><a href="#1-32-本章实验" class="headerlink" title="1.32 本章实验"></a>1.32 本章实验</h1><h2 id="1-32-1-观察状态与等待点"><a href="#1-32-1-观察状态与等待点" class="headerlink" title="1.32.1 观察状态与等待点"></a>1.32.1 观察状态与等待点</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ps -eo pid,tid,<span class="hljs-built_in">stat</span>,wchan:32,<span class="hljs-built_in">comm</span><br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/status<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/wchan<br></code></pre></td></tr></table></figure>
 
 <p><code>wchan</code>只表示当前睡眠附近的符号，不是根因结论；符号可见性还受内核配置和权限限制。</p>
