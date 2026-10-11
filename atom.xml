@@ -10,7 +10,89 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-08T23:46:16.524Z</updated>
+  <updated>2026-10-09T13:08:15.285Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="Call Trace" scheme="https://cj0510.github.io/tags/Call-Trace/"/>
+    <category term="Wait Object" scheme="https://cj0510.github.io/tags/Wait-Object/"/>
+    <category term="Root Cause" scheme="https://cj0510.github.io/tags/Root-Cause/"/>
+    <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/</id>
+    <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/"/>
+    <published>2026-10-09T11:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第4章：如何读一条hung-task日志——从Call-Trace找到Wait-Object"><a href="#第4章：如何读一条hung-task日志——从Call-Trace找到Wait-Object" class="headerlink" title="第4章：如何读一条hung_task日志——从Call Trace找到Wait Object"></a>第4章：如何读一条hung_task日志——从Call Trace找到Wait Object</h1><h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界"]]>
+    </summary>
+    <title>Linux hung_task故障分析：如何读一条hung_task日志</title>
+    <updated>2026-10-09T13:08:15.285Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="wait queue" scheme="https://cj0510.github.io/tags/wait-queue/"/>
+    <category term="completion" scheme="https://cj0510.github.io/tags/completion/"/>
+    <category term="mutex" scheme="https://cj0510.github.io/tags/mutex/"/>
+    <category term="IO wait" scheme="https://cj0510.github.io/tags/IO-wait/"/>
+    <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/</id>
+    <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/"/>
+    <published>2026-10-09T10:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第3章：Linux阻塞与等待模型——Task为什么会进入D状态"><a href="#第3章：Linux阻塞与等待模型——Task为什么会进入D状态" class="headerlink" title="第3章：Linux阻塞与等待模型——Task为什么会进入D状态"></a>第3章：Linux阻塞与等待模型——Task为什么会进入D状态</h1><h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界" class="headerlink" title="0. 源码基线与本章边界"></a>0. 源码基线与本章边界</h2><p>本文以]]>
+    </summary>
+    <title>Linux hung_task故障分析：Linux阻塞与等待模型</title>
+    <updated>2026-10-09T12:58:46.272Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="khungtaskd" scheme="https://cj0510.github.io/tags/khungtaskd/"/>
+    <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/</id>
+    <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/"/>
+    <published>2026-10-09T09:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第2章：hung-task-Detector源码——khungtaskd是怎么发现阻塞任务的"><a href="#第2章：hung-task-Detector源码——khungtaskd是怎么发现阻塞任务的" class="headerlink" title="第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的"></a>第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的</h1><h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界"]]>
+    </summary>
+    <title>Linux hung_task故障分析：khungtaskd检测源码</title>
+    <updated>2026-10-09T12:26:01.831Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
+    <category term="D State" scheme="https://cj0510.github.io/tags/D-State/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/</id>
+    <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/"/>
+    <published>2026-10-09T08:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="第1章：hung-task到底是什么——TASK-UNINTERRUPTIBLE与D状态"><a href="#第1章：hung-task到底是什么——TASK-UNINTERRUPTIBLE与D状态" class="headerlink" title="第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态"></a>第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态</h1><p>看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”：</p>
+<figure class="highlight]]>
+    </summary>
+    <title>Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</title>
+    <updated>2026-10-09T12:21:36.109Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -100,6 +182,26 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
+    <category term="Conditional Logic" scheme="https://cj0510.github.io/tags/Conditional-Logic/"/>
+    <category term="Branching" scheme="https://cj0510.github.io/tags/Branching/"/>
+    <category term="Decision Table" scheme="https://cj0510.github.io/tags/Decision-Table/"/>
+    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/"/>
+    <published>2026-10-06T16:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支"><a href="#Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支" class="headerlink" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支"></a>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1><p>前面几章建立了 Skill 的结构、Workflow、Contract，以及]]>
+    </summary>
+    <title>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</title>
+    <updated>2026-10-07T22:45:49.188Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
+    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
     <category term="Loop" scheme="https://cj0510.github.io/tags/Loop/"/>
     <category term="Retry" scheme="https://cj0510.github.io/tags/Retry/"/>
     <category term="Fallback" scheme="https://cj0510.github.io/tags/Fallback/"/>
@@ -112,26 +214,6 @@
     </summary>
     <title>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</title>
     <updated>2026-10-07T22:45:54.124Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
-    <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
-    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
-    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
-    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
-    <published>2026-10-06T16:00:00.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
-    </summary>
-    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
-    <updated>2026-10-07T22:45:58.329Z</updated>
   </entry>
   <entry>
     <author>
@@ -160,18 +242,18 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Conditional Logic" scheme="https://cj0510.github.io/tags/Conditional-Logic/"/>
-    <category term="Branching" scheme="https://cj0510.github.io/tags/Branching/"/>
-    <category term="Decision Table" scheme="https://cj0510.github.io/tags/Decision-Table/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/"/>
+    <category term="Orchestration" scheme="https://cj0510.github.io/tags/Orchestration/"/>
+    <category term="Composition" scheme="https://cj0510.github.io/tags/Composition/"/>
+    <category term="Delegation" scheme="https://cj0510.github.io/tags/Delegation/"/>
+    <category term="Dependency" scheme="https://cj0510.github.io/tags/Dependency/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/"/>
     <published>2026-10-06T16:00:00.000Z</published>
     <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支"><a href="#Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支" class="headerlink" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支"></a>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1><p>前面几章建立了 Skill 的结构、Workflow、Contract，以及]]>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用"><a href="#Agent-Skill-原理与工程实践（十八）：多个-Skill-如何组合与调用" class="headerlink" title="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用"></a>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</h1><p>上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill]]>
     </summary>
-    <title>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</title>
-    <updated>2026-10-07T22:45:49.188Z</updated>
+    <title>Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用</title>
+    <updated>2026-10-07T22:45:58.329Z</updated>
   </entry>
   <entry>
     <author>
@@ -311,84 +393,5 @@
     </summary>
     <title>Kernel Log Buffer源码分析</title>
     <updated>2026-08-22T12:18:17.560Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</id>
-    <link href="https://cj0510.github.io/2026/08/16/Linux%20Kernel/Logging%20subsystem/printk%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
-    <published>2026-08-16T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="printk-源码"><a href="#printk-源码" class="headerlink" title="printk 源码"></a>printk 源码</h1><p>之前我们讲了整个调用过程，本章从源码进行分析。</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.102w7kgn6v.webp"></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span]]>
-    </summary>
-    <title>printk源码分析</title>
-    <updated>2026-08-22T03:35:00.261Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/</id>
-    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/printk%E6%9C%BA%E5%88%B6%E5%9F%BA%E7%A1%80/"/>
-    <published>2026-08-09T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-printk-是什么"><a href="#1-printk-是什么" class="headerlink" title="1 printk 是什么"></a>1 printk 是什么</h1><p>内核中没有 <code>printf</code>，用户空间使用的 <code>printf</code> 是由 C lib 库提供的，只存在于用户空间。那内核空间是怎么使用的呢？</p>
-<p>这条链路是这样的：</p>
-<p><img]]>
-    </summary>
-    <title>printk机制基础</title>
-    <updated>2026-08-16T11:12:09.420Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Logging subsystem" scheme="https://cj0510.github.io/categories/Linux-Kernel/Logging-subsystem/"/>
-    <category term="Linux Logging subsystem" scheme="https://cj0510.github.io/tags/Linux-Logging-subsystem/"/>
-    <id>https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/</id>
-    <link href="https://cj0510.github.io/2026/08/09/Linux%20Kernel/Logging%20subsystem/Linux%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84/"/>
-    <published>2026-08-09T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-为什么需要Kernel日志系统"><a href="#1-为什么需要Kernel日志系统" class="headerlink" title="1 为什么需要Kernel日志系统"></a>1 为什么需要Kernel日志系统</h1><p>为什么需要？因为用户空间都是需要通过系统调用（System Call）才能进入内核使用内核服务，内核也只能通过日志暴露问题，比如我们之前提到SPI，驱动probe失败时，用户只知道设备不能工作，不知懂哪里出了问题。</p>
-<p>我们可以注入类似</p>
-<figure class="highlight]]>
-    </summary>
-    <title>Linux日志系统整体架构</title>
-    <updated>2026-08-09T10:08:39.008Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="SPI" scheme="https://cj0510.github.io/categories/Linux-Kernel/SPI/"/>
-    <category term="Linux SPI" scheme="https://cj0510.github.io/tags/Linux-SPI/"/>
-    <id>https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</id>
-    <link href="https://cj0510.github.io/2026/08/08/Linux%20Kernel/SPI/Linux%20SPI%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"/>
-    <published>2026-08-08T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="1-SPI性能指标"><a href="#1-SPI性能指标" class="headerlink" title="1 SPI性能指标"></a>1 SPI性能指标</h1><p>无论优化什么，明确衡量指标永远是第一步。</p>
-<p>我们先来看几个关键的性能指标：</p>
-<ul>
-<li>吞吐量：单位时间内传输的数据量</li>
-<li>延迟：单次传输所需的时间</li>
-<li>CPU 占用率</li>
-<li>功耗</li>
-</ul>
-<p>回顾之前的 SPI 框架图，每一层都可能成为性能瓶颈，比如可能是 SPI Clock 太低等原因。</p>
-<h1]]>
-    </summary>
-    <title>Linux SPI性能优化</title>
-    <updated>2026-08-08T08:20:55.892Z</updated>
   </entry>
 </feed>

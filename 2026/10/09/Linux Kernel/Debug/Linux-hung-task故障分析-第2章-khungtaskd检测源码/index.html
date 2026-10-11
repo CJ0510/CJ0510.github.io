@@ -1,0 +1,1041 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，核心文件是 kernel&#x2F;hung_task.c。对应上游标签提交为 830b3c68c1fb1e9176028d02ef86f3cf76aa2476。 本章只回答一个问题：  Linux怎样发现一个不可中断等待任务已经长时间没有调度进展？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux hung_task故障分析：khungtaskd检测源码">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，核心文件是 kernel&#x2F;hung_task.c。对应上游标签提交为 830b3c68c1fb1e9176028d02ef86f3cf76aa2476。 本章只回答一个问题：  Linux怎样发现一个不可中断等待任务已经长时间没有调度进展？">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-09T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T12:26:01.831Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Debug">
+<meta property="article:tag" content="Linux Kernel">
+<meta property="article:tag" content="TASK_UNINTERRUPTIBLE">
+<meta property="article:tag" content="hung task">
+<meta property="article:tag" content="khungtaskd">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Linux hung_task故障分析：khungtaskd检测源码 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux hung_task故障分析：khungtaskd检测源码</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-09 17:00" pubdate>
+          2026-10-09
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          9.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          81 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux hung_task故障分析：khungtaskd检测源码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第2章：hung-task-Detector源码——khungtaskd是怎么发现阻塞任务的"><a href="#第2章：hung-task-Detector源码——khungtaskd是怎么发现阻塞任务的" class="headerlink" title="第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的"></a>第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的</h1><h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界" class="headerlink" title="0. 源码基线与本章边界"></a>0. 源码基线与本章边界</h2><p>本文以 <strong>Linux v6.1</strong> 为源码基线，核心文件是 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/hung_task.c"><code>kernel/hung_task.c</code></a>。对应上游标签提交为 <code>830b3c68c1fb1e9176028d02ef86f3cf76aa2476</code>。</p>
+<p>本章只回答一个问题：</p>
+<blockquote>
+<p>Linux怎样发现一个不可中断等待任务已经长时间没有调度进展？</p>
+</blockquote>
+<p>主线固定为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">hung_task_init()<br>    -&gt; kthread_run(watchdog, ..., &quot;khungtaskd&quot;)<br>    -&gt; watchdog()<br>    -&gt; check_hung_uninterruptible_tasks()<br>    -&gt; check_hung_task()<br>    -&gt; sched_show_task()<br></code></pre></td></tr></table></figure>
+
+<p>这里先不追查锁的持有者、I&#x2F;O设备或驱动中断，那些属于发现异常后的根因分析。</p>
+<h1 id="2-1-为什么需要hung-task-Detector"><a href="#2-1-为什么需要hung-task-Detector" class="headerlink" title="2.1 为什么需要hung_task Detector"></a>2.1 为什么需要hung_task Detector</h1><p>D状态本身是正常的：任务等待块设备I&#x2F;O、Completion或内核锁时，都可能短暂进入不可中断睡眠。真正可疑的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">TASK_UNINTERRUPTIBLE + 长时间没有调度进展<br></code></pre></td></tr></table></figure>
+
+<p>这种故障不会必然让整台机器立即崩溃。其他CPU和任务可能仍在运行，因此需要一个独立观察者周期扫描系统，主动留下任务信息和调用栈。hung_task Detector就是这个观察者。</p>
+<h1 id="2-2-hung-task-Detector运行在哪里"><a href="#2-2-hung-task-Detector运行在哪里" class="headerlink" title="2.2 hung_task Detector运行在哪里"></a>2.2 hung_task Detector运行在哪里</h1><p>检测器运行在名为 <code>khungtaskd</code> 的内核线程中。它不是硬中断、软中断或定时器回调，而是一个可以睡眠、醒来并遍历任务的普通内核线程。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">khungtaskd<br>   -&gt; 睡眠一段时间<br>   -&gt; 醒来扫描任务<br>   -&gt; 输出必要诊断<br>   -&gt; 再次睡眠<br></code></pre></td></tr></table></figure>
+
+<p>因此检测存在时间粒度，不会在任务刚进入D状态的瞬间报警。</p>
+<h1 id="2-3-hung-task-init-做什么"><a href="#2-3-hung-task-init-做什么" class="headerlink" title="2.3 hung_task_init()做什么"></a>2.3 <code>hung_task_init()</code>做什么</h1><p>v6.1的初始化代码可抽出为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> __init <span class="hljs-title function_">hung_task_init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    atomic_notifier_chain_register(&amp;panic_notifier_list, &amp;panic_block);<br>    pm_notifier(hungtask_pm_notify, <span class="hljs-number">0</span>);<br><br>    watchdog_task = kthread_run(watchdog, <span class="hljs-literal">NULL</span>, <span class="hljs-string">&quot;khungtaskd&quot;</span>);<br>    hung_task_sysctl_init();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br>subsys_initcall(hung_task_init);<br></code></pre></td></tr></table></figure>
+
+<p>它完成三件主要事情：注册panic通知、注册电源管理通知、创建<code>khungtaskd</code>并注册相关sysctl。<code>subsys_initcall()</code>把它接入内核启动初始化序列。</p>
+<h1 id="2-4-khungtaskd是什么"><a href="#2-4-khungtaskd是什么" class="headerlink" title="2.4 khungtaskd是什么"></a>2.4 khungtaskd是什么</h1><p><code>kthread_run()</code>创建并唤醒一个内核线程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">线程显示名称：khungtaskd<br>线程入口函数：watchdog()<br></code></pre></td></tr></table></figure>
+
+<p>不要把“线程名”和“C函数名”误认为两个执行阶段。<code>khungtaskd</code>是用户在进程列表中看到的名字，<code>watchdog()</code>才是它实际执行的函数。</p>
+<h1 id="2-5-watchdog-主循环"><a href="#2-5-watchdog-主循环" class="headerlink" title="2.5 watchdog()主循环"></a>2.5 <code>watchdog()</code>主循环</h1><p>核心代码可以缩减为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">watchdog</span><span class="hljs-params">(<span class="hljs-type">void</span> *dummy)</span><br>&#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> hung_last_checked = jiffies;<br><br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> timeout = sysctl_hung_task_timeout_secs;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> interval = sysctl_hung_task_check_interval_secs;<br>        <span class="hljs-type">long</span> t;<br><br>        <span class="hljs-keyword">if</span> (interval == <span class="hljs-number">0</span>)<br>            interval = timeout;<br>        interval = <span class="hljs-type">min_t</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>, interval, timeout);<br>        t = hung_timeout_jiffies(hung_last_checked, interval);<br><br>        <span class="hljs-keyword">if</span> (t &lt;= <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">if</span> (!<span class="hljs-type">atomic_xchg</span>(&amp;reset_hung_task, <span class="hljs-number">0</span>) &amp;&amp;<br>                !hung_detector_suspended)<br>                check_hung_uninterruptible_tasks(timeout);<br>            hung_last_checked = jiffies;<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        schedule_timeout_interruptible(t);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>逻辑就是：计算距离下一次检查还剩多久；到期后执行扫描，否则让当前内核线程以可中断方式睡眠。</p>
+<h1 id="2-6-khungtaskd多久检查一次"><a href="#2-6-khungtaskd多久检查一次" class="headerlink" title="2.6 khungtaskd多久检查一次"></a>2.6 khungtaskd多久检查一次</h1><p>实际检查间隔不是简单等于某一个参数，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">interval == 0 ? timeout : min(interval, timeout)<br></code></pre></td></tr></table></figure>
+
+<p>所以：</p>
+<ul>
+<li><code>check_interval=0</code>时，用<code>timeout</code>作为检查间隔；</li>
+<li><code>check_interval&gt;timeout</code>时，也会被限制为<code>timeout</code>；</li>
+<li><code>check_interval&lt;timeout</code>时，可以更频繁地扫描，但仍按<code>timeout</code>判断任务是否超时。</li>
+</ul>
+<h1 id="2-7-hung-task-timeout-secs"><a href="#2-7-hung-task-timeout-secs" class="headerlink" title="2.7 hung_task_timeout_secs"></a>2.7 <code>hung_task_timeout_secs</code></h1><p><code>sysctl_hung_task_timeout_secs</code>表示“多久没有观察到任务调度进展才算可疑”的阈值，默认值来自<code>CONFIG_DEFAULT_HUNG_TASK_TIMEOUT</code>。</p>
+<p>用户空间接口通常是：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_timeout_secs<br></code></pre></td></tr></table></figure>
+
+<p>它是策略阈值，不是任务等待对象自身的超时参数，也不会替任务终止等待。</p>
+<h1 id="2-8-hung-task-check-interval-secs"><a href="#2-8-hung-task-check-interval-secs" class="headerlink" title="2.8 hung_task_check_interval_secs"></a>2.8 <code>hung_task_check_interval_secs</code></h1><p>该参数控制扫描频率：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_check_interval_secs<br></code></pre></td></tr></table></figure>
+
+<p>例如<code>timeout=120</code>、<code>interval=10</code>，表示检测线程大约每10秒扫描一次，但任务需要满足至少120秒无进展才会被报告。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">检查频率 != hung判定阈值<br></code></pre></td></tr></table></figure>
+
+<h1 id="2-9-为什么timeout-0表示关闭"><a href="#2-9-为什么timeout-0表示关闭" class="headerlink" title="2.9 为什么timeout&#x3D;0表示关闭"></a>2.9 为什么timeout&#x3D;0表示关闭</h1><p><code>hung_timeout_jiffies()</code>明确处理了0：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">return</span> timeout ? last_checked - jiffies + timeout * HZ :<br>                 MAX_SCHEDULE_TIMEOUT;<br></code></pre></td></tr></table></figure>
+
+<p>0被解释为无限等待，<code>khungtaskd</code>不会到达正常扫描时刻，因此关闭检测。修改sysctl时处理函数会调用<code>wake_up_process(watchdog_task)</code>，让线程立即重新读取配置，而不是继续按旧值睡眠。</p>
+<h1 id="2-10-check-hung-uninterruptible-tasks-做什么"><a href="#2-10-check-hung-uninterruptible-tasks-做什么" class="headerlink" title="2.10 check_hung_uninterruptible_tasks()做什么"></a>2.10 <code>check_hung_uninterruptible_tasks()</code>做什么</h1><p>该函数承担一次完整扫描：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">确认系统未进入panic/die状态<br>    -&gt; RCU保护下遍历进程和线程<br>    -&gt; 筛选目标状态<br>    -&gt; 对候选任务调用check_hung_task()<br>    -&gt; 必要时显示锁、所有CPU栈或panic<br></code></pre></td></tr></table></figure>
+
+<p>它负责“找候选者”；真正判断某一个任务是否超时的是<code>check_hung_task()</code>。</p>
+<h1 id="2-11-如何遍历系统Task"><a href="#2-11-如何遍历系统Task" class="headerlink" title="2.11 如何遍历系统Task"></a>2.11 如何遍历系统Task</h1><p>v6.1使用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c">rcu_read_lock();<br>for_each_process_thread(g, t) &#123;<br>    ...<br>&#125;<br>rcu_read_unlock();<br></code></pre></td></tr></table></figure>
+
+<p><code>g</code>代表线程组首领，<code>t</code>代表其中的具体线程。扫描受<code>sysctl_hung_task_check_count</code>限制，避免一次检查无限扩张。</p>
+<p>遍历过程中还会周期调用<code>rcu_lock_break()</code>：暂时退出RCU读侧临界区，执行<code>cond_resched()</code>，再重新进入。这避免扫描大量任务时无限延长RCU宽限期，也避免<code>khungtaskd</code>长时间霸占CPU。</p>
+<h1 id="2-12-为什么重点检查D状态"><a href="#2-12-为什么重点检查D状态" class="headerlink" title="2.12 为什么重点检查D状态"></a>2.12 为什么重点检查D状态</h1><p>状态筛选的真实代码是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c">state = READ_ONCE(t-&gt;__state);<br><span class="hljs-keyword">if</span> ((state &amp; TASK_UNINTERRUPTIBLE) &amp;&amp;<br>    !(state &amp; TASK_WAKEKILL) &amp;&amp;<br>    !(state &amp; TASK_NOLOAD))<br>    check_hung_task(t, timeout);<br></code></pre></td></tr></table></figure>
+
+<p>它不是简单判断<code>state == TASK_UNINTERRUPTIBLE</code>，而是按状态位筛选：必须包含<code>TASK_UNINTERRUPTIBLE</code>，同时排除可被致命信号唤醒的<code>TASK_WAKEKILL</code>和真正空闲的<code>TASK_NOLOAD</code>。因此<code>TASK_KILLABLE</code>及idle类任务不会按普通D状态处理。</p>
+<h1 id="2-13-check-hung-task-做什么"><a href="#2-13-check-hung-task-做什么" class="headerlink" title="2.13 check_hung_task()做什么"></a>2.13 <code>check_hung_task()</code>做什么</h1><p>这个函数的职责可以写成一张What Card：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">symbol:</span> <span class="hljs-string">check_hung_task</span><br><span class="hljs-attr">input:</span> <span class="hljs-string">候选task_struct、超时秒数</span><br><span class="hljs-attr">reads:</span> <span class="hljs-string">__state、nvcsw、nivcsw、last_switch_count、last_switch_time</span><br><span class="hljs-attr">updates:</span> <span class="hljs-string">last_switch_count、last_switch_time、诊断控制标志</span><br><span class="hljs-attr">output:</span> <span class="hljs-string">无返回值；必要时输出事件与日志</span><br><span class="hljs-attr">not_responsible_for:</span> <span class="hljs-string">分析任务正在等待的真实资源和根因</span><br></code></pre></td></tr></table></figure>
+
+<p>其核心分支是“当前切换计数是否与上次记录相同”以及“距上次观察到进展是否已经超过阈值”。</p>
+<h1 id="2-14-Linux怎么判断Task有没有进展"><a href="#2-14-Linux怎么判断Task有没有进展" class="headerlink" title="2.14 Linux怎么判断Task有没有进展"></a>2.14 Linux怎么判断Task有没有进展</h1><p>检测器无法理解每个文件系统、驱动或网络协议的业务进度。它选择通用而廉价的代理指标：任务的上下文切换计数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> switch_count = t-&gt;nvcsw + t-&gt;nivcsw;<br></code></pre></td></tr></table></figure>
+
+<p>只要任务发生过新的上下文切换，这个总数就会改变，说明它在两次观察之间至少获得过某种调度活动。</p>
+<h1 id="2-15-nvcsw是什么"><a href="#2-15-nvcsw是什么" class="headerlink" title="2.15 nvcsw是什么"></a>2.15 <code>nvcsw</code>是什么</h1><p><code>nvcsw</code>是voluntary context switches计数，即任务主动放弃CPU的次数。典型原因是等待条件、等待锁、等待I&#x2F;O或主动调用会调度出去的接口。</p>
+<p>用户空间可以在<code>/proc/&lt;pid&gt;/status</code>看到对应的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">voluntary_ctxt_switches<br></code></pre></td></tr></table></figure>
+
+<h1 id="2-16-nivcsw是什么"><a href="#2-16-nivcsw是什么" class="headerlink" title="2.16 nivcsw是什么"></a>2.16 <code>nivcsw</code>是什么</h1><p><code>nivcsw</code>是involuntary context switches计数，即任务不是主动睡眠，而是被调度器换下CPU的次数，例如被抢占。</p>
+<p>用户空间对应：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">nonvoluntary_ctxt_switches<br></code></pre></td></tr></table></figure>
+
+<h1 id="2-17-voluntary与involuntary-context-switch区别"><a href="#2-17-voluntary与involuntary-context-switch区别" class="headerlink" title="2.17 voluntary与involuntary context switch区别"></a>2.17 voluntary与involuntary context switch区别</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">主动切换：任务自己遇到等待点，主动让出CPU<br>被动切换：任务本来仍可运行，但被调度器抢占或换下<br></code></pre></td></tr></table></figure>
+
+<p>hung_task Detector不需要区分是哪一种进展，只关心二者总和有没有增加。</p>
+<h1 id="2-18-为什么context-switch计数可以判断Task是否有进展"><a href="#2-18-为什么context-switch计数可以判断Task是否有进展" class="headerlink" title="2.18 为什么context switch计数可以判断Task是否有进展"></a>2.18 为什么context switch计数可以判断Task是否有进展</h1><p>这个指标具备三项优势：所有任务都有、读取便宜、与具体子系统无关。只要任务重新参与调度，计数通常就会变化。</p>
+<p>但它只是近似指标：计数变化证明发生过调度活动，不证明业务操作已经取得有效进展；计数不变也只说明长期没有被再次调度，不能直接证明死锁。</p>
+<h1 id="2-19-switch-count为什么需要缓存"><a href="#2-19-switch-count为什么需要缓存" class="headerlink" title="2.19 switch_count为什么需要缓存"></a>2.19 switch_count为什么需要缓存</h1><p><code>task_struct</code>保存两项检测基线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">last_switch_count：上次观察到的切换总数<br>last_switch_time ：最近一次发现切换计数变化的jiffies<br></code></pre></td></tr></table></figure>
+
+<p>代码为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (switch_count != t-&gt;last_switch_count) &#123;<br>    t-&gt;last_switch_count = switch_count;<br>    t-&gt;last_switch_time = jiffies;<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>没有上一轮基线，就无法区分“刚刚睡下”与“已经很久没有动”。</p>
+<h1 id="2-20-第一次扫描为什么不会马上报警"><a href="#2-20-第一次扫描为什么不会马上报警" class="headerlink" title="2.20 第一次扫描为什么不会马上报警"></a>2.20 第一次扫描为什么不会马上报警</h1><p>第一次遇到一个已有切换记录的候选任务时，当前<code>switch_count</code>通常不同于缓存值，于是检测器更新基线后返回。下一轮扫描如果计数仍未变化，才继续检查<code>last_switch_time + timeout * HZ</code>是否已经到期。</p>
+<p>还有一个保护：<code>switch_count == 0</code>的全新任务直接跳过，避免把从未正常切出过的新任务误判为hung。</p>
+<h1 id="2-21-blocked-for-more-than-xxx-seconds怎么来的"><a href="#2-21-blocked-for-more-than-xxx-seconds怎么来的" class="headerlink" title="2.21 blocked for more than xxx seconds怎么来的"></a>2.21 <code>blocked for more than xxx seconds</code>怎么来的</h1><p>超时条件是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (time_is_after_jiffies(t-&gt;last_switch_time + timeout * HZ))<br>    <span class="hljs-keyword">return</span>;<br></code></pre></td></tr></table></figure>
+
+<p>一旦到期，日志中的秒数来自：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">(jiffies - t-&gt;last_switch_time) / HZ<br></code></pre></td></tr></table></figure>
+
+<p>所以它表示“距检测器上次观察到该任务切换计数变化已经过去多久”，不是对等待函数入口进行纳秒级记录。实际报告还会受扫描间隔和调度延迟影响。</p>
+<h1 id="2-22-hung-task-warnings"><a href="#2-22-hung-task-warnings" class="headerlink" title="2.22 hung_task_warnings"></a>2.22 <code>hung_task_warnings</code></h1><p><code>sysctl_hung_task_warnings</code>是日志预算，v6.1默认初值为10。值大于0时，每打印一条hung task警告就递减；变成0后停止继续打印，避免永久故障造成日志风暴。</p>
+<p>该sysctl允许最小值<code>-1</code>。由于代码只在大于0时递减，<code>-1</code>保持非零，可用于不限制警告次数。它限制的是警告输出，不等于关闭扫描。</p>
+<h1 id="2-23-hung-task-panic"><a href="#2-23-hung-task-panic" class="headerlink" title="2.23 hung_task_panic"></a>2.23 <code>hung_task_panic</code></h1><p>启用<code>hung_task_panic</code>后，发现hung任务会先提高console详细度，并记录需要显示锁和触发panic。扫描结束后统一执行：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">panic(<span class="hljs-string">&quot;hung_task: blocked tasks&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>测试系统可借此立即冻结现场并配合kdump获取转储；生产环境要谨慎，因为它会把局部阻塞升级为整机panic。</p>
+<h1 id="2-24-hung-task-all-cpu-backtrace"><a href="#2-24-hung-task-all-cpu-backtrace" class="headerlink" title="2.24 hung_task_all_cpu_backtrace"></a>2.24 <code>hung_task_all_cpu_backtrace</code></h1><p>SMP系统启用该选项后，只要确实输出了hung task警告，就设置<code>hung_task_show_all_bt</code>。扫描完成后调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">trigger_all_cpu_backtrace();<br></code></pre></td></tr></table></figure>
+
+<p>它能补充其他CPU正在执行什么，有机会看到锁持有者或事件生产者。但这仍不是自动建立依赖链，只是增加现场证据。</p>
+<h1 id="2-25-打印Task信息和Call-Trace"><a href="#2-25-打印Task信息和Call-Trace" class="headerlink" title="2.25 打印Task信息和Call Trace"></a>2.25 打印Task信息和Call Trace</h1><p>报告路径的关键动作是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">trace_sched_process_hang(t)<br>    -&gt; pr_err()打印任务名、PID、阻塞秒数和内核版本<br>    -&gt; sched_show_task(t)<br>    -&gt; 必要时debug_show_all_locks()<br>    -&gt; 必要时所有CPU backtrace<br></code></pre></td></tr></table></figure>
+
+<p><code>sched_show_task()</code>打印任务状态和栈等调度信息。Tracepoint还允许ftrace&#x2F;perf等跟踪工具订阅hung事件。</p>
+<h1 id="2-26-为什么Call-Trace只是现场"><a href="#2-26-为什么Call-Trace只是现场" class="headerlink" title="2.26 为什么Call Trace只是现场"></a>2.26 为什么Call Trace只是现场</h1><p>假设调用栈显示：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">schedule<br>  -&gt; wait_for_completion<br>  -&gt; driver_transfer<br></code></pre></td></tr></table></figure>
+
+<p>这只能证明任务正在等待Completion。真正根因可能是IRQ没有到达、错误路径遗漏<code>complete()</code>、硬件无响应或负责完成事件的工作线程被另一把锁阻塞。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Call Trace = Waiter当前停在哪里<br>Root Cause = 谁应该改变等待条件、为什么没有改变<br></code></pre></td></tr></table></figure>
+
+<h1 id="2-27-hung-task-Detector能检测什么"><a href="#2-27-hung-task-Detector能检测什么" class="headerlink" title="2.27 hung_task Detector能检测什么"></a>2.27 hung_task Detector能检测什么</h1><p>它擅长发现：</p>
+<ul>
+<li>长时间处于不可中断等待的任务；</li>
+<li>I&#x2F;O、锁、Completion或驱动路径上的长期无调度进展；</li>
+<li>系统尚能运行但局部任务链已经卡住的故障。</li>
+</ul>
+<p>它提供的是“异常候选任务和现场入口”。</p>
+<h1 id="2-28-hung-task-Detector不能检测什么"><a href="#2-28-hung-task-Detector不能检测什么" class="headerlink" title="2.28 hung_task Detector不能检测什么"></a>2.28 hung_task Detector不能检测什么</h1><p>它不能直接回答：</p>
+<ul>
+<li>哪个mutex owner没有释放锁；</li>
+<li>哪个中断丢失；</li>
+<li>哪个设备寄存器或固件状态异常；</li>
+<li>哪个远端服务器没有响应；</li>
+<li>任务是否形成了严格意义上的环形死锁。</li>
+</ul>
+<p>一直处于R状态的busy loop也不属于这条D状态检测主线；soft lockup、hard lockup、RCU stall分别有自己的检测机制。</p>
+<h1 id="2-29-False-Positive与Long-Latency问题"><a href="#2-29-False-Positive与Long-Latency问题" class="headerlink" title="2.29 False Positive与Long Latency问题"></a>2.29 False Positive与Long Latency问题</h1><p>hung_task警告是启发式告警，不是deadlock proof。极慢存储、长时间NFS响应、设备调试暂停等场景，即使最终能恢复，也可能超过阈值。</p>
+<p>阈值应该结合系统业务时延、最坏I&#x2F;O延迟和故障恢复策略设置。阈值太短会制造噪声，太长又会降低故障发现速度。</p>
+<h1 id="2-30-本章源码阅读主线"><a href="#2-30-本章源码阅读主线" class="headerlink" title="2.30 本章源码阅读主线"></a>2.30 本章源码阅读主线</h1><p>建议不要从文件第一行逐行阅读，而是按因果顺序追踪：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">hung_task_init()<br>  └─ kthread_run(watchdog, NULL, &quot;khungtaskd&quot;)<br>       └─ watchdog()<br>            ├─ hung_timeout_jiffies()<br>            ├─ schedule_timeout_interruptible()<br>            └─ check_hung_uninterruptible_tasks()<br>                 ├─ for_each_process_thread()<br>                 ├─ 状态位筛选<br>                 └─ check_hung_task()<br>                      ├─ 比较switch_count<br>                      ├─ 比较last_switch_time<br>                      ├─ sched_show_task()<br>                      └─ 设置锁栈、全CPU栈或panic动作<br></code></pre></td></tr></table></figure>
+
+<p>这一主线覆盖了初始化、周期调度、候选筛选、单任务判定和报告五个层次。</p>
+<h1 id="2-31-本章实验"><a href="#2-31-本章实验" class="headerlink" title="2.31 本章实验"></a>2.31 本章实验</h1><p>先确认运行内核启用了hung task检测，再做只读观察：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">ps -eLo pid,tid,<span class="hljs-built_in">comm</span>,state | grep khungtaskd<br><br><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_timeout_secs<br><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_check_interval_secs<br><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_warnings<br><span class="hljs-built_in">cat</span> /proc/sys/kernel/hung_task_panic<br></code></pre></td></tr></table></figure>
+
+<p>观察某个普通进程的切换计数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">grep -E <span class="hljs-string">&#x27;voluntary_ctxt|nonvoluntary_ctxt&#x27;</span> /proc/&lt;pid&gt;/status<br></code></pre></td></tr></table></figure>
+
+<p>预测：睡眠频繁的任务通常增加主动切换计数；持续计算并被抢占的任务更容易增加非主动切换计数。</p>
+<p>仅在可恢复的开发板或虚拟机中缩短阈值：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> sysctl -w kernel.hung_task_timeout_secs=10<br></code></pre></td></tr></table></figure>
+
+<p>不要在生产机上为了实验随意制造D状态、启用panic或无限打印警告。实验后恢复原配置，并确认运行内核版本和本文v6.1源码是否一致。</p>
+<h1 id="2-32-工程与性能意义"><a href="#2-32-工程与性能意义" class="headerlink" title="2.32 工程与性能意义"></a>2.32 工程与性能意义</h1><p>周期扫描相比给每个D状态任务单独创建定时器更集中、简单，开销也更容易控制。与此同时，全系统任务遍历、打印大量栈和所有CPU回溯都不是免费的，因此存在<code>check_count</code>、检查间隔和warning budget等控制手段。</p>
+<p>工程上应把hung事件当作抓取更多证据的触发点，例如冻结ftrace、保存块层和中断状态、采集锁依赖信息，而不是看到第一条栈就修改等待者代码。</p>
+<h1 id="2-33-常见误区"><a href="#2-33-常见误区" class="headerlink" title="2.33 常见误区"></a>2.33 常见误区</h1><h2 id="误区1：khungtaskd是定时器或中断"><a href="#误区1：khungtaskd是定时器或中断" class="headerlink" title="误区1：khungtaskd是定时器或中断"></a>误区1：khungtaskd是定时器或中断</h2><p>它是<code>kthread_run()</code>创建的内核线程，入口为<code>watchdog()</code>。</p>
+<h2 id="误区2：所有D状态都会立即报警"><a href="#误区2：所有D状态都会立即报警" class="headerlink" title="误区2：所有D状态都会立即报警"></a>误区2：所有D状态都会立即报警</h2><p>检测器会周期扫描，并要求切换计数长期不变且超过timeout。</p>
+<h2 id="误区3：timeout就是扫描间隔"><a href="#误区3：timeout就是扫描间隔" class="headerlink" title="误区3：timeout就是扫描间隔"></a>误区3：timeout就是扫描间隔</h2><p>timeout是无进展阈值，check interval是扫描频率，两者在<code>watchdog()</code>中共同决定行为。</p>
+<h2 id="误区4：check-interval-0关闭扫描"><a href="#误区4：check-interval-0关闭扫描" class="headerlink" title="误区4：check_interval=0关闭扫描"></a>误区4：<code>check_interval=0</code>关闭扫描</h2><p>在v6.1中它表示使用timeout作为检查间隔；真正关闭检测的是<code>timeout=0</code>。</p>
+<h2 id="误区5：扫描所有含TASK-UNINTERRUPTIBLE的任务"><a href="#误区5：扫描所有含TASK-UNINTERRUPTIBLE的任务" class="headerlink" title="误区5：扫描所有含TASK_UNINTERRUPTIBLE的任务"></a>误区5：扫描所有含<code>TASK_UNINTERRUPTIBLE</code>的任务</h2><p>源码还排除了<code>TASK_WAKEKILL</code>和<code>TASK_NOLOAD</code>，并在单任务检查中跳过冻结任务和零切换计数的新任务。</p>
+<h2 id="误区6：switch-count变化代表业务完成"><a href="#误区6：switch-count变化代表业务完成" class="headerlink" title="误区6：switch count变化代表业务完成"></a>误区6：switch count变化代表业务完成</h2><p>它只代表发生过调度活动，是“进展”的通用近似值。</p>
+<h2 id="误区7：日志秒数就是精确D状态持续时间"><a href="#误区7：日志秒数就是精确D状态持续时间" class="headerlink" title="误区7：日志秒数就是精确D状态持续时间"></a>误区7：日志秒数就是精确D状态持续时间</h2><p>它基于<code>last_switch_time</code>和<code>jiffies</code>计算，还受扫描周期影响。</p>
+<h2 id="误区8：hung-task直接定位根因"><a href="#误区8：hung-task直接定位根因" class="headerlink" title="误区8：hung_task直接定位根因"></a>误区8：hung_task直接定位根因</h2><p>它负责检测并打印现场，根因仍要沿Wait Object、Owner和Producer继续追踪。</p>
+<h1 id="2-34-博客总结"><a href="#2-34-博客总结" class="headerlink" title="2.34 博客总结"></a>2.34 博客总结</h1><p>Linux v6.1的hung_task Detector由<code>hung_task_init()</code>创建<code>khungtaskd</code>内核线程，线程入口<code>watchdog()</code>按照timeout和check interval周期醒来。<code>check_hung_uninterruptible_tasks()</code>在RCU保护下遍历系统进程与线程，筛选包含<code>TASK_UNINTERRUPTIBLE</code>且不属于killable、idle类的候选任务；<code>check_hung_task()</code>再把<code>nvcsw + nivcsw</code>与任务保存的<code>last_switch_count</code>比较。如果计数发生变化，就更新<code>last_switch_time</code>，视为最近仍有调度进展；如果计数长期不变并超过timeout，内核便输出“blocked for more than … seconds”、任务信息和调用栈，并根据配置追加锁信息、所有CPU回溯或触发panic。</p>
+<p>整个机制的本质是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">周期观察任务状态<br>    +<br>用上下文切换计数近似衡量调度进展<br>    +<br>超过策略阈值后保留诊断现场<br></code></pre></td></tr></table></figure>
+
+<p>它能告诉我们“谁长时间没有动”，但不能自动回答“谁本来应该唤醒它，以及为什么没有唤醒”。</p>
+<h1 id="2-35-学完检查题"><a href="#2-35-学完检查题" class="headerlink" title="2.35 学完检查题"></a>2.35 学完检查题</h1><ol>
+<li><code>khungtaskd</code>是线程名还是函数名？它的入口函数是什么？</li>
+<li><code>hung_task_init()</code>通过什么接口创建检测线程？</li>
+<li><code>watchdog()</code>为什么可以调用<code>schedule_timeout_interruptible()</code>？</li>
+<li>timeout与check interval分别控制什么？</li>
+<li><code>check_interval=0</code>和<code>timeout=0</code>分别表示什么？</li>
+<li>为什么实际interval不能大于timeout？</li>
+<li><code>check_hung_uninterruptible_tasks()</code>与<code>check_hung_task()</code>如何分工？</li>
+<li>为什么遍历任务时需要RCU？为什么还要周期性<code>rcu_lock_break()</code>？</li>
+<li>v6.1的状态筛选为什么排除<code>TASK_WAKEKILL</code>和<code>TASK_NOLOAD</code>？</li>
+<li><code>nvcsw</code>与<code>nivcsw</code>分别表示什么？</li>
+<li>为什么二者之和只能近似代表进展？</li>
+<li><code>last_switch_count</code>与<code>last_switch_time</code>各自保存什么？</li>
+<li>第一次扫描到一个刚进入D状态的任务为什么通常不会报警？</li>
+<li>为什么<code>switch_count == 0</code>的任务会被跳过？</li>
+<li>日志中的阻塞秒数使用什么公式计算？</li>
+<li><code>hung_task_warnings=0</code>与<code>timeout=0</code>的效果是否相同？</li>
+<li><code>hung_task_panic</code>适合什么场景，又有什么风险？</li>
+<li>all CPU backtrace为什么可能帮助寻找Owner？</li>
+<li>为什么Call Trace只是根因分析入口？</li>
+<li>请不看本文画出从<code>hung_task_init()</code>到<code>sched_show_task()</code>的完整主链。</li>
+</ol>
+<p>下一章将从“检测器如何发现异常”转向“任务究竟通过什么机制睡下去”，统一分析wait queue、Completion、mutex、rwsem与I&#x2F;O等待，并建立Waiter到Owner&#x2F;Producer的依赖链。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-Kernel/" class="print-no-link">#Linux Kernel</a>
+      
+        <a href="/tags/hung-task/" class="print-no-link">#hung task</a>
+      
+        <a href="/tags/TASK-UNINTERRUPTIBLE/" class="print-no-link">#TASK_UNINTERRUPTIBLE</a>
+      
+        <a href="/tags/Debug/" class="print-no-link">#Debug</a>
+      
+        <a href="/tags/khungtaskd/" class="print-no-link">#khungtaskd</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux hung_task故障分析：khungtaskd检测源码</div>
+      <div>https://cj0510.github.io/2026/10/09/Linux Kernel/Debug/Linux-hung-task故障分析-第2章-khungtaskd检测源码/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/" title="Linux hung_task故障分析：Linux阻塞与等待模型">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux hung_task故障分析：Linux阻塞与等待模型</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/" title="Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态">
+                        <span class="hidden-mobile">Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

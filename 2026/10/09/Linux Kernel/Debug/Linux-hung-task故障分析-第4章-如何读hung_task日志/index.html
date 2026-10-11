@@ -1,0 +1,1050 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第4章：如何读一条hung_task日志——从Call Trace找到Wait Object0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。主要参考：  kernel&#x2F;hung_task.c：告警生成与sched_show_task()调用； kernel&#x2F;sched&#x2F;core.c：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux hung_task故障分析：如何读一条hung_task日志">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第4章：如何读一条hung_task日志——从Call Trace找到Wait Object0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。主要参考：  kernel&#x2F;hung_task.c：告警生成与sched_show_task()调用； kernel&#x2F;sched&#x2F;core.c：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-09T11:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T13:08:15.285Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="Call Trace">
+<meta property="article:tag" content="Linux Kernel">
+<meta property="article:tag" content="Root Cause">
+<meta property="article:tag" content="Wait Object">
+<meta property="article:tag" content="hung task">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Linux hung_task故障分析：如何读一条hung_task日志 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux hung_task故障分析：如何读一条hung_task日志</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-09 19:00" pubdate>
+          2026-10-09
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          89 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux hung_task故障分析：如何读一条hung_task日志</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第4章：如何读一条hung-task日志——从Call-Trace找到Wait-Object"><a href="#第4章：如何读一条hung-task日志——从Call-Trace找到Wait-Object" class="headerlink" title="第4章：如何读一条hung_task日志——从Call Trace找到Wait Object"></a>第4章：如何读一条hung_task日志——从Call Trace找到Wait Object</h1><h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界" class="headerlink" title="0. 源码基线与本章边界"></a>0. 源码基线与本章边界</h2><p>本文以 <strong>Linux v6.1</strong> 为源码基线，对应上游标签提交<code>830b3c68c1fb1e9176028d02ef86f3cf76aa2476</code>。主要参考：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/hung_task.c"><code>kernel/hung_task.c</code></a>：告警生成与<code>sched_show_task()</code>调用；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/sched/core.c"><code>kernel/sched/core.c</code></a>：任务信息及栈打印；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/include/linux/wait.h"><code>include/linux/wait.h</code></a>：<code>wait_event*()</code>；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/sched/completion.c"><code>kernel/sched/completion.c</code></a>：Completion等待；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/locking/mutex.c"><code>kernel/locking/mutex.c</code></a>：mutex慢路径；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/locking/rwsem.c"><code>kernel/locking/rwsem.c</code></a>：rwsem慢路径；</li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/Documentation/admin-guide/tainted-kernels.rst"><code>Documentation/admin-guide/tainted-kernels.rst</code></a>：taint标志解释。</li>
+</ul>
+<p>本章不试图仅凭一条栈“猜出Bug”，而是建立可重复执行的证据流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">日志字段 -&gt; 栈分层 -&gt; Wait Primitive -&gt; Wait Object<br>         -&gt; Owner / Producer -&gt; 下一层依赖 -&gt; Root Cause证据<br></code></pre></td></tr></table></figure>
+
+<h1 id="4-1-一条hung-task日志应该怎么看"><a href="#4-1-一条hung-task日志应该怎么看" class="headerlink" title="4.1 一条hung_task日志应该怎么看"></a>4.1 一条hung_task日志应该怎么看</h1><p>先看一份抽象日志：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">INFO: task foo:1234 blocked for more than 120 seconds.<br>      Tainted: P           O       6.1.x #1<br>task:foo             state:D stack:0 pid:1234 ppid:1<br>Call Trace:<br> __schedule+0x...<br> schedule+0x...<br> wait_for_completion+0x...<br> my_device_xfer+0x...<br> my_ioctl+0x...<br></code></pre></td></tr></table></figure>
+
+<p>不要直接得出“<code>my_device_xfer()</code>有Bug”。先把日志拆成身份、时间、状态、等待方式和业务入口，再追具体对象及其依赖。</p>
+<h1 id="4-2-日志头部有哪些关键信息"><a href="#4-2-日志头部有哪些关键信息" class="headerlink" title="4.2 日志头部有哪些关键信息"></a>4.2 日志头部有哪些关键信息</h1><p>第一轮只提取事实：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Task name：谁被报告<br>PID/PPID：如何关联现场和调用来源<br>State：当前属于哪类等待<br>Blocked time：检测器观察到多久没有调度进展<br>Kernel version/taint：分析使用哪份源码，运行环境是否被修改<br>Call Trace：Waiter如何走到睡眠点<br></code></pre></td></tr></table></figure>
+
+<p>不要在事实提取阶段混入根因结论。</p>
+<h1 id="4-3-Task-Name怎么看"><a href="#4-3-Task-Name怎么看" class="headerlink" title="4.3 Task Name怎么看"></a>4.3 Task Name怎么看</h1><p><code>comm</code>只有固定长度，日志中的任务名可能被截断，也不一定唯一。它首先帮助判断任务类型：用户进程线程、内核线程、workqueue worker、文件系统线程还是驱动业务线程。</p>
+<p>需要结合PID、<code>/proc/&lt;pid&gt;/comm</code>、<code>cmdline</code>、<code>status</code>和业务日志确认身份，不能只靠名字关联唯一实体。</p>
+<h1 id="4-4-PID怎么看"><a href="#4-4-PID怎么看" class="headerlink" title="4.4 PID怎么看"></a>4.4 PID怎么看</h1><p>PID用于把告警和运行时证据关联起来：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/status<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/stack<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/wchan<br></code></pre></td></tr></table></figure>
+
+<p>它也可用于过滤ftrace、perf和业务日志。PID只是索引，不是原因；现场消失或PID复用后，必须结合时间戳和任务名谨慎关联。</p>
+<h1 id="4-5-State怎么看"><a href="#4-5-State怎么看" class="headerlink" title="4.5 State怎么看"></a>4.5 State怎么看</h1><p><code>state:D</code>表明任务处于不可中断睡眠的用户可见表示。分析问题立即从“为什么占CPU”切换为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">它通过什么原语睡下？<br>具体等待什么对象？<br>谁应该改变对象状态并唤醒它？<br></code></pre></td></tr></table></figure>
+
+<p>注意某些内部状态是位组合，诊断时应以对应版本源码和完整日志为准。</p>
+<h1 id="4-6-blocked-for-more-than-xxx-seconds怎么看"><a href="#4-6-blocked-for-more-than-xxx-seconds怎么看" class="headerlink" title="4.6 blocked for more than xxx seconds怎么看"></a>4.6 <code>blocked for more than xxx seconds</code>怎么看</h1><p>v6.1的秒数来自：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">(jiffies - t-&gt;last_switch_time) / HZ<br></code></pre></td></tr></table></figure>
+
+<p>所以它表示自检测器最近观察到该任务context switch计数变化后经过的时间，不是精确记录某个等待函数入口的秒表。扫描间隔和检测线程调度延迟会影响报告时刻。</p>
+<h1 id="4-7-Tainted怎么看"><a href="#4-7-Tainted怎么看" class="headerlink" title="4.7 Tainted怎么看"></a>4.7 Tainted怎么看</h1><p>taint是一组内核运行历史标志。不同字母占据固定位置，例如<code>P</code>常表示加载过专有模块，<code>O</code>表示加载过树外模块。它提醒你当前现场可能包含厂商或第三方代码，也会影响上游问题受理。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">Tainted = 环境证据<br>Tainted != 某个模块已经被证明是根因<br></code></pre></td></tr></table></figure>
+
+<p>应按日志对应内核版本的<code>tainted-kernels.rst</code>解码，不要凭印象解释所有字符。</p>
+<h1 id="4-8-Call-Trace是什么"><a href="#4-8-Call-Trace是什么" class="headerlink" title="4.8 Call Trace是什么"></a>4.8 Call Trace是什么</h1><p>Call Trace是该任务当前内核栈的符号化表示，展示函数调用关系和偏移。对hung_task而言，它主要告诉我们Waiter沿什么路径进入当前等待。</p>
+<p>受架构、编译优化、内联、栈展开能力和符号质量影响，调用栈可能不完整或包含偏差。因此它是关键证据，但不是自动生成的根因报告。</p>
+<h1 id="4-9-Call-Trace为什么不能只看最上面"><a href="#4-9-Call-Trace为什么不能只看最上面" class="headerlink" title="4.9 Call Trace为什么不能只看最上面"></a>4.9 Call Trace为什么不能只看最上面</h1><p>栈顶经常是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">__schedule<br>schedule<br>schedule_timeout<br></code></pre></td></tr></table></figure>
+
+<p>这些函数只说明任务怎样离开CPU。大量完全不同的等待最终都会汇聚到调度器，如果把公共汇聚点当根因，就无法区分锁、Completion、I&#x2F;O和网络等待。</p>
+<h1 id="4-10-Scheduler-Frame是什么"><a href="#4-10-Scheduler-Frame是什么" class="headerlink" title="4.10 Scheduler Frame是什么"></a>4.10 Scheduler Frame是什么</h1><p>Scheduler Frame是通用睡眠框架，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">__schedule()<br>schedule()<br>schedule_timeout()<br>schedule_preempt_disabled()<br>io_schedule()中的schedule()<br></code></pre></td></tr></table></figure>
+
+<p>它们回答“CPU是怎么切走的”，一般不回答“业务条件为什么没成立”。除非证据指向调度器自身异常，否则先把它们标成框架层。</p>
+<h1 id="4-11-Wait-Primitive是什么"><a href="#4-11-Wait-Primitive是什么" class="headerlink" title="4.11 Wait Primitive是什么"></a>4.11 Wait Primitive是什么</h1><p>Wait Primitive是第一个揭示等待类别的同步接口或慢路径，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">wait_for_completion*()<br>mutex_lock*() / __mutex_lock_common()<br>down_read() / down_write() / rwsem_*_slowpath()<br>wait_event*()展开后的子系统等待函数<br>io_schedule()<br>wait_on_page*()<br></code></pre></td></tr></table></figure>
+
+<p>它回答“任务用什么机制等待”，是从公共调度框架进入业务分析的桥梁。</p>
+<h1 id="4-12-Business-Wait-Point是什么"><a href="#4-12-Business-Wait-Point是什么" class="headerlink" title="4.12 Business Wait Point是什么"></a>4.12 Business Wait Point是什么</h1><p>Business Wait Point是Wait Primitive下面第一个说明“为何等待”的子系统函数：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">wait_for_completion()       &lt;- 机制<br>spi_sync_locked()           &lt;- SPI同步传输等待<br>my_sensor_read()            &lt;- 业务请求<br></code></pre></td></tr></table></figure>
+
+<p>它通常能帮助定位源码调用点和实参，但仍未必是根因。真正对象可能在函数内部，真正故障可能在另一个执行上下文。</p>
+<h1 id="4-13-如何识别Completion等待"><a href="#4-13-如何识别Completion等待" class="headerlink" title="4.13 如何识别Completion等待"></a>4.13 如何识别Completion等待</h1><p>典型栈形态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">__schedule<br>schedule_timeout<br>wait_for_completion_timeout / wait_for_completion<br>driver_submit_sync<br></code></pre></td></tr></table></figure>
+
+<p>固定翻译为：当前任务在等一个<code>struct completion</code>获得完成令牌。下一步确认具体Completion实例，并找所有<code>complete()</code>、<code>complete_all()</code>和重初始化路径。</p>
+<h1 id="4-14-如何识别Mutex等待"><a href="#4-14-如何识别Mutex等待" class="headerlink" title="4.14 如何识别Mutex等待"></a>4.14 如何识别Mutex等待</h1><p>典型栈可能包含<code>mutex_lock()</code>、<code>mutex_lock_interruptible()</code>或<code>__mutex_lock_common()</code>。固定翻译：任务正在等待某个mutex成为可获得状态。</p>
+<p>下一步不是搜索“mutex有什么Bug”，而是定位具体mutex字段、当前Owner以及Owner为何没有走到对应<code>mutex_unlock()</code>。</p>
+<h1 id="4-15-如何识别RWSEM等待"><a href="#4-15-如何识别RWSEM等待" class="headerlink" title="4.15 如何识别RWSEM等待"></a>4.15 如何识别RWSEM等待</h1><p>常见符号包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">rwsem_down_read_slowpath<br>rwsem_down_write_slowpath<br>down_read<br>down_write<br></code></pre></td></tr></table></figure>
+
+<p>需要判断Waiter是Reader还是Writer，并寻找当前Reader集合或Writer持有者。大量任务收敛到同一rwsem时，通常应寻找共同持有路径。</p>
+<h1 id="4-16-如何识别Wait-Event等待"><a href="#4-16-如何识别Wait-Event等待" class="headerlink" title="4.16 如何识别Wait Event等待"></a>4.16 如何识别Wait Event等待</h1><p><code>wait_event*()</code>是宏，优化后未必直接出现在栈里。调用栈可能只保留子系统的等待helper、<code>prepare_to_wait_event()</code>或<code>schedule()</code>。</p>
+<p>因此要回到业务函数源码寻找类似：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">wait_event(obj-&gt;waitq, obj-&gt;ready);<br></code></pre></td></tr></table></figure>
+
+<p>同时记录wait queue和condition，二者缺一不可。</p>
+<h1 id="4-17-如何识别IO-Wait"><a href="#4-17-如何识别IO-Wait" class="headerlink" title="4.17 如何识别IO Wait"></a>4.17 如何识别IO Wait</h1><p><code>io_schedule()</code>、<code>wait_on_page*()</code>、块层请求等待和文件映射等待常提示I&#x2F;O语义。它们表明任务的睡眠被标记为I&#x2F;O等待，但不会自动告诉你是哪块磁盘或哪条request。</p>
+<p>继续追踪具体page、bio、request、gendisk、队列、驱动和完成回调，并结合块层trace与设备日志验证。</p>
+<h1 id="4-18-如何识别Filesystem与NFS等待"><a href="#4-18-如何识别Filesystem与NFS等待" class="headerlink" title="4.18 如何识别Filesystem与NFS等待"></a>4.18 如何识别Filesystem与NFS等待</h1><p>本地文件系统栈可能出现<code>filemap_*</code>、页锁、writeback、journal和<code>submit_bio</code>；NFS路径常出现<code>nfs_*</code>、<code>rpc_*</code>、socket等待等。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">本地FS -&gt; page/writeback/journal -&gt; block layer -&gt; device<br>NFS    -&gt; RPC request -&gt; network -&gt; remote server<br></code></pre></td></tr></table></figure>
+
+<p>函数前缀只用于选择调查方向，不能替代具体对象和运行时证据。</p>
+<h1 id="4-19-怎么从Wait-Primitive定位Wait-Object"><a href="#4-19-怎么从Wait-Primitive定位Wait-Object" class="headerlink" title="4.19 怎么从Wait Primitive定位Wait Object"></a>4.19 怎么从Wait Primitive定位Wait Object</h1><p>Wait Primitive只能说明“怎么等”。Wait Object必须从调用点实参、结构体字段和对象生命周期中还原：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">wait_for_completion(&amp;cmd-&gt;done);  <span class="hljs-comment">// cmd-&gt;done</span><br>mutex_lock(&amp;dev-&gt;lock);           <span class="hljs-comment">// dev-&gt;lock</span><br>wait_event(req-&gt;wait, req-&gt;done); <span class="hljs-comment">// req-&gt;wait与req-&gt;done</span><br></code></pre></td></tr></table></figure>
+
+<p>同一函数可能服务大量对象，只有找到本次调用使用的实例，才能继续追Owner或Producer。</p>
+<h1 id="4-20-怎么从源码找到Wait-Object"><a href="#4-20-怎么从源码找到Wait-Object" class="headerlink" title="4.20 怎么从源码找到Wait Object"></a>4.20 怎么从源码找到Wait Object</h1><p>固定步骤：</p>
+<ol>
+<li>使用日志对应版本和配置找到Business Wait Point；</li>
+<li>沿控制流定位等待API的直接调用点；</li>
+<li>记录实参表达式及其所属结构体；</li>
+<li>查对象在哪里初始化、如何关联当前请求、何时销毁；</li>
+<li>若静态源码无法确定本次实例，使用vmcore、调试符号、trace或动态探针补充运行时地址。</li>
+</ol>
+<p>不要拿其他版本中“名字相似”的实现替换现场版本。</p>
+<h1 id="4-21-怎么找到Owner"><a href="#4-21-怎么找到Owner" class="headerlink" title="4.21 怎么找到Owner"></a>4.21 怎么找到Owner</h1><p>Owner概念主要适用于mutex、rwsem等资源。静态搜索所有获取与释放路径，列出可能持有者；再用运行时证据确认实际持有者：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">all task stacks<br>lockdep输出<br>ftrace锁事件<br>crash/vmcore中的锁和task状态<br>业务对象状态<br></code></pre></td></tr></table></figure>
+
+<p>源码只能证明“谁可能持有”，不能单独证明“故障瞬间谁正在持有”。</p>
+<h1 id="4-22-没有Owner时怎么找Producer"><a href="#4-22-没有Owner时怎么找Producer" class="headerlink" title="4.22 没有Owner时怎么找Producer"></a>4.22 没有Owner时怎么找Producer</h1><p>Completion、条件等待和I&#x2F;O请求通常没有传统Owner。此时寻找负责让状态推进的Producer：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Completion -&gt; complete()调用者<br>wait_event -&gt; condition写入者 + wake_up()调用者<br>I/O request -&gt; end_io/完成回调/IRQ<br>RPC -&gt; 网络接收路径或远端服务<br>Timer -&gt; 定时器回调<br>Work -&gt; workqueue worker<br></code></pre></td></tr></table></figure>
+
+<h1 id="4-23-怎么找complete-调用者"><a href="#4-23-怎么找complete-调用者" class="headerlink" title="4.23 怎么找complete()调用者"></a>4.23 怎么找<code>complete()</code>调用者</h1><p>从具体字段出发搜索：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">rg <span class="hljs-string">&#x27;complete(_all)?\s*\(&amp;cmd-&gt;done\)&#x27;</span> &lt;source-tree&gt;<br></code></pre></td></tr></table></figure>
+
+<p>若对象通过helper传递，应继续追helper、回调注册和函数指针，而不是只做文本匹配。还要检查<code>reinit_completion()</code>、取消、超时、复位和设备移除路径，确认事件没有被错误消费或重置。</p>
+<h1 id="4-24-怎么找wake-up-调用者"><a href="#4-24-怎么找wake-up-调用者" class="headerlink" title="4.24 怎么找wake_up()调用者"></a>4.24 怎么找<code>wake_up()</code>调用者</h1><p>条件等待必须同时检查两个动作：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">1. 谁把condition更新为true？<br>2. 谁在正确时机对同一wait queue执行wake_up*()？<br></code></pre></td></tr></table></figure>
+
+<p>只找到<code>wake_up()</code>不够；如果它更新了错误对象、先后顺序不当或condition仍为false，Waiter醒来后还会继续睡眠。</p>
+<h1 id="4-25-怎么找unlock-路径"><a href="#4-25-怎么找unlock-路径" class="headerlink" title="4.25 怎么找unlock()路径"></a>4.25 怎么找<code>unlock()</code>路径</h1><p>从具体锁字段搜索获取和释放：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">rg <span class="hljs-string">&#x27;mutex_(lock|unlock).*dev-&gt;lock&#x27;</span> &lt;source-tree&gt;<br></code></pre></td></tr></table></figure>
+
+<p>检查每条成功、错误、重试和早退路径是否成对释放，并关注持锁期间是否调用了可能长时间睡眠的下游操作。必要时结合锁trace确认真实持锁时间。</p>
+<h1 id="4-26-怎么找IO-Completion路径"><a href="#4-26-怎么找IO-Completion路径" class="headerlink" title="4.26 怎么找IO Completion路径"></a>4.26 怎么找IO Completion路径</h1><p>从Wait Object沿完成方向反向验证：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter等待page/request<br>  &lt;- 谁提交bio/request<br>  &lt;- 驱动是否dispatch<br>  &lt;- 设备是否接受命令<br>  &lt;- IRQ是否产生<br>  &lt;- ISR/线程化中断是否运行<br>  &lt;- end_io/complete request是否执行<br>  &lt;- Waiter是否被唤醒<br></code></pre></td></tr></table></figure>
+
+<p>应把块层trace、<code>/proc/interrupts</code>、控制器错误日志和设备状态组合起来，避免只凭一层栈下结论。</p>
+<h1 id="4-27-多Task-hung怎么分析"><a href="#4-27-多Task-hung怎么分析" class="headerlink" title="4.27 多Task hung怎么分析"></a>4.27 多Task hung怎么分析</h1><p>先做聚类，而不是逐条孤立阅读。为每个任务提取：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Task identity | Wait Primitive | Business Wait Point | Object候选<br></code></pre></td></tr></table></figure>
+
+<p>按相同调用后缀、同一业务函数、同一设备&#x2F;挂载点或同一对象分组。大量Waiter通常是同一个上游停顿向外传播的结果。</p>
+<h1 id="4-28-Common-Dependency怎么找"><a href="#4-28-Common-Dependency怎么找" class="headerlink" title="4.28 Common Dependency怎么找"></a>4.28 Common Dependency怎么找</h1><p>把每条栈转换成依赖边：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">A -&gt; Mutex M -&gt; Task X<br>B -&gt; Mutex M -&gt; Task X<br>C -&gt; Completion C -&gt; Worker X<br></code></pre></td></tr></table></figure>
+
+<p>共同Owner、Producer、设备队列、workqueue、文件系统事务或远端服务，就是优先验证的Common Dependency。栈函数相同不一定对象相同，必须进一步确认实例。</p>
+<h1 id="4-29-什么时候需要看其他CPU或Task-stack"><a href="#4-29-什么时候需要看其他CPU或Task-stack" class="headerlink" title="4.29 什么时候需要看其他CPU或Task stack"></a>4.29 什么时候需要看其他CPU或Task stack</h1><p>出现锁Owner、workqueue Producer、内核线程协作或疑似依赖环时，需要查看其他任务栈。all CPU backtrace适合了解当时各CPU正在运行什么，但Sleeping Owner未必正在CPU上，所以还要查看all task stacks或vmcore。</p>
+<p>目标是回答：依赖链下一节点当前在运行、Runnable，还是也在等待？</p>
+<h1 id="4-30-什么时候需要看IRQ"><a href="#4-30-什么时候需要看IRQ" class="headerlink" title="4.30 什么时候需要看IRQ"></a>4.30 什么时候需要看IRQ</h1><p>当Completion或I&#x2F;O的Producer理论上位于硬件中断路径时，检查：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">设备是否使能中断<br>中断号和CPU亲和性是否正确<br>/proc/interrupts计数是否增长<br>ISR是否进入并确认正确状态位<br>ISR是否执行到完成/唤醒分支<br>是否存在中断风暴、屏蔽或共享IRQ误判<br></code></pre></td></tr></table></figure>
+
+<h1 id="4-31-什么时候需要看Workqueue"><a href="#4-31-什么时候需要看Workqueue" class="headerlink" title="4.31 什么时候需要看Workqueue"></a>4.31 什么时候需要看Workqueue</h1><p>当Producer由<code>queue_work()</code>或<code>queue_delayed_work()</code>调度时，验证work是否成功入队、目标workqueue是否有可用worker、worker是否被更早的work堵塞，以及当前work是否在等待同一资源形成自依赖。</p>
+<p>“已经queue”不等于“已经运行”，更不等于“已经执行到wake&#x2F;complete”。</p>
+<h1 id="4-32-什么时候需要看Block-IO"><a href="#4-32-什么时候需要看Block-IO" class="headerlink" title="4.32 什么时候需要看Block IO"></a>4.32 什么时候需要看Block IO</h1><p>栈出现<code>io_schedule()</code>、page wait、bio&#x2F;request或文件系统回写路径时，检查：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">request是否生成、合并和dispatch<br>队列是否freeze/quiesce<br>设备是否timeout/reset<br>完成中断是否到达<br>end_io是否执行<br></code></pre></td></tr></table></figure>
+
+<p>可结合blktrace、tracepoints、控制器日志和<code>/sys/block</code>状态，但必须注意观测工具本身的开销。</p>
+<h1 id="4-33-什么时候需要看NFS或RPC"><a href="#4-33-什么时候需要看NFS或RPC" class="headerlink" title="4.33 什么时候需要看NFS或RPC"></a>4.33 什么时候需要看NFS或RPC</h1><p>出现<code>nfs_*</code>、<code>rpc_*</code>或网络等待时，应检查RPC任务状态、重传、挂载选项、网络连通性、收包路径和服务端状态。硬挂载在远端不可用时可能长期等待，这是策略和故障共同作用，不应直接归咎于本地调度器。</p>
+<h1 id="4-34-什么时候需要看Driver或Firmware"><a href="#4-34-什么时候需要看Driver或Firmware" class="headerlink" title="4.34 什么时候需要看Driver或Firmware"></a>4.34 什么时候需要看Driver或Firmware</h1><p>出现mailbox、DMA、设备命令或驱动私有wait helper时，按协议检查：命令是否真正发出，ring&#x2F;FIFO是否推进，firmware是否接收，硬件状态机是否完成，IRQ&#x2F;doorbell是否返回，错误恢复是否遗漏通知。</p>
+<p>厂商模块taint可以提高调查优先级，但仍需完整证据链。</p>
+<h1 id="4-35-如何建立Dependency-Chain"><a href="#4-35-如何建立Dependency-Chain" class="headerlink" title="4.35 如何建立Dependency Chain"></a>4.35 如何建立Dependency Chain</h1><p>每条边都应写成“主体等待对象，对象依赖谁改变”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A<br>  -&gt; waits for cmd-&gt;done<br>  -&gt; completed by device_irq()<br>  -&gt; device_irq depends on IRQ 42<br>  -&gt; IRQ depends on hardware command completion<br></code></pre></td></tr></table></figure>
+
+<p>边旁边记录证据：调用点、对象地址、Owner PID、trace事件、中断计数或寄存器状态。没有证据的边标记为“假设”，不要伪装成结论。</p>
+<h1 id="4-36-Symptom、Immediate-Cause和Root-Cause如何区分"><a href="#4-36-Symptom、Immediate-Cause和Root-Cause如何区分" class="headerlink" title="4.36 Symptom、Immediate Cause和Root Cause如何区分"></a>4.36 Symptom、Immediate Cause和Root Cause如何区分</h1><p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Symptom：Task A被报告blocked 184秒<br>Immediate Cause：Task A等待Mutex M<br>Intermediate Cause：Mutex M由Task B持有<br>Root Cause：Task B等待设备完成，但设备中断未到达<br></code></pre></td></tr></table></figure>
+
+<p>“mutex导致hung”只描述了直接阻塞关系。Root Cause应该解释依赖链为何停止，以及什么证据排除了其他可能。</p>
+<h1 id="4-37-本章分析模板"><a href="#4-37-本章分析模板" class="headerlink" title="4.37 本章分析模板"></a>4.37 本章分析模板</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs text">[现场]<br>Kernel release/commit/config:<br>Timestamp:<br>Taint:<br><br>[Waiter]<br>Name/PID/PPID:<br>State:<br>Reported duration:<br><br>[栈分层]<br>Scheduler frames:<br>Wait primitive:<br>Business wait point:<br>Request origin:<br><br>[对象]<br>Wait object/type/address:<br>Condition:<br>Object lifetime:<br><br>[依赖]<br>Owner or Producer:<br>Next dependency:<br>Other affected tasks:<br><br>[证据]<br>Source call site:<br>Owner/task stack:<br>IRQ/workqueue/I/O/RPC evidence:<br>Relevant logs/trace:<br><br>[结论]<br>Symptom:<br>Immediate cause:<br>Root-cause hypothesis:<br>Confirmed evidence:<br>Missing evidence:<br></code></pre></td></tr></table></figure>
+
+<h1 id="4-38-本章实验"><a href="#4-38-本章实验" class="headerlink" title="4.38 本章实验"></a>4.38 本章实验</h1><h2 id="4-38-1-手工分层Call-Trace"><a href="#4-38-1-手工分层Call-Trace" class="headerlink" title="4.38.1 手工分层Call Trace"></a>4.38.1 手工分层Call Trace</h2><p>选一条包含<code>wait_for_completion()</code>的历史日志，用四种颜色或标签标记Scheduler、Wait Primitive、Business Wait Point和Request Origin。先只陈述每层事实，不下结论。</p>
+<h2 id="4-38-2-静态反查对象"><a href="#4-38-2-静态反查对象" class="headerlink" title="4.38.2 静态反查对象"></a>4.38.2 静态反查对象</h2><p>在匹配版本源码中找到等待调用点，记录实参字段、初始化点、所有<code>complete()</code>&#x2F;<code>wake_up()</code>&#x2F;<code>unlock()</code>以及错误出口。区分直接调用、helper和函数指针回调。</p>
+<h2 id="4-38-3-运行时复核"><a href="#4-38-3-运行时复核" class="headerlink" title="4.38.3 运行时复核"></a>4.38.3 运行时复核</h2><p>若现场仍存在：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/stack<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/wchan<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/status<br></code></pre></td></tr></table></figure>
+
+<p>预测：<code>wchan</code>只能给出附近等待符号，无法直接告诉你具体对象和Producer。</p>
+<h2 id="4-38-4-多栈聚类"><a href="#4-38-4-多栈聚类" class="headerlink" title="4.38.4 多栈聚类"></a>4.38.4 多栈聚类</h2><p>把多条hung任务整理成表格，按Wait Primitive、Business Point、设备&#x2F;挂载点和对象候选分组，再画Common Dependency图。</p>
+<h1 id="4-39-工程意义"><a href="#4-39-工程意义" class="headerlink" title="4.39 工程意义"></a>4.39 工程意义</h1><p>结构化分析能避免“看到哪个函数就改哪个函数”。对驱动而言，把永久等待改成超时可以限制故障影响，但超时只是Fault Containment；硬件为何不完成、IRQ为何丢失仍是Root Cause问题。</p>
+<p>高质量故障报告应该包含版本、配置、完整日志、对象与依赖链、验证证据及未确认假设，使问题可以复现和复核。</p>
+<h1 id="4-40-常见误区"><a href="#4-40-常见误区" class="headerlink" title="4.40 常见误区"></a>4.40 常见误区</h1><h2 id="误区1：Call-Trace第一行就是Root-Cause"><a href="#误区1：Call-Trace第一行就是Root-Cause" class="headerlink" title="误区1：Call Trace第一行就是Root Cause"></a>误区1：Call Trace第一行就是Root Cause</h2><p>栈顶通常是公共调度框架。</p>
+<h2 id="误区2：看到schedule-就怀疑调度器"><a href="#误区2：看到schedule-就怀疑调度器" class="headerlink" title="误区2：看到schedule()就怀疑调度器"></a>误区2：看到<code>schedule()</code>就怀疑调度器</h2><p>绝大多数睡眠等待最终都会调用调度器。</p>
+<h2 id="误区3：wait-for-completion-卡住说明Completion坏了"><a href="#误区3：wait-for-completion-卡住说明Completion坏了" class="headerlink" title="误区3：wait_for_completion()卡住说明Completion坏了"></a>误区3：<code>wait_for_completion()</code>卡住说明Completion坏了</h2><p>应找具体Completion及Producer。</p>
+<h2 id="误区4：mutex-lock-卡住说明mutex实现坏了"><a href="#误区4：mutex-lock-卡住说明mutex实现坏了" class="headerlink" title="误区4：mutex_lock()卡住说明mutex实现坏了"></a>误区4：<code>mutex_lock()</code>卡住说明mutex实现坏了</h2><p>应找具体锁、实际Owner和Owner的下一层依赖。</p>
+<h2 id="误区5：io-schedule-说明CPU调度异常"><a href="#误区5：io-schedule-说明CPU调度异常" class="headerlink" title="误区5：io_schedule()说明CPU调度异常"></a>误区5：<code>io_schedule()</code>说明CPU调度异常</h2><p>它主要表达I&#x2F;O等待语义，应继续追request完成链。</p>
+<h2 id="误区6：静态源码能直接确定现场Owner"><a href="#误区6：静态源码能直接确定现场Owner" class="headerlink" title="误区6：静态源码能直接确定现场Owner"></a>误区6：静态源码能直接确定现场Owner</h2><p>源码只能列出可能路径，实际Owner属于运行时状态。</p>
+<h2 id="误区7：多个相同栈一定等待同一对象"><a href="#误区7：多个相同栈一定等待同一对象" class="headerlink" title="误区7：多个相同栈一定等待同一对象"></a>误区7：多个相同栈一定等待同一对象</h2><p>相同函数可以服务多个实例，必须验证对象地址和业务关联。</p>
+<h2 id="误区8：增加timeout就是根因修复"><a href="#误区8：增加timeout就是根因修复" class="headerlink" title="误区8：增加timeout就是根因修复"></a>误区8：增加timeout就是根因修复</h2><p>timeout可能避免永久挂起，但不解释事件为何没有完成。</p>
+<h2 id="误区9：Tainted证明第三方模块有Bug"><a href="#误区9：Tainted证明第三方模块有Bug" class="headerlink" title="误区9：Tainted证明第三方模块有Bug"></a>误区9：Tainted证明第三方模块有Bug</h2><p>它只说明环境历史，应作为调查上下文而非定罪证据。</p>
+<h1 id="4-41-博客总结"><a href="#4-41-博客总结" class="headerlink" title="4.41 博客总结"></a>4.41 博客总结</h1><p>阅读hung_task日志应从事实提取开始：确认任务身份、PID、D状态、报告时长、内核版本和taint，再对Call Trace分层。<code>__schedule()</code>、<code>schedule()</code>等是公共睡眠框架；<code>wait_for_completion()</code>、mutex&#x2F;rwsem慢路径、条件等待和<code>io_schedule()</code>揭示Wait Primitive；其下方第一个子系统函数通常是Business Wait Point。</p>
+<p>Wait Primitive只回答“怎么等”，必须回到匹配版本源码，通过等待API实参确认Wait Object。mutex&#x2F;rwsem继续寻找运行时Owner；Completion、wait_event和I&#x2F;O继续寻找Producer及完成路径。多个hung任务先聚类并寻找Common Dependency，最终将结论分成Symptom、Immediate Cause和Root Cause，并为依赖图中的每条边附上证据或明确标为假设。</p>
+<h1 id="4-42-学完检查题"><a href="#4-42-学完检查题" class="headerlink" title="4.42 学完检查题"></a>4.42 学完检查题</h1><ol>
+<li>第一轮阅读hung_task日志应提取哪些事实？</li>
+<li>为什么任务名可能不唯一或被截断？</li>
+<li>PID如何帮助关联运行时证据？</li>
+<li><code>state:D</code>会把调查方向引向什么问题？</li>
+<li>报告秒数为什么不是等待入口的精确计时？</li>
+<li>Tainted字段能证明第三方模块是根因吗？</li>
+<li>Call Trace受哪些因素影响？</li>
+<li>什么是Scheduler Frame？</li>
+<li>什么是Wait Primitive？</li>
+<li>什么是Business Wait Point？</li>
+<li>为什么不能停在<code>schedule()</code>？</li>
+<li>Completion等待的下一步固定问题是什么？</li>
+<li>mutex等待的下一步固定问题是什么？</li>
+<li>rwsem Reader和Writer等待要分别关注什么？</li>
+<li>为什么<code>wait_event()</code>可能不直接出现在优化后的栈里？</li>
+<li>I&#x2F;O栈中应如何找到具体request？</li>
+<li>本地文件系统与NFS的依赖方向有何不同？</li>
+<li>为什么Wait Primitive还不是Wait Object？</li>
+<li>如何用源码实参确认Wait Object？</li>
+<li>静态源码为什么不能单独确认实际Owner？</li>
+<li>Completion没有Owner时应该找什么？</li>
+<li>搜索<code>complete()</code>时为什么还要检查helper和函数指针？</li>
+<li>条件等待为什么必须同时查condition writer与<code>wake_up()</code>？</li>
+<li>如何审查mutex的异常返回路径？</li>
+<li>一条块I&#x2F;O完成链包含哪些关键环节？</li>
+<li>多任务hung时为什么应先聚类？</li>
+<li>相同栈是否必然代表同一Wait Object？</li>
+<li>什么时候需要all task stacks而不仅是all CPU backtrace？</li>
+<li>哪些证据可以验证IRQ Producer？</li>
+<li>work已入队为什么仍可能不执行？</li>
+<li>Block Queue freeze可能怎样影响Waiter？</li>
+<li>NFS硬挂载为何可能长期D状态？</li>
+<li>驱动&#x2F;固件链应验证哪些协议节点？</li>
+<li>Dependency Chain中的每条边应记录什么？</li>
+<li>Symptom、Immediate Cause与Root Cause如何区别？</li>
+<li><code>wchan</code>能提供什么、不能提供什么？</li>
+<li>为什么timeout常是Fault Containment而非Root Cause Fix？</li>
+<li>请用本章模板拆解一条Completion类hung栈。</li>
+<li>请画出“Waiter -&gt; mutex -&gt; Owner -&gt; Completion -&gt; IRQ -&gt; Hardware”的依赖链。</li>
+<li>哪些缺失证据会阻止你把根因假设升级为结论？</li>
+</ol>
+<p>下一章将把Root Cause按Lock、Completion&#x2F;Wait、I&#x2F;O、Driver、Memory和Dependency Cycle分类，为每一类建立典型栈、关键补充证据和验证路线。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-Kernel/" class="print-no-link">#Linux Kernel</a>
+      
+        <a href="/tags/hung-task/" class="print-no-link">#hung task</a>
+      
+        <a href="/tags/Call-Trace/" class="print-no-link">#Call Trace</a>
+      
+        <a href="/tags/Wait-Object/" class="print-no-link">#Wait Object</a>
+      
+        <a href="/tags/Root-Cause/" class="print-no-link">#Root Cause</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux hung_task故障分析：如何读一条hung_task日志</div>
+      <div>https://cj0510.github.io/2026/10/09/Linux Kernel/Debug/Linux-hung-task故障分析-第4章-如何读hung_task日志/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/" title="Linux hung_task故障分析：Linux阻塞与等待模型">
+                        <span class="hidden-mobile">Linux hung_task故障分析：Linux阻塞与等待模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

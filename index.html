@@ -343,6 +343,336 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux hung_task故障分析：如何读一条hung_task日志">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/" target="_self">
+          Linux hung_task故障分析：如何读一条hung_task日志
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC4%E7%AB%A0-%E5%A6%82%E4%BD%95%E8%AF%BBhung_task%E6%97%A5%E5%BF%97/" target="_self">
+        <div>
+          第4章：如何读一条hung_task日志——从Call Trace找到Wait Object0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。主要参考：  kernel/hung_task.c：告警生成与sched_show_task()调用； kernel/sched/core.c：
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-10-09 19:00" pubdate>
+              2026-10-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Kernel/">#Linux Kernel</a>
+            
+              <a href="/tags/hung-task/">#hung task</a>
+            
+              <a href="/tags/Call-Trace/">#Call Trace</a>
+            
+              <a href="/tags/Wait-Object/">#Wait Object</a>
+            
+              <a href="/tags/Root-Cause/">#Root Cause</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux hung_task故障分析：Linux阻塞与等待模型">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/" target="_self">
+          Linux hung_task故障分析：Linux阻塞与等待模型
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC3%E7%AB%A0-Linux%E9%98%BB%E5%A1%9E%E4%B8%8E%E7%AD%89%E5%BE%85%E6%A8%A1%E5%9E%8B/" target="_self">
+        <div>
+          第3章：Linux阻塞与等待模型——Task为什么会进入D状态0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，对应上游标签提交830b3c68c1fb1e9176028d02ef86f3cf76aa2476。主要阅读入口是：  include/linux/wait.h：等待队列接口与wait_event*()宏； kernel/sched/wait.c：等待队列登记、清理与唤醒；
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-10-09 18:00" pubdate>
+              2026-10-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Kernel/">#Linux Kernel</a>
+            
+              <a href="/tags/hung-task/">#hung task</a>
+            
+              <a href="/tags/wait-queue/">#wait queue</a>
+            
+              <a href="/tags/completion/">#completion</a>
+            
+              <a href="/tags/mutex/">#mutex</a>
+            
+              <a href="/tags/IO-wait/">#IO wait</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux hung_task故障分析：khungtaskd检测源码">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/" target="_self">
+          Linux hung_task故障分析：khungtaskd检测源码
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/" target="_self">
+        <div>
+          第2章：hung_task Detector源码——khungtaskd是怎么发现阻塞任务的0. 源码基线与本章边界本文以 Linux v6.1 为源码基线，核心文件是 kernel/hung_task.c。对应上游标签提交为 830b3c68c1fb1e9176028d02ef86f3cf76aa2476。 本章只回答一个问题：  Linux怎样发现一个不可中断等待任务已经长时间没有调度进展？
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-10-09 17:00" pubdate>
+              2026-10-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Kernel/">#Linux Kernel</a>
+            
+              <a href="/tags/hung-task/">#hung task</a>
+            
+              <a href="/tags/TASK-UNINTERRUPTIBLE/">#TASK_UNINTERRUPTIBLE</a>
+            
+              <a href="/tags/Debug/">#Debug</a>
+            
+              <a href="/tags/khungtaskd/">#khungtaskd</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/" target="_self">
+          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/" target="_self">
+          Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/" target="_self">
+        <div>
+          第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”： 1INFO: task xxx:1234 blocked for more than 120 seconds.  但hung task通常不是CPU忙循环，而是一个Task长时间睡在不可中断等待路径中。真正要追踪的是：它在等什么、谁应该让条件成立、
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-10-09 16:00" pubdate>
+              2026-10-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux-Kernel/">#Linux Kernel</a>
+            
+              <a href="/tags/hung-task/">#hung task</a>
+            
+              <a href="/tags/TASK-UNINTERRUPTIBLE/">#TASK_UNINTERRUPTIBLE</a>
+            
+              <a href="/tags/D-State/">#D State</a>
+            
+              <a href="/tags/Debug/">#Debug</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/10/09/Linux%20Kernel/GPU/Linux-GPU-NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84-%E7%AC%AC2%E7%AB%A0-%E5%AE%8C%E6%95%B4%E8%BD%AF%E4%BB%B6%E6%A0%88/" target="_self">
           <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Linux GPU/NPU加速器总体架构：完整软件栈">
         </a>
@@ -669,339 +999,11 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/" target="_self">
-          Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/" target="_self">
-        <div>
-          Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计上一章讨论了条件判断与分支。分支解决“下一步走哪条路”，但复杂任务还会出现另一类控制流：同一类动作需要重复执行。 例如研究任务： 123456789Search  ↓Enough evidence?  ├── yes → continue  └── no       ↓    refine query
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-10-07 00:00" pubdate>
-              2026-10-07
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/AI/" class="category-chain-item">AI</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Agent-Skill/">#Agent Skill</a>
-            
-              <a href="/tags/Loop/">#Loop</a>
-            
-              <a href="/tags/Retry/">#Retry</a>
-            
-              <a href="/tags/Fallback/">#Fallback</a>
-            
-              <a href="/tags/Recovery/">#Recovery</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/" target="_self">
-          Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/10/07/AI/Skill/18-%E5%A4%9A%E4%B8%AASkill%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E4%B8%8E%E8%B0%83%E7%94%A8/" target="_self">
-        <div>
-          Agent Skill 原理与工程实践（十八）：多个 Skill 如何组合与调用上一章讨论了单个 Skill 内部的循环、重试与 Fallback。但真实任务往往无法由一个 Skill 独立完成。 例如一次系统性能分析，至少可能包含： 123456performance-analysis       │       ├── scheduler-analysis       ├── memory-a
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-10-07 00:00" pubdate>
-              2026-10-07
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/AI/" class="category-chain-item">AI</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Agent-Skill/">#Agent Skill</a>
-            
-              <a href="/tags/Orchestration/">#Orchestration</a>
-            
-              <a href="/tags/Composition/">#Composition</a>
-            
-              <a href="/tags/Delegation/">#Delegation</a>
-            
-              <a href="/tags/Dependency/">#Dependency</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/10/07/AI/Skill/19-Skill%E4%B9%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%81%8C%E8%B4%A3%E9%87%8D%E5%8F%A0/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/10/07/AI/Skill/19-Skill%E4%B9%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%81%8C%E8%B4%A3%E9%87%8D%E5%8F%A0/" target="_self">
-          Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/10/07/AI/Skill/19-Skill%E4%B9%8B%E9%97%B4%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%81%8C%E8%B4%A3%E9%87%8D%E5%8F%A0/" target="_self">
-        <div>
-          Agent Skill 原理与工程实践（十九）：Skill 之间如何避免职责重叠上一章讨论了多个 Skill 的组合与调用。组合能够把复杂任务拆成若干专业能力，但也会引入一个新问题：多个 Skill 都认为任务属于自己。 大纲给出的反例是： 1performance  它看起来简单，实际上边界过于宽泛。系统遇到下面任何请求，都可能触发它：  帮我判断这次延迟异常属于哪个方向； 分析调度延迟； 检查
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-10-07 00:00" pubdate>
-              2026-10-07
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/AI/" class="category-chain-item">AI</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Agent-Skill/">#Agent Skill</a>
-            
-              <a href="/tags/Responsibility-Boundary/">#Responsibility Boundary</a>
-            
-              <a href="/tags/Skill-Discovery/">#Skill Discovery</a>
-            
-              <a href="/tags/Routing/">#Routing</a>
-            
-              <a href="/tags/Coexistence/">#Coexistence</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/" target="_self">
-          <img src="/img/banner/hardware.jpg" srcset="/img/loading.svg" lazyload alt="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/" target="_self">
-          Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/" target="_self">
-        <div>
-          Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支前面几章建立了 Skill 的结构、Workflow、Contract，以及 references/、scripts/、assets/、Tool &#x2F; MCP &#x2F; API 的使用方式。 现实任务很少沿着一条固定直线执行。例如性能分析可能遇到： 12345678if trace contains sche
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-10-07 00:00" pubdate>
-              2026-10-07
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/AI/" class="category-chain-item">AI</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/AI/Agent-Skill/" class="category-chain-item">Agent Skill</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Agent-Skill/">#Agent Skill</a>
-            
-              <a href="/tags/Conditional-Logic/">#Conditional Logic</a>
-            
-              <a href="/tags/Branching/">#Branching</a>
-            
-              <a href="/tags/Decision-Table/">#Decision Table</a>
-            
-              <a href="/tags/Workflow/">#Workflow</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="page-number" href="/page/3/#board">3</a><a class="page-number" href="/page/4/#board">4</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="page-number" href="/page/3/#board">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/#board">5</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
 

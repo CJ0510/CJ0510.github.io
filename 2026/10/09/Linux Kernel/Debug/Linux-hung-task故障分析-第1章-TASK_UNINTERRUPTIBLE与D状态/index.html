@@ -1,0 +1,1086 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#071426">
+  <meta name="author" content="CJ1018">
+  <meta name="keywords" content="Linux 内核,嵌入式系统,SPI,进程管理,内存管理,RK3566,U-Boot,驱动开发">
+  
+    <meta name="description" content="第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”： 1INFO: task xxx:1234 blocked for more than 120 seconds.  但hung task通常不是CPU忙循环，而是一个Task长时间睡在不可中断等待路径中。真正要追踪的是：它在等什么、谁应该让条件成立、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态">
+<meta property="og:url" content="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/">
+<meta property="og:site_name" content="CJ&#39;s Tech Notes">
+<meta property="og:description" content="第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”： 1INFO: task xxx:1234 blocked for more than 120 seconds.  但hung task通常不是CPU忙循环，而是一个Task长时间睡在不可中断等待路径中。真正要追踪的是：它在等什么、谁应该让条件成立、">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-09T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T12:21:36.109Z">
+<meta property="article:author" content="CJ1018">
+<meta property="article:tag" content="D State">
+<meta property="article:tag" content="Debug">
+<meta property="article:tag" content="Linux Kernel">
+<meta property="article:tag" content="TASK_UNINTERRUPTIBLE">
+<meta property="article:tag" content="hung task">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+    <meta name="follow.it-verification-code" content="qrCQ30TKHzwFRfXLC0D5">
+  
+  <title>Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态 · CJ&#39;s Tech Notes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cj0510.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":55,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":"#"},"progressbar":{"enable":true,"height_px":3,"color":"#38bdf8","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.svg","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="CJ's Tech Notes" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 72vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CJ · Tech Notes</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner/code.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.55)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-09 16:00" pubdate>
+          2026-10-09
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          7.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          66 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="第1章：hung-task到底是什么——TASK-UNINTERRUPTIBLE与D状态"><a href="#第1章：hung-task到底是什么——TASK-UNINTERRUPTIBLE与D状态" class="headerlink" title="第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态"></a>第1章：hung_task到底是什么——TASK_UNINTERRUPTIBLE与D状态</h1><p>看到下面的日志，很多人第一反应是“这个线程在CPU上卡死了”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">INFO: task xxx:1234 blocked for more than 120 seconds.<br></code></pre></td></tr></table></figure>
+
+<p>但hung task通常不是CPU忙循环，而是一个Task长时间睡在不可中断等待路径中。真正要追踪的是：它在等什么、谁应该让条件成立、那个Owner或Producer为什么没有继续推进。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter → Wait Object → Owner / Producer → Dependency → Root Cause<br></code></pre></td></tr></table></figure>
+
+<h2 id="0-源码基线与本章边界"><a href="#0-源码基线与本章边界" class="headerlink" title="0. 源码基线与本章边界"></a>0. 源码基线与本章边界</h2><p>本文严格使用Linux v6.1正式版本：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">repository: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git<br>tag:        v6.1<br>commit:     830b3c68c1fb1e9176028d02ef86f3cf76aa2476<br></code></pre></td></tr></table></figure>
+
+<p>主要源码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">include/linux/sched.h<br>include/linux/wait.h<br>include/linux/completion.h<br>kernel/sched/core.c<br>kernel/sched/completion.c<br>kernel/locking/mutex.c<br>fs/proc/array.c<br>kernel/hung_task.c<br></code></pre></td></tr></table></figure>
+
+<p>本章只建立D状态和依赖模型。<code>khungtaskd</code>如何扫描、怎样用<code>nvcsw</code>判断进展，将在下一章展开。</p>
+<h1 id="1-1-hung-task到底是什么"><a href="#1-1-hung-task到底是什么" class="headerlink" title="1.1 hung_task到底是什么"></a>1.1 hung_task到底是什么</h1><p>hung task是Linux发现“Task长时间处于特定阻塞状态并且没有可观察调度进展”的诊断机制。它打印Task、阻塞时长和栈，提醒系统可能存在长期I&#x2F;O、锁等待、固件无响应或死锁。</p>
+<p>它不是一种新Task State，也不直接证明死锁：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">hung_task warning = 长时间无进展的症状<br>deadlock          = 可能原因之一<br></code></pre></td></tr></table></figure>
+
+<h1 id="1-2-为什么第一章先学Task-State"><a href="#1-2-为什么第一章先学Task-State" class="headerlink" title="1.2 为什么第一章先学Task State"></a>1.2 为什么第一章先学Task State</h1><p>日志常伴随<code>state:D</code>。如果误把D理解为Dead，就会把等待问题错误归因于崩溃；如果误认为D状态仍在运行，又会错误追查CPU占用率。</p>
+<p>正确入口是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">D → TASK_UNINTERRUPTIBLE → 睡眠等待 → 寻找等待对象和唤醒者<br></code></pre></td></tr></table></figure>
+
+<h1 id="1-3-Linux-Task有哪些常见状态"><a href="#1-3-Linux-Task有哪些常见状态" class="headerlink" title="1.3 Linux Task有哪些常见状态"></a>1.3 Linux Task有哪些常见状态</h1><p>日常工具常显示：</p>
+<table>
+<thead>
+<tr>
+<th>字母</th>
+<th>常见含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>R</code></td>
+<td>Running或Runnable</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Interruptible Sleep</td>
+</tr>
+<tr>
+<td><code>D</code></td>
+<td>Uninterruptible Sleep</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Stopped或Traced</td>
+</tr>
+<tr>
+<td><code>Z</code></td>
+<td>Zombie</td>
+</tr>
+</tbody></table>
+<p>v6.1在<code>include/linux/sched.h</code>中把<code>TASK_RUNNING</code>定义为0，把<code>TASK_INTERRUPTIBLE</code>和<code>TASK_UNINTERRUPTIBLE</code>定义为不同状态位。<code>exit_state</code>与可运行状态字段也应区分。</p>
+<h1 id="1-4-TASK-RUNNING是什么"><a href="#1-4-TASK-RUNNING是什么" class="headerlink" title="1.4 TASK_RUNNING是什么"></a>1.4 <code>TASK_RUNNING</code>是什么</h1><p><code>TASK_RUNNING</code>同时覆盖：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">正在某个CPU上执行<br>已经可运行、位于或即将位于runqueue等待CPU<br></code></pre></td></tr></table></figure>
+
+<p>所以<code>R</code>不等于“此刻一定占有CPU”。同理，唤醒把Task恢复成Runnable，也不保证立即获得CPU。</p>
+<h1 id="1-5-TASK-INTERRUPTIBLE是什么"><a href="#1-5-TASK-INTERRUPTIBLE是什么" class="headerlink" title="1.5 TASK_INTERRUPTIBLE是什么"></a>1.5 <code>TASK_INTERRUPTIBLE</code>是什么</h1><p>Task等待事件，但某些Signal可以让等待提前返回：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">条件未满足 → TASK_INTERRUPTIBLE → schedule()<br>                                ↙          ↘<br>                           事件唤醒       Signal唤醒<br></code></pre></td></tr></table></figure>
+
+<p>调用者必须处理被Signal中断的返回值和清理路径。</p>
+<h1 id="1-6-TASK-UNINTERRUPTIBLE是什么"><a href="#1-6-TASK-UNINTERRUPTIBLE是什么" class="headerlink" title="1.6 TASK_UNINTERRUPTIBLE是什么"></a>1.6 <code>TASK_UNINTERRUPTIBLE</code>是什么</h1><p><code>TASK_UNINTERRUPTIBLE</code>表示Task等待一个不能被普通Signal随意打断的内核条件。用户态工具通常把它报告为<code>D</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">TASK_UNINTERRUPTIBLE ≈ 用户可见D状态<br></code></pre></td></tr></table></figure>
+
+<p>这是状态映射的实用近似；<code>TASK_KILLABLE</code>、<code>TASK_IDLE</code>等组合状态还带有额外语义，不能全部简单叫D。</p>
+<h1 id="1-7-用户看到的S状态和D状态分别代表什么"><a href="#1-7-用户看到的S状态和D状态分别代表什么" class="headerlink" title="1.7 用户看到的S状态和D状态分别代表什么"></a>1.7 用户看到的S状态和D状态分别代表什么</h1><p>二者都通常意味着Task已经睡眠并让出CPU。核心差别是允许哪些唤醒原因：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">S：等待事件，Signal也可能打断<br>D：等待事件，普通Signal不打断<br></code></pre></td></tr></table></figure>
+
+<p>它们不是“轻度卡顿”和“重度卡顿”的等级关系。</p>
+<h1 id="1-8-为什么D状态不是“CPU卡死”"><a href="#1-8-为什么D状态不是“CPU卡死”" class="headerlink" title="1.8 为什么D状态不是“CPU卡死”"></a>1.8 为什么D状态不是“CPU卡死”</h1><p>典型路径已经调用<code>schedule()</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A设置D状态<br>  → schedule()<br>  → 从CPU切走<br>  → CPU运行Task B<br></code></pre></td></tr></table></figure>
+
+<p>Task A在等待期间通常不消耗CPU。系统可能CPU idle很高，却因为大量关键Task都在D状态而几乎无法提供服务。</p>
+<h1 id="1-9-Task为什么要sleep"><a href="#1-9-Task为什么要sleep" class="headerlink" title="1.9 Task为什么要sleep"></a>1.9 Task为什么要sleep</h1><p>磁盘、网络、DMA、Firmware、锁和页面状态不会总是立即就绪。忙轮询会浪费CPU：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">while</span> (!ready)<br>    cpu_relax();<br></code></pre></td></tr></table></figure>
+
+<p>可睡眠上下文更适合登记等待者并让出CPU，条件成立后再唤醒。</p>
+<h1 id="1-10-为什么不能所有等待都用TASK-INTERRUPTIBLE"><a href="#1-10-为什么不能所有等待都用TASK-INTERRUPTIBLE" class="headerlink" title="1.10 为什么不能所有等待都用TASK_INTERRUPTIBLE"></a>1.10 为什么不能所有等待都用<code>TASK_INTERRUPTIBLE</code></h1><p>若一个底层事务已经把Buffer交给设备，Signal让调用者直接退出并不意味着DMA也停止。中断等待会引入取消、回滚、所有权和迟到完成等复杂状态。</p>
+<p>只有API和底层状态机都能正确处理取消时，可中断等待才安全。</p>
+<h1 id="1-11-为什么Linux需要TASK-UNINTERRUPTIBLE"><a href="#1-11-为什么Linux需要TASK-UNINTERRUPTIBLE" class="headerlink" title="1.11 为什么Linux需要TASK_UNINTERRUPTIBLE"></a>1.11 为什么Linux需要<code>TASK_UNINTERRUPTIBLE</code></h1><p>不可中断等待为必须完成的状态过渡提供简单约束：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">提交事务 → 所有权转移 → 等待最终完成 → 回收资源<br></code></pre></td></tr></table></figure>
+
+<p>它不是为了“禁止用户控制进程”，而是避免普通Signal把不能安全取消的内核事务撕开。</p>
+<h1 id="1-12-可中断与不可中断等待的本质区别"><a href="#1-12-可中断与不可中断等待的本质区别" class="headerlink" title="1.12 可中断与不可中断等待的本质区别"></a>1.12 可中断与不可中断等待的本质区别</h1><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Interruptible</th>
+<th>Uninterruptible</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>等待事件</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>普通Signal可打断</td>
+<td>可以</td>
+<td>不可以</td>
+</tr>
+<tr>
+<td>调用者需处理中断返回</td>
+<td>是</td>
+<td>通常无此分支</td>
+</tr>
+<tr>
+<td>用户常见状态</td>
+<td>S</td>
+<td>D</td>
+</tr>
+<tr>
+<td>是否占CPU忙等</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<p>是否允许Signal与是否具有超时也是不同维度；不可中断等待仍然可以由带timeout的API限制时间。</p>
+<h1 id="1-13-一个Task如何进入睡眠状态"><a href="#1-13-一个Task如何进入睡眠状态" class="headerlink" title="1.13 一个Task如何进入睡眠状态"></a>1.13 一个Task如何进入睡眠状态</h1><p>最小模型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (;;) &#123;<br>    set_current_state(TASK_UNINTERRUPTIBLE);<br>    <span class="hljs-keyword">if</span> (condition)<br>        <span class="hljs-keyword">break</span>;<br>    schedule();<br>&#125;<br>__set_current_state(TASK_RUNNING);<br></code></pre></td></tr></table></figure>
+
+<p>真实等待原语还需要等待队列、锁和内存顺序，防止条件检查与唤醒并发时丢失事件。</p>
+<h1 id="1-14-set-current-state-与-set-current-state"><a href="#1-14-set-current-state-与-set-current-state" class="headerlink" title="1.14 set_current_state()与__set_current_state()"></a>1.14 <code>set_current_state()</code>与<code>__set_current_state()</code></h1><p>v6.1的关键区别：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> __set_current_state(state_value) \</span><br><span class="hljs-meta">    WRITE_ONCE(current-&gt;__state, state_value)</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> set_current_state(state_value) \</span><br><span class="hljs-meta">    smp_store_mb(current-&gt;__state, state_value)</span><br></code></pre></td></tr></table></figure>
+
+<p><code>set_current_state()</code>包含内存屏障，使状态写入与随后条件检查正确排序；<code>__set_current_state()</code>不提供这层序列化，适用于调用者已经通过同一把锁等方式保证顺序的场景。</p>
+<p>若“登记睡眠状态→检查条件”与Producer的“更新条件→唤醒”排序错误，就可能发生条件已成立但Waiter错过唤醒的竞态。</p>
+<h1 id="1-15-schedule-在等待流程里做什么"><a href="#1-15-schedule-在等待流程里做什么" class="headerlink" title="1.15 schedule()在等待流程里做什么"></a>1.15 <code>schedule()</code>在等待流程里做什么</h1><p>设置状态只表达“不满足条件时我可以睡”，真正让出CPU的是<code>schedule()</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">current非TASK_RUNNING<br>  → schedule()<br>  → 调度器不把它作为普通Runnable任务继续运行<br>  → 选择next并context_switch<br></code></pre></td></tr></table></figure>
+
+<p><code>schedule()</code>不是造成卡住的根因，它只是实现睡眠的通用机制。</p>
+<h1 id="1-16-Wait-Queue是什么"><a href="#1-16-Wait-Queue是什么" class="headerlink" title="1.16 Wait Queue是什么"></a>1.16 Wait Queue是什么</h1><p>等待队列把“事件”和“等待该事件的Task”关联起来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">wait_queue_head<br> ├─ waiter A<br> ├─ waiter B<br> └─ waiter C<br></code></pre></td></tr></table></figure>
+
+<p>等待宏通常完成：加入队列、设置状态、反复检查条件、调度、被唤醒后清理队列项。直接手写这些步骤容易产生丢失唤醒。</p>
+<h1 id="1-17-Waiter、Wait-Object、Owner、Producer四个角色"><a href="#1-17-Waiter、Wait-Object、Owner、Producer四个角色" class="headerlink" title="1.17 Waiter、Wait Object、Owner、Producer四个角色"></a>1.17 Waiter、Wait Object、Owner、Producer四个角色</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter：当前被阻塞的Task<br>Wait Object：mutex、completion、I/O request、page、设备事件<br>Owner：持有排他资源的人，例如mutex owner<br>Producer：使条件成立的人，例如IRQ、worker、hardware、remote server<br></code></pre></td></tr></table></figure>
+
+<p>Completion未必有“Owner”，但一定有应该产生完成事件的Producer。</p>
+<h1 id="1-18-一个Task如何从D状态被唤醒"><a href="#1-18-一个Task如何从D状态被唤醒" class="headerlink" title="1.18 一个Task如何从D状态被唤醒"></a>1.18 一个Task如何从D状态被唤醒</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">Producer更新condition<br>  → wake_up/complete/unlock/I/O completion<br>  → try_to_wake_up一类路径匹配Task状态<br>  → Task变为TASK_RUNNING<br>  → 入队或保持可运行<br>  → 以后被调度<br></code></pre></td></tr></table></figure>
+
+<p>唤醒与实际运行是两个事件，中间可能存在runqueue等待。</p>
+<h1 id="1-19-wake-up-大体做什么"><a href="#1-19-wake-up-大体做什么" class="headerlink" title="1.19 wake_up()大体做什么"></a>1.19 <code>wake_up()</code>大体做什么</h1><p><code>wake_up()</code>遍历相应等待队列，调用等待项的唤醒函数。默认唤醒逻辑最终尝试把符合状态掩码的Task恢复为Runnable并入队。</p>
+<p>它不会替Waiter修复条件；正确顺序通常是先发布条件变化，再执行唤醒。</p>
+<h1 id="1-20-Completion模型怎么理解"><a href="#1-20-Completion模型怎么理解" class="headerlink" title="1.20 Completion模型怎么理解"></a>1.20 Completion模型怎么理解</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter                         Producer<br>wait_for_completion(&amp;done)     IRQ/worker<br>  → D状态                         → complete(&amp;done)<br>  → schedule()                    → done计数变化<br>                                  → wake waiter<br></code></pre></td></tr></table></figure>
+
+<p><code>wait_for_completion()</code>默认是不可中断等待。若IRQ丢失、错误路径漏掉<code>complete()</code>或Firmware不回包，Waiter就可能长期停在D状态。</p>
+<h1 id="1-21-mutex等待为什么也可能进入D状态"><a href="#1-21-mutex等待为什么也可能进入D状态" class="headerlink" title="1.21 mutex等待为什么也可能进入D状态"></a>1.21 mutex等待为什么也可能进入D状态</h1><p>普通<code>mutex_lock()</code>竞争失败后会睡眠等待，并使用不可中断语义。分析链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A → mutex M → owner Task B → B当前依赖<br></code></pre></td></tr></table></figure>
+
+<p>Task A的<code>mutex_lock()</code>栈只说明等待点，根因更可能位于持锁者B或B依赖的下一层。</p>
+<h1 id="1-22-I-O等待为什么常见D状态"><a href="#1-22-I-O等待为什么常见D状态" class="headerlink" title="1.22 I&#x2F;O等待为什么常见D状态"></a>1.22 I&#x2F;O等待为什么常见D状态</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">read/write/fsync<br> → filesystem<br> → block layer<br> → device/remote storage<br> → completion/IRQ<br></code></pre></td></tr></table></figure>
+
+<p>底层操作常不能靠普通Signal安全撤销，因此存储、NFS、Writeback和块设备异常经常表现为D状态。</p>
+<h1 id="1-23-Driver等待为什么常见D状态"><a href="#1-23-Driver等待为什么常见D状态" class="headerlink" title="1.23 Driver等待为什么常见D状态"></a>1.23 Driver等待为什么常见D状态</h1><p>驱动常采用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">写命令/Ring<br> → 等待completion<br> → Device/Firmware执行<br> → IRQ或Mailbox response<br> → complete<br></code></pre></td></tr></table></figure>
+
+<p>设备无响应、IRQ被mask、DMA未结束、Firmware hang或异常分支漏完成都会断开这条链。</p>
+<h1 id="1-24-D状态是不是一定有问题"><a href="#1-24-D状态是不是一定有问题" class="headerlink" title="1.24 D状态是不是一定有问题"></a>1.24 D状态是不是一定有问题</h1><p>不是。短暂D状态可能只是正常I&#x2F;O等待。判断要加入时间和进展：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">D状态 + 很快被唤醒 = 正常现象<br>D状态 + 长期无进展 = 需要调查<br></code></pre></td></tr></table></figure>
+
+<h1 id="1-25-正常D状态与异常D状态的区别"><a href="#1-25-正常D状态与异常D状态的区别" class="headerlink" title="1.25 正常D状态与异常D状态的区别"></a>1.25 正常D状态与异常D状态的区别</h1><p>正常路径具有活跃Producer和有限完成时间；异常路径的条件长期不成立，或唤醒已经发生却因竞态未被Waiter观察。</p>
+<p>应检查请求是否推进、Owner是否运行、IRQ计数是否变化、设备是否响应，而不是只统计D状态数量。</p>
+<h1 id="1-26-D状态什么时候会变成hung-task"><a href="#1-26-D状态什么时候会变成hung-task" class="headerlink" title="1.26 D状态什么时候会变成hung_task"></a>1.26 D状态什么时候会变成hung_task</h1><p>D状态不会“转换成”一种叫hung task的新状态。检测线程周期性观察Task；当符合检测条件且超过配置阈值时打印警告。Task依然处于原来的等待状态。</p>
+<h1 id="1-27-hung-task检测的是死锁还是长时间无进展"><a href="#1-27-hung-task检测的是死锁还是长时间无进展" class="headerlink" title="1.27 hung_task检测的是死锁还是长时间无进展"></a>1.27 hung_task检测的是死锁还是长时间无进展</h1><p>检测的是Long No Progress。可能原因包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">锁循环依赖<br>设备或Firmware无响应<br>极慢I/O<br>NFS Server卡顿<br>内存回收/Writeback停滞<br>漏唤醒<br></code></pre></td></tr></table></figure>
+
+<p>仅凭warning不能选择其中哪一种。</p>
+<h1 id="1-28-为什么hung-task日志只是Symptom"><a href="#1-28-为什么hung-task日志只是Symptom" class="headerlink" title="1.28 为什么hung_task日志只是Symptom"></a>1.28 为什么hung_task日志只是Symptom</h1><p>日志打印被观察到的Waiter。比如栈停在<code>wait_for_completion()</code>，只证明它等待的Completion没有及时满足，不证明Completion实现有Bug。</p>
+<p>日志的价值是提供第一条依赖边：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Task A waits on object X<br></code></pre></td></tr></table></figure>
+
+<h1 id="1-29-为什么Waiter通常不是Root-Cause"><a href="#1-29-为什么Waiter通常不是Root-Cause" class="headerlink" title="1.29 为什么Waiter通常不是Root Cause"></a>1.29 为什么Waiter通常不是Root Cause</h1><p>Waiter按设计睡眠，真正失去进展的往往是Owner&#x2F;Producer：持锁者没释放、IRQ没来、Worker没执行、远端没回复或Firmware卡住。</p>
+<p>调试必须从Waiter栈向外追，而不是在<code>schedule()</code>附近反复阅读。</p>
+<h1 id="1-30-本章最重要的Dependency模型"><a href="#1-30-本章最重要的Dependency模型" class="headerlink" title="1.30 本章最重要的Dependency模型"></a>1.30 本章最重要的Dependency模型</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">Hung Task（Waiter）<br>  ↓ waits for<br>Wait Object<br>  ↓ owned/produced by<br>Owner / Producer<br>  ↓ may wait for<br>Next Object / Next Producer<br>  ↓<br>Root Cause<br></code></pre></td></tr></table></figure>
+
+<p>锁形成Owner链；Completion&#x2F;I&#x2F;O形成Producer链；复杂故障常是两者混合。</p>
+<h1 id="1-31-最小源码阅读入口"><a href="#1-31-最小源码阅读入口" class="headerlink" title="1.31 最小源码阅读入口"></a>1.31 最小源码阅读入口</h1><p>建议按顺序：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text">include/linux/sched.h<br>  TASK_*与set_current_state<br><br>include/linux/wait.h<br>  wait_event*宏和wait queue对象<br><br>include/linux/completion.h<br>kernel/sched/completion.c<br>  wait_for_completion/complete<br><br>kernel/sched/core.c<br>  schedule与try_to_wake_up坐标<br><br>kernel/hung_task.c<br>  下一章再深入<br></code></pre></td></tr></table></figure>
+
+<p>每次只回答：谁设置状态、谁调用schedule、等待对象是谁、谁执行wake。</p>
+<h1 id="1-32-本章实验"><a href="#1-32-本章实验" class="headerlink" title="1.32 本章实验"></a>1.32 本章实验</h1><h2 id="1-32-1-观察状态与等待点"><a href="#1-32-1-观察状态与等待点" class="headerlink" title="1.32.1 观察状态与等待点"></a>1.32.1 观察状态与等待点</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ps -eo pid,tid,<span class="hljs-built_in">stat</span>,wchan:32,<span class="hljs-built_in">comm</span><br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/status<br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/wchan<br></code></pre></td></tr></table></figure>
+
+<p><code>wchan</code>只表示当前睡眠附近的符号，不是根因结论；符号可见性还受内核配置和权限限制。</p>
+<h2 id="1-32-2-构造S状态"><a href="#1-32-2-构造S状态" class="headerlink" title="1.32.2 构造S状态"></a>1.32.2 构造S状态</h2><p>运行<code>sleep 300</code>后观察S状态，再发送Signal，验证可中断等待能够提前结束。</p>
+<h2 id="1-32-3-阅读一对Completion调用"><a href="#1-32-3-阅读一对Completion调用" class="headerlink" title="1.32.3 阅读一对Completion调用"></a>1.32.3 阅读一对Completion调用</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">rg <span class="hljs-string">&quot;wait_for_completion&quot;</span> drivers/ -g <span class="hljs-string">&#x27;*.[ch]&#x27;</span><br>rg <span class="hljs-string">&quot;complete\(&quot;</span> &lt;same-driver-directory&gt;<br></code></pre></td></tr></table></figure>
+
+<p>画出Waiter、Completion对象和Producer，不要只列函数名。</p>
+<h2 id="1-32-4-观察真实D状态"><a href="#1-32-4-观察真实D状态" class="headerlink" title="1.32.4 观察真实D状态"></a>1.32.4 观察真实D状态</h2><p>不要为了实验故意破坏存储设备。若系统自然出现D状态，可立即保存：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ps -eo pid,tid,<span class="hljs-built_in">stat</span>,wchan:32,<span class="hljs-built_in">comm</span><br><span class="hljs-built_in">cat</span> /proc/&lt;pid&gt;/stack<br>dmesg -T | <span class="hljs-built_in">tail</span> -200<br></code></pre></td></tr></table></figure>
+
+<p>然后判断是锁、Completion、I&#x2F;O还是设备等待。</p>
+<h1 id="1-33-工程与性能意义"><a href="#1-33-工程与性能意义" class="headerlink" title="1.33 工程与性能意义"></a>1.33 工程与性能意义</h1><p>D状态Task不消耗大量CPU，但可能占有锁、Buffer、挂起请求或阻塞上层服务。大量D状态常对应I&#x2F;O backlog、NFS stall、驱动&#x2F;Firmware hang或Writeback停滞。</p>
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">CPU idle高 ≠ 系统健康<br>Load Average高 ≠ CPU一定繁忙<br></code></pre></td></tr></table></figure>
+
+<p>Linux负载统计会考虑某些不可中断任务，I&#x2F;O卡顿可能造成高Load但低CPU利用率。</p>
+<h1 id="1-34-常见误区"><a href="#1-34-常见误区" class="headerlink" title="1.34 常见误区"></a>1.34 常见误区</h1><h2 id="误区1：D表示Dead"><a href="#误区1：D表示Dead" class="headerlink" title="误区1：D表示Dead"></a>误区1：D表示Dead</h2><p>错误，通常表示不可中断睡眠。</p>
+<h2 id="误区2：D状态一直占CPU"><a href="#误区2：D状态一直占CPU" class="headerlink" title="误区2：D状态一直占CPU"></a>误区2：D状态一直占CPU</h2><p>错误，Task一般已经通过<code>schedule()</code>让出CPU。</p>
+<h2 id="误区3：D状态就是死锁"><a href="#误区3：D状态就是死锁" class="headerlink" title="误区3：D状态就是死锁"></a>误区3：D状态就是死锁</h2><p>错误，正常短暂I&#x2F;O也会出现D状态。</p>
+<h2 id="误区4：hung-task就是死锁检测器"><a href="#误区4：hung-task就是死锁检测器" class="headerlink" title="误区4：hung_task就是死锁检测器"></a>误区4：hung_task就是死锁检测器</h2><p>错误，它报告长期无进展，不能直接证明依赖环。</p>
+<h2 id="误区5：栈顶等待函数就是根因"><a href="#误区5：栈顶等待函数就是根因" class="headerlink" title="误区5：栈顶等待函数就是根因"></a>误区5：栈顶等待函数就是根因</h2><p>错误，它往往只是Wait Primitive。</p>
+<h2 id="误区6：wait-for-completion-卡住说明Completion有Bug"><a href="#误区6：wait-for-completion-卡住说明Completion有Bug" class="headerlink" title="误区6：wait_for_completion()卡住说明Completion有Bug"></a>误区6：<code>wait_for_completion()</code>卡住说明Completion有Bug</h2><p>应先找谁负责<code>complete()</code>以及为什么没执行。</p>
+<h2 id="误区7：mutex-lock-卡住说明mutex实现有Bug"><a href="#误区7：mutex-lock-卡住说明mutex实现有Bug" class="headerlink" title="误区7：mutex_lock()卡住说明mutex实现有Bug"></a>误区7：<code>mutex_lock()</code>卡住说明mutex实现有Bug</h2><p>应追踪Owner及Owner的下一层依赖。</p>
+<h2 id="误区8：wake-up-后Task立即执行"><a href="#误区8：wake-up-后Task立即执行" class="headerlink" title="误区8：wake_up()后Task立即执行"></a>误区8：<code>wake_up()</code>后Task立即执行</h2><p>错误，它先变为Runnable，何时执行由调度器决定。</p>
+<h1 id="1-35-博客总结"><a href="#1-35-博客总结" class="headerlink" title="1.35 博客总结"></a>1.35 博客总结</h1><p><code>D</code>通常对应<code>TASK_UNINTERRUPTIBLE</code>：Task正在等待不能被普通Signal随意打断的内核条件，并且已经让出CPU。D状态本身可以完全正常，异常的是长期无进展。</p>
+<p>进入等待的核心顺序是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">登记Waiter/设置状态 → 检查条件 → schedule → Producer更新条件 → wake<br></code></pre></td></tr></table></figure>
+
+<p><code>set_current_state()</code>的屏障、条件检查和Producer唤醒共同防止丢失唤醒。分析hung task时，Call Trace只给出Waiter所在位置；真正的主线是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Waiter → Wait Object → Owner/Producer → Next Dependency → Root Cause<br></code></pre></td></tr></table></figure>
+
+<p>官方源码入口：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/include/linux/sched.h">Linux v6.1 <code>include/linux/sched.h</code></a></li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/include/linux/wait.h">Linux v6.1 <code>include/linux/wait.h</code></a></li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/sched/completion.c">Linux v6.1 <code>kernel/sched/completion.c</code></a></li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v6.1/source/kernel/hung_task.c">Linux v6.1 <code>kernel/hung_task.c</code></a></li>
+</ul>
+<h1 id="1-36-学完检查题"><a href="#1-36-学完检查题" class="headerlink" title="1.36 学完检查题"></a>1.36 学完检查题</h1><ol>
+<li>D状态通常对应哪个内核状态？</li>
+<li><code>TASK_RUNNING</code>为何同时包含正在运行和Runnable？</li>
+<li>S与D的核心区别是什么？</li>
+<li>D状态为什么通常不占用CPU？</li>
+<li>为什么某些内核事务不能被普通Signal随意打断？</li>
+<li>设置<code>TASK_UNINTERRUPTIBLE</code>后为什么还要调用<code>schedule()</code>？</li>
+<li><code>set_current_state()</code>与<code>__set_current_state()</code>的关键差别是什么？</li>
+<li>条件检查和唤醒排序错误可能造成什么问题？</li>
+<li>Wait Queue保存的核心关系是什么？</li>
+<li><code>wake_up()</code>与Task真正开始运行有何区别？</li>
+<li>Completion路径中的Waiter与Producer分别是谁？</li>
+<li>mutex等待时为什么应继续寻找Owner？</li>
+<li>I&#x2F;O、NFS和Firmware问题为什么常表现为D状态？</li>
+<li>D状态什么时候正常，什么时候可疑？</li>
+<li>hung task是否是一种新的Task State？</li>
+<li>hung task warning为什么不能证明死锁？</li>
+<li><code>wchan</code>为什么只是线索？</li>
+<li>为什么<code>schedule()</code>通常不是Call Trace中的根因？</li>
+<li>CPU idle高时系统为什么仍可能严重卡顿？</li>
+<li>请画出Waiter到Root Cause的完整依赖链。</li>
+</ol>
+<p>下一章进入<code>kernel/hung_task.c</code>，分析<code>khungtaskd → watchdog → check_hung_uninterruptible_tasks() → check_hung_task()</code>如何判断一个Task“太久没有进展”。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux-Kernel/" class="category-chain-item">Linux Kernel</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Linux-Kernel/Debug/" class="category-chain-item">Debug</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux-Kernel/" class="print-no-link">#Linux Kernel</a>
+      
+        <a href="/tags/hung-task/" class="print-no-link">#hung task</a>
+      
+        <a href="/tags/TASK-UNINTERRUPTIBLE/" class="print-no-link">#TASK_UNINTERRUPTIBLE</a>
+      
+        <a href="/tags/D-State/" class="print-no-link">#D State</a>
+      
+        <a href="/tags/Debug/" class="print-no-link">#Debug</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux hung_task故障分析：TASK_UNINTERRUPTIBLE与D状态</div>
+      <div>https://cj0510.github.io/2026/10/09/Linux Kernel/Debug/Linux-hung-task故障分析-第1章-TASK_UNINTERRUPTIBLE与D状态/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>CJ1018</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              CC BY-NC-SA 4.0
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/" title="Linux hung_task故障分析：khungtaskd检测源码">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux hung_task故障分析：khungtaskd检测源码</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/09/Linux%20Kernel/GPU/Linux-GPU-NPU%E5%8A%A0%E9%80%9F%E5%99%A8%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84-%E7%AC%AC2%E7%AB%A0-%E5%AE%8C%E6%95%B4%E8%BD%AF%E4%BB%B6%E6%A0%88/" title="Linux GPU/NPU加速器总体架构：完整软件栈">
+                        <span class="hidden-mobile">Linux GPU/NPU加速器总体架构：完整软件栈</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+      <div class="col-lg-7 mx-auto nopadding-x-md">
+        <div class="container custom mx-auto">
+          <section class="cj-subscribe" aria-labelledby="cj-subscribe-title">
+  <div class="cj-subscribe__icon" aria-hidden="true">✦</div>
+  <div class="cj-subscribe__copy">
+    <h2 id="cj-subscribe-title">订阅博客更新</h2>
+    <p>新文章发布后，通过邮件第一时间告诉你。不群发广告，随时可以取消订阅。</p>
+  </div>
+  <form class="cj-subscribe__form" action="https://api.follow.it/subscription-form/OWpTSHllRXRtYnNoOXZxcStpZzhuRXFMOGVNOW1lRTkvcDR4eUJHYWcyVEVKVFpKR3BTSlhweU8wdHV3WHBPbmFqbEZ2Q3RRWkp3MTNoTUhoQWxvWlkxWURwd01sdVByVmgzRWk1ampBQkxOUnFxRXpMNXYvdHpNdnFiQWRuT3h8T2poWGNDSU00cVJwSm81Z3AraTh1TXdxWEdpSEMwZGk5OTJWbTRtVXRlQT0=/8" method="post" target="_blank">
+    <label class="sr-only" for="cj-subscribe-email">邮箱地址</label>
+    <input id="cj-subscribe-email" type="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email" inputmode="email" required>
+    <button type="submit">订阅更新</button>
+  </form>
+  <a class="cj-subscribe__provider" href="https://follow.it" target="_blank" rel="nofollow noopener">Powered by follow.it</a>
+</section>
+
+        </div>
+      </div>
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Built with <a href="https://hexo.io" target="_blank" rel="nofollow noopener">Hexo</a> &amp; <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">Fluid</a>
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/content-protection.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
