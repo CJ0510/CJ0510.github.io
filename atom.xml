@@ -10,7 +10,29 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-11T10:12:32.991Z</updated>
+  <updated>2026-10-22T14:01:40.536Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="Embedded Linux" scheme="https://cj0510.github.io/tags/Embedded-Linux/"/>
+    <category term="Software Engineering" scheme="https://cj0510.github.io/tags/Software-Engineering/"/>
+    <category term="C" scheme="https://cj0510.github.io/tags/C/"/>
+    <category term="C++" scheme="https://cj0510.github.io/tags/C/"/>
+    <category term="Code Review" scheme="https://cj0510.github.io/tags/Code-Review/"/>
+    <id>https://cj0510.github.io/2026/10/22/Linux%20Kernel/Debug/%E5%B5%8C%E5%85%A5%E5%BC%8F-Linux-%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%B4%A0%E5%85%BB%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E4%B8%8E%E5%AE%9E%E8%B7%B5%E8%B7%AF%E7%BA%BF/</id>
+    <link href="https://cj0510.github.io/2026/10/22/Linux%20Kernel/Debug/%E5%B5%8C%E5%85%A5%E5%BC%8F-Linux-%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E7%B4%A0%E5%85%BB%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E4%B8%8E%E5%AE%9E%E8%B7%B5%E8%B7%AF%E7%BA%BF/"/>
+    <published>2026-10-22T02:00:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="嵌入式与Linux软件工程素养：学习资料与实践路线"><a href="#嵌入式与Linux软件工程素养：学习资料与实践路线" class="headerlink" title="嵌入式与Linux软件工程素养：学习资料与实践路线"></a>嵌入式与Linux软件工程素养：学习资料与实践路线</h1><p>写出一段能够工作的代码并不难，困难的是让代码在资源不足、并发竞争、硬件异常、需求变更和多年维护之后，依然安全、清晰并且容易验证。</p>
+<p>对于C、C++、Linux]]>
+    </summary>
+    <title>嵌入式与Linux软件工程素养：学习资料与实践路线</title>
+    <updated>2026-10-22T14:01:40.536Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -141,9 +163,9 @@
     <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
     <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="khungtaskd" scheme="https://cj0510.github.io/tags/khungtaskd/"/>
     <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
     <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
-    <category term="khungtaskd" scheme="https://cj0510.github.io/tags/khungtaskd/"/>
     <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/</id>
     <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/"/>
     <published>2026-10-09T09:00:00.000Z</published>
@@ -162,8 +184,8 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
     <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
     <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
-    <category term="D State" scheme="https://cj0510.github.io/tags/D-State/"/>
     <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="D State" scheme="https://cj0510.github.io/tags/D-State/"/>
     <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/</id>
     <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/"/>
     <published>2026-10-09T08:00:00.000Z</published>
@@ -387,24 +409,5 @@
     </summary>
     <title>物理内存管理</title>
     <updated>2026-10-07T02:29:03.828Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="perf" scheme="https://cj0510.github.io/categories/Linux-Kernel/perf/"/>
-    <category term="Linux perf" scheme="https://cj0510.github.io/tags/Linux-perf/"/>
-    <id>https://cj0510.github.io/2026/08/30/Linux%20Kernel/perf/p0_perf/</id>
-    <link href="https://cj0510.github.io/2026/08/30/Linux%20Kernel/perf/p0_perf/"/>
-    <published>2026-08-30T14:11:55.000Z</published>
-    <summary>
-      <![CDATA[<h2 id="perf基础"><a href="#perf基础" class="headerlink" title="perf基础"></a>perf基础</h2><p>Perf 是 Linux 内核提供的一套性能分析工具，它通过 Linux perf_event 子系统获取 CPU、内核和程序运行时的性能数据。</p>
-<p>其原理大致如下</p>
-<p><img src="https://github.com/CJ0510/picx-images-hosting/raw/master/image.1vze7syyey.webp"></p>
-<p>PMU全称Performance]]>
-    </summary>
-    <title>perf初探</title>
-    <updated>2026-08-30T13:34:01.395Z</updated>
   </entry>
 </feed>
