@@ -10,7 +10,30 @@
   <rights>All rights reserved 2026, CJ1018</rights>
   <subtitle>Linux 内核 · 嵌入式系统 · 开源技术</subtitle>
   <title>CJ's Tech Notes</title>
-  <updated>2026-10-22T14:01:40.536Z</updated>
+  <updated>2026-10-25T12:23:50.524Z</updated>
+  <entry>
+    <author>
+      <name>CJ1018</name>
+    </author>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
+    <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="syzkaller" scheme="https://cj0510.github.io/tags/syzkaller/"/>
+    <category term="syzbot" scheme="https://cj0510.github.io/tags/syzbot/"/>
+    <category term="KASAN" scheme="https://cj0510.github.io/tags/KASAN/"/>
+    <category term="KernelCI" scheme="https://cj0510.github.io/tags/KernelCI/"/>
+    <category term="Kernel Security" scheme="https://cj0510.github.io/tags/Kernel-Security/"/>
+    <category term="AI Repair" scheme="https://cj0510.github.io/tags/AI-Repair/"/>
+    <id>https://cj0510.github.io/2026/10/25/Linux%20Kernel/Debug/Linux-Kernel-Bug%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E4%B8%8E%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90-%E4%BB%8E-syzbot-%E5%88%B0-AI%E8%87%AA%E5%8A%A8%E4%BF%AE%E5%A4%8D/</id>
+    <link href="https://cj0510.github.io/2026/10/25/Linux%20Kernel/Debug/Linux-Kernel-Bug%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E4%B8%8E%E9%A1%B9%E7%9B%AE%E6%8E%A8%E8%8D%90-%E4%BB%8E-syzbot-%E5%88%B0-AI%E8%87%AA%E5%8A%A8%E4%BF%AE%E5%A4%8D/"/>
+    <published>2026-10-25T12:30:00.000Z</published>
+    <summary>
+      <![CDATA[<h1 id="Linux-Kernel-Bug学习资料与项目推荐：从syzbot到AI自动修复"><a href="#Linux-Kernel-Bug学习资料与项目推荐：从syzbot到AI自动修复" class="headerlink" title="Linux Kernel Bug学习资料与项目推荐：从syzbot到AI自动修复"></a>Linux Kernel]]>
+    </summary>
+    <title>Linux Kernel Bug学习资料与项目推荐：从syzbot到AI自动修复</title>
+    <updated>2026-10-25T12:23:50.524Z</updated>
+  </entry>
   <entry>
     <author>
       <name>CJ1018</name>
@@ -80,8 +103,8 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
-    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
     <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
     <category term="Root Cause" scheme="https://cj0510.github.io/tags/Root-Cause/"/>
     <category term="Dependency Chain" scheme="https://cj0510.github.io/tags/Dependency-Chain/"/>
     <id>https://cj0510.github.io/2026/10/11/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC6%E7%AB%A0-%E5%AE%9E%E6%88%98%E6%8E%92%E6%9F%A5%E6%96%B9%E6%B3%95-Dependency-Chain/</id>
@@ -162,10 +185,10 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
-    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
-    <category term="khungtaskd" scheme="https://cj0510.github.io/tags/khungtaskd/"/>
-    <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
     <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
+    <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
+    <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
+    <category term="khungtaskd" scheme="https://cj0510.github.io/tags/khungtaskd/"/>
     <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/</id>
     <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC2%E7%AB%A0-khungtaskd%E6%A3%80%E6%B5%8B%E6%BA%90%E7%A0%81/"/>
     <published>2026-10-09T09:00:00.000Z</published>
@@ -182,9 +205,9 @@
     <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
     <category term="Debug" scheme="https://cj0510.github.io/categories/Linux-Kernel/Debug/"/>
     <category term="Linux Kernel" scheme="https://cj0510.github.io/tags/Linux-Kernel/"/>
+    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
     <category term="hung task" scheme="https://cj0510.github.io/tags/hung-task/"/>
     <category term="TASK_UNINTERRUPTIBLE" scheme="https://cj0510.github.io/tags/TASK-UNINTERRUPTIBLE/"/>
-    <category term="Debug" scheme="https://cj0510.github.io/tags/Debug/"/>
     <category term="D State" scheme="https://cj0510.github.io/tags/D-State/"/>
     <id>https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/</id>
     <link href="https://cj0510.github.io/2026/10/09/Linux%20Kernel/Debug/Linux-hung-task%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90-%E7%AC%AC1%E7%AB%A0-TASK_UNINTERRUPTIBLE%E4%B8%8ED%E7%8A%B6%E6%80%81/"/>
@@ -246,9 +269,9 @@
     <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
     <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
     <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
-    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
-    <category term="Page Allocator" scheme="https://cj0510.github.io/tags/Page-Allocator/"/>
     <category term="alloc_pages" scheme="https://cj0510.github.io/tags/alloc-pages/"/>
+    <category term="Page Allocator" scheme="https://cj0510.github.io/tags/Page-Allocator/"/>
+    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
     <id>https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-alloc_pages%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D/</id>
     <link href="https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC8%E7%AB%A0-alloc_pages%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D/"/>
     <published>2026-10-07T13:00:00.000Z</published>
@@ -266,8 +289,8 @@
     <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
     <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
     <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
-    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
     <category term="Page Allocator" scheme="https://cj0510.github.io/tags/Page-Allocator/"/>
+    <category term="Buddy System" scheme="https://cj0510.github.io/tags/Buddy-System/"/>
     <id>https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/</id>
     <link href="https://cj0510.github.io/2026/10/07/Linux%20Kernel/Memory%20Management/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E7%AC%AC7%E7%AB%A0-Buddy-System%E6%95%B4%E4%BD%93%E8%AE%BE%E8%AE%A1/"/>
     <published>2026-10-07T12:00:00.000Z</published>
@@ -285,18 +308,18 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Conditional Logic" scheme="https://cj0510.github.io/tags/Conditional-Logic/"/>
-    <category term="Branching" scheme="https://cj0510.github.io/tags/Branching/"/>
-    <category term="Decision Table" scheme="https://cj0510.github.io/tags/Decision-Table/"/>
-    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/"/>
+    <category term="Loop" scheme="https://cj0510.github.io/tags/Loop/"/>
+    <category term="Retry" scheme="https://cj0510.github.io/tags/Retry/"/>
+    <category term="Fallback" scheme="https://cj0510.github.io/tags/Fallback/"/>
+    <category term="Recovery" scheme="https://cj0510.github.io/tags/Recovery/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/"/>
     <published>2026-10-06T16:00:00.000Z</published>
     <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支"><a href="#Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支" class="headerlink" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支"></a>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1><p>前面几章建立了 Skill 的结构、Workflow、Contract，以及]]>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计"><a href="#Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计" class="headerlink" title="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计"></a>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback]]>
     </summary>
-    <title>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</title>
-    <updated>2026-10-07T22:45:49.188Z</updated>
+    <title>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</title>
+    <updated>2026-10-07T22:45:54.124Z</updated>
   </entry>
   <entry>
     <author>
@@ -325,18 +348,18 @@
     <category term="AI" scheme="https://cj0510.github.io/categories/AI/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/categories/AI/Agent-Skill/"/>
     <category term="Agent Skill" scheme="https://cj0510.github.io/tags/Agent-Skill/"/>
-    <category term="Loop" scheme="https://cj0510.github.io/tags/Loop/"/>
-    <category term="Retry" scheme="https://cj0510.github.io/tags/Retry/"/>
-    <category term="Fallback" scheme="https://cj0510.github.io/tags/Fallback/"/>
-    <category term="Recovery" scheme="https://cj0510.github.io/tags/Recovery/"/>
-    <id>https://cj0510.github.io/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/</id>
-    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/17-%E5%BE%AA%E7%8E%AF%E9%87%8D%E8%AF%95Fallback%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1/"/>
+    <category term="Conditional Logic" scheme="https://cj0510.github.io/tags/Conditional-Logic/"/>
+    <category term="Branching" scheme="https://cj0510.github.io/tags/Branching/"/>
+    <category term="Decision Table" scheme="https://cj0510.github.io/tags/Decision-Table/"/>
+    <category term="Workflow" scheme="https://cj0510.github.io/tags/Workflow/"/>
+    <id>https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/</id>
+    <link href="https://cj0510.github.io/2026/10/07/AI/Skill/16-Skill%E9%87%8C%E7%9A%84%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD%E4%B8%8E%E5%88%86%E6%94%AF/"/>
     <published>2026-10-06T16:00:00.000Z</published>
     <summary>
-      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计"><a href="#Agent-Skill-原理与工程实践（十七）：循环、重试、Fallback-怎么设计" class="headerlink" title="Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计"></a>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback]]>
+      <![CDATA[<h1 id="Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支"><a href="#Agent-Skill-原理与工程实践（十六）：Skill-里的条件判断与分支" class="headerlink" title="Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支"></a>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</h1><p>前面几章建立了 Skill 的结构、Workflow、Contract，以及]]>
     </summary>
-    <title>Agent Skill 原理与工程实践（十七）：循环、重试、Fallback 怎么设计</title>
-    <updated>2026-10-07T22:45:54.124Z</updated>
+    <title>Agent Skill 原理与工程实践（十六）：Skill 里的条件判断与分支</title>
+    <updated>2026-10-07T22:45:49.188Z</updated>
   </entry>
   <entry>
     <author>
@@ -390,24 +413,5 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">git clone]]>
     </summary>
     <updated>2026-10-05T11:31:52.005Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>CJ1018</name>
-    </author>
-    <category term="Linux Kernel" scheme="https://cj0510.github.io/categories/Linux-Kernel/"/>
-    <category term="Memory Management" scheme="https://cj0510.github.io/categories/Linux-Kernel/Memory-Management/"/>
-    <category term="Linux Memory" scheme="https://cj0510.github.io/tags/Linux-Memory/"/>
-    <category term="Memory Management" scheme="https://cj0510.github.io/tags/Memory-Management/"/>
-    <id>https://cj0510.github.io/2026/09/14/Linux%20Kernel/Memory%20Management/%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98/</id>
-    <link href="https://cj0510.github.io/2026/09/14/Linux%20Kernel/Memory%20Management/%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98/"/>
-    <published>2026-09-14T05:32:55.000Z</published>
-    <summary>
-      <![CDATA[<h1 id="启动前期物理内存"><a href="#启动前期物理内存" class="headerlink" title="启动前期物理内存"></a>启动前期物理内存</h1><p>在Linux启动时，物理内存整个系统是怎么被建立起来的。</p>
-<p>比如一块ARM开发板配有1GB DDR，Linux内核也只是一个通用程序，<br>不能提前指导硬件内存布局，这部分由Bootloader &#x2F; Firmware通过设备树将<br>硬件内存信息传递给内核。</p>
-<p>当系统正常运行后，物理页主要由Buddy]]>
-    </summary>
-    <title>物理内存管理</title>
-    <updated>2026-10-07T02:29:03.828Z</updated>
   </entry>
 </feed>
